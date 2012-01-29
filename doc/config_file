@@ -1,0 +1,36 @@
+#Brouillon de fichier de configuration
+#OIDI = 0 : reserver pour le slave/PC
+#nom_du_periferique	type	ODID	slaves_propriaitaire	CLASSE_correspondante_sur_pc
+arduino		arduino	00	Arduino	Arduino
+
+ultrason1	sfr04	01	Arduino	Sfr
+ultrason2	sfr08	02	Arduino Sfr
+
+...
+
+led1		led		20	Arduino Sfr
+
+...
+
+moteur1		moteur	30	Arduino
+
+
+#Proposition de tableau pour les ODI en fonction du peripherique (en hexa)
+#[0 -> 2F] ultrason (48 valeurs)
+#[30 -> 3F] servos  (16 valeurs)
+#[40 -> 4F] moteur  (16 valeurs)
+#[50 -> 5F] boutons (16 valeurs) //cable jack, boutons poussoir, ...
+#[A0 -> FF] debogue (96 valeurs) //led, ...
+#
+#open : ini arduino by goap protocole
+#open how many?
+#arduino : n : [ODID, ok]...
+#arduino : [ODID, ok]...
+#arduino : end
+#
+#
+#read : 
+# [ODID]
+#
+#write : [ODID, value]
+
