@@ -11,7 +11,7 @@
  *  Exemple : envoye(a_quoi: moteur, arg1, arg2, ...)
  *  detail du protocol GAOP, GAOP is an origine protocol :
  *  Tout les champs seront codee sur 8bits, soit un octet.
- *  //octet de debut
+ *  taille de la frame
  *  nombre de donnees = n
  *  odid du peripherique
  *  taille de la première donnee = t1
@@ -26,11 +26,9 @@
  *  ...
  *  octet tn
  *  checksum (ou checkxor plutot)
- *  //octet de fin
  */
+/* on a la bonne frame ssi l'octet 0 == DEBUT et le dernier octet lu == FIN */
 
-//#define DEBUT 0x00
-//#define FIN 0xFF
 
 #include "Commande.h" /* type octet et objet Commande */
 

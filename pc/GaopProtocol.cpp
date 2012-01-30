@@ -81,12 +81,10 @@ bool Gaop::Send(Commande &cmd , octet odid)
 	
 	int ind_buf = prochain++;
 	while (ind_buf != appel) { usleep(50); }//tant que ce n'est pas notre tour
-	
 	octet buf[BUF_MAX]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 	int ind_taille_donnee, ind_nb_donnee;
-	ind_buf = 0;
+	ind_buf = 1; //l'indice 0 contiendra la  taille de la frame
 	octet checksum = 0; //XOR SUM
-	//buf[ind_buf++] = DEBUT;
 	buf[ind_buf++] = cmd.getNbCommandes();
 	checksum ^= cmd.getNbCommandes();
 	buf[ind_buf++] = odid; 
@@ -102,7 +100,7 @@ bool Gaop::Send(Commande &cmd , octet odid)
 		}
 	}
 	buf[ind_buf++] = checksum;
-	//buf[ind_buf++] = FIN;
+	buf[0] = ind_buf;
 	if (write(device, buf, ind_buf*sizeof(octet)) < 0) { appel++; return false;}
 	else 
 	{
@@ -117,11 +115,17 @@ bool Gaop::Receive(Commande &cmd, octet &odid)
 	int ind_buf = prochain++;
 	while (ind_buf != appel) { usleep(50); }//tant que ce n'est pas notre tour
 	octet buf[BUF_MAX];
-	int i, j, nb_donnees, taille;
+	int i , j, nb_donnees, taille;
 	ind_buf = 0;
-	while (read(device, buf, BUF_MAX*sizeof(octet)) <= 0); //attendre que les octets arrivent
-	
-	//buf[ind_buf++]; //DEBUT
+	do	//attendre que les octets arrivent
+	{
+		i = read(device, buf+ind_buf, BUF_MAX*(sizeof(octet)));
+		ind_buf += i;
+	} while (ind_buf != buf[0] && i >= 0);
+
+	if (i < 0) { appel++; return false; }
+
+	ind_buf = 1; //indice 0 = taille de la frame
 	octet checksum = 0;
 	nb_donnees = buf[ind_buf++];
 	checksum ^= nb_donnees;
@@ -143,14 +147,13 @@ bool Gaop::Receive(Commande &cmd, octet &odid)
 
 	if(buf[ind_buf++] == checksum)
 	{
-		//buf[ind_buf++]; //FIN
 		appel++;
 		return true;
 	} else
 	{
 		odid = 0;
 		appel++;
-		//buf[ind_buf++]; //FIN
+		std::cerr << "Erreur de transmition ! " << std::endl;
 		return false;
 	}
 }

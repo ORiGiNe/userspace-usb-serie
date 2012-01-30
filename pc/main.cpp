@@ -14,22 +14,23 @@ int main()
 	short int tblodid[2] = {6, 9};
 	g.initialise(tblodid, 2);
 /*	Boucle infini jour/nuit */
- 	while (true)
+	while (true)
 	{
 		leds[0]->allume();
 		leds[1]->eteint();
-		usleep(1000*1000);
+		usleep(1*1000);
 		leds[0]->eteint(); 
 		leds[1]->allume();
-		usleep(1000*1000);
+		usleep(1*1000);
 	}
+
 /* allume une led puis s'arrete */
 /*
 	leds[0]->allume();
 	sleep(3);
 */
 	/* rapidite*/
-	/*time_t nb_sec = time(NULL);
+/*	time_t nb_sec = time(NULL);
 	for (unsigned long i = 0; i < 1000; i++)
 	{
 		leds[0]->allume();
@@ -38,7 +39,7 @@ int main()
 		leds[1]->eteint();
 	}
 	cout << "temps ecoule : " << time(NULL) - nb_sec << " s" << endl;
-	*/
+*/	
 	delete leds[0];
 	delete leds[1];
 	return 0;
