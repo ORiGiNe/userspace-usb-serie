@@ -2,6 +2,9 @@
 
 Gaop::Gaop(const char *peripherique) 
 {
+	prochain = 0;
+	appel = 0;
+	
 	device = open(peripherique, O_RDWR | O_NOCTTY | O_SYNC );
 	if (device < 0) 
 	{
@@ -75,8 +78,13 @@ void Gaop::initialise(short int odidPeripherique[] , int taille)
 
 bool Gaop::Send(Commande &cmd , octet odid)
 {
+	
+	int ind_buf = prochain++;
+	while (ind_buf != appel) { usleep(50); }//tant que ce n'est pas notre tour
+	
 	octet buf[BUF_MAX]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
-	int ind_taille_donnee, ind_nb_donnee, ind_buf = 0;
+	int ind_taille_donnee, ind_nb_donnee;
+	ind_buf = 0;
 	octet checksum = 0; //XOR SUM
 	//buf[ind_buf++] = DEBUT;
 	buf[ind_buf++] = cmd.getNbCommandes();
@@ -95,15 +103,22 @@ bool Gaop::Send(Commande &cmd , octet odid)
 	}
 	buf[ind_buf++] = checksum;
 	//buf[ind_buf++] = FIN;
-	if (write(device, buf, ind_buf*sizeof(octet)) < 0) return false;
-	return true;
+	if (write(device, buf, ind_buf*sizeof(octet)) < 0) { appel++; return false;}
+	else 
+	{
+		appel++;
+		return true;
+	}
 }
 
 //inverse de send
 bool Gaop::Receive(Commande &cmd, octet &odid) 
 {
+	int ind_buf = prochain++;
+	while (ind_buf != appel) { usleep(50); }//tant que ce n'est pas notre tour
 	octet buf[BUF_MAX];
-	int i, j, nb_donnees, taille, ind_buf = 0;
+	int i, j, nb_donnees, taille;
+	ind_buf = 0;
 	while (read(device, buf, BUF_MAX*sizeof(octet)) <= 0); //attendre que les octets arrivent
 	
 	//buf[ind_buf++]; //DEBUT
@@ -129,10 +144,12 @@ bool Gaop::Receive(Commande &cmd, octet &odid)
 	if(buf[ind_buf++] == checksum)
 	{
 		//buf[ind_buf++]; //FIN
+		appel++;
 		return true;
 	} else
 	{
 		odid = 0;
+		appel++;
 		//buf[ind_buf++]; //FIN
 		return false;
 	}

@@ -3,7 +3,8 @@
 
 Gaop::Gaop()
 {
-
+	prochain = 0;
+	appel = 0;
 }
 
 Gaop::~Gaop()
@@ -49,8 +50,12 @@ void Gaop::initialise(short int odidPeripheriques[] , int nombre_de_devices)
 
 bool Gaop::Send(Commande& cmd, octet odid)
 {
+	int ind_buf = prochain++;
+	while (ind_buf != appel) { delay(50); } //tant que ce n'est pas notre tour
+	
 	octet buf[BUF_MAX]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
-	int ind_taille_donnee, ind_nb_donnee, ind_buf = 0;
+	int ind_taille_donnee, ind_nb_donnee;
+	ind_buf = 0;
 	octet checksum = 0; //XOR SUM
 	//buf[ind_buf++] = DEBUT;
 	buf[ind_buf++] = cmd.getNbCommandes();
@@ -71,14 +76,17 @@ bool Gaop::Send(Commande& cmd, octet odid)
 	//buf[ind_buf++] = FIN;
 
 	Serial.write(buf, ind_buf*sizeof(octet));
+	appel++; //on a fini. Donc on appel le suivant
 	return true;
 }
 
 //inverse de send
 bool Gaop::Receive(Commande &cmd, octet &odid) 
 {    
-	int i, j, nb_donnees, taille;
-	if (Serial.available() <= 0) return false;
+	int i = prochain++;
+	while (i != appel) { delay(50); }
+	int j, nb_donnees, taille;
+	if (Serial.available() <= 0) { appel++; return false; }
 
 	//buf[ind_buf++]; //DEBUT
 	octet checksum = 0;
@@ -107,11 +115,13 @@ bool Gaop::Receive(Commande &cmd, octet &odid)
 	if (checksum == Serial.read())
 	{ 
 		//buf[ind_buf++]; //FIN
+		appel++;
 		return true;
 	} else
 	{
 		odid = 0;
 		//buf[ind_buf++]; //FIN
+		appel++;
 		return false;
 	}
 }

@@ -22,7 +22,7 @@ class Peripherique
 		#endif
 		int getOdid();
 		
-                virtual bool test() = 0; //test le fonctionnement. Renvoie faux si ne marche pas
+            virtual bool test() = 0; //test le fonctionnement. Renvoie faux si ne marche pas
     		//virtual void Send(); //peripherique demande l'envoie sur l'usb
     		virtual void Receive(Commande&) = 0; //peripherique recoit des donnees
 	protected:

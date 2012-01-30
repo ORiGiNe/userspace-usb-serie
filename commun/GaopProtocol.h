@@ -82,6 +82,10 @@ class Gaop
 		#ifndef IAmNotOnThePandaBoard
 			int device; //file descriptor
 		#endif
+		/* Le drivers est thread safe. on met en place un systeme de priorite du
+		 * du style premier arrive = premier servi. */
+		 	octet prochain; //prochain numero disponible (% 256)
+		 	octet appel; //candidat appele
 };
 
 #endif /*GAOPPROTOCOL */

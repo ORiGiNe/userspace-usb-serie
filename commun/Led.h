@@ -8,8 +8,8 @@ class Led : public Peripherique
 		Led(octet odid, Gaop &g);
 		void allume();
 		void eteint();
-                bool test();
-                void Receive(Commande&);
+        bool test();
+        void Receive(Commande&);
 };
 
 #endif /*LEDOrIgInE*/
