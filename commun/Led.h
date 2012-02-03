@@ -5,7 +5,7 @@
 class Led : public Peripherique
 {
 	public:
-		Led(octet odid, Gaop &g);
+		Led(octet odid);
 		void allume();
 		void eteint();
         bool test();

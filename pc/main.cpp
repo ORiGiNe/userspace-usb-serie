@@ -9,19 +9,25 @@ int main()
 {
 	Led *leds[2];
 	Gaop g("/dev/ttyACM0");
-	leds[0] = new Led(6, g);
-	leds[1] = new Led(9, g);
+	leds[0] = new Led(6);
+	leds[1] = new Led(9);
 	short int tblodid[2] = {6, 9};
+	//initailiation des device au bon gaop protocol
+	//les 3 lignes qui suivent devront etre refaites pour tout les slaves
 	g.initialise(tblodid, 2);
+	if (tblodid[0] >= 0) leds[0]->associe(g);
+	if (tblodid[1] >= 0) leds[1]->associe(g);
+
+
 /*	Boucle infini jour/nuit */
 	while (true)
 	{
 		leds[0]->allume();
 		leds[1]->eteint();
-		usleep(1*1000);
+		usleep(1000*1000);
 		leds[0]->eteint(); 
 		leds[1]->allume();
-		usleep(1*1000);
+		usleep(1000*1000);
 	}
 
 /* allume une led puis s'arrete */

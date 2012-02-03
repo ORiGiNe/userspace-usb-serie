@@ -1,8 +1,9 @@
 #include "Led.h"
 #include <iostream>
-Led::Led(octet odid, Gaop &g) : Peripherique(odid, g) { }
+Led::Led(octet odid) : Peripherique(odid) { }
 void Led::allume()
 {
+	if (g == NULL) return;
 	octet odid_r = 0;
 	Commande cmd;
 	cmd.add((octet*)"up", 2);
@@ -17,6 +18,7 @@ bool Led::test() { return true; };
 
 void Led::eteint()
 {
+	if (g == NULL) return;
 	octet odid_r = 0;
 	Commande cmd;
 	cmd.add((octet*)"of", 2);

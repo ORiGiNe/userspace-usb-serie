@@ -1,9 +1,8 @@
 #include "Led.h"
-#include <WProgram.h> //to have HIGH, LOW, digitalWrite, digitalRead, Serial.*, ...
 
-Led::Led(octet odid, Gaop &g) : Peripherique(odid, g) 
+Led::Led(octet odid) : Peripherique(odid) 
 {
-	pinMode(odid, OUTPUT);
+	pinMode(odid, OUTPUT); //on utilise l'odid comme pin.
 }
 void Led::allume()
 {

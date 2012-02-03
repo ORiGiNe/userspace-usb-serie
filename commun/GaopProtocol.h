@@ -10,7 +10,7 @@
  *  Il y a une trame par commande.
  *  Exemple : envoye(a_quoi: moteur, arg1, arg2, ...)
  *  detail du protocol GAOP, GAOP is an origine protocol :
- *  Tout les champs seront codee sur 8bits, soit un octet.
+ *  Tous les champs seront codes sur 8bits, soit un octet.
  *  taille de la frame
  *  nombre de donnees = n
  *  odid du peripherique
@@ -42,6 +42,8 @@
 	#include <iostream>		/*cerr, cout, endl*/
 	#include <cstring>		/*strerr*/
 	#include <cerrno>		/*errno*/
+#else
+	#include <WProgram.h> //to have HIGH, LOW, digitalWrite, digitalRead, Serial.*, ...
 #endif
 
 /* Une commande est vu comme une chaine de carartere. */

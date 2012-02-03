@@ -1,5 +1,4 @@
 #include "GaopProtocol.h"
-#include <WProgram.h> //to have HIGH, LOW, digitalWrite, digitalRead, Serial.*, ...
 
 Gaop::Gaop()
 {

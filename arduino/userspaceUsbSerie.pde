@@ -5,8 +5,8 @@
 Commande commandes;
 //Warning : on ne peut pas faire de new ou de delete (mais on peut faire du malloc), ni user de la STL
 Gaop brain;
-Led led1(6, brain);
-Led led2(9, brain);
+Led led1(6);
+Led led2(9);
 #define NB_DEVICES 2
 Peripherique* peripheriques[NB_DEVICES];
 short int tables_des_odids[NB_DEVICES];
@@ -21,6 +21,8 @@ void setup()
 	peripheriques[1] = &led2;
 	tables_des_odids[1] = (led2.test()) ? led2.getOdid() : -1;
 	brain.initialise(tables_des_odids, NB_DEVICES); //Serial.begin(115200);
+	if (tables_des_odids[0] >= 0) led1.associe(brain);
+	if (tables_des_odids[1] >= 0) led2.associe(brain);
 }
 
 void loop()
