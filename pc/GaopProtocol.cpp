@@ -119,7 +119,7 @@ bool Gaop::Receive(Commande &cmd, octet &odid)
 	ind_buf = 0;
 	do	//attendre que les octets arrivent
 	{
-		i = read(device, buf+ind_buf, BUF_MAX*(sizeof(octet)));
+		i = read(device, buf+ind_buf, (BUF_MAX-ind_buf)*(sizeof(octet)));
 		ind_buf += i;
 	} while (ind_buf != buf[0] && i >= 0);
 
