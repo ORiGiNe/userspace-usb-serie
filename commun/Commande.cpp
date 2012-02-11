@@ -42,6 +42,17 @@ void Commande::add(const octet* commande, int taille)
 	taille_des_cmd[nb_element - 1] = taille;
 }
 
+void Commande::add(short int i)
+{
+	nb_element++;
+	cmd = (octet**)realloc(cmd, nb_element*sizeof(octet*));
+	cmd[nb_element-1] = (octet*)malloc(sizeof(short int));
+	taille_des_cmd = (int*)realloc(taille_des_cmd, nb_element*sizeof(int));
+	cmd[nb_element-1][0] = (octet)(i >> 8);
+	cmd[nb_element-1][1] = i % 0x100;
+	taille_des_cmd[nb_element - 1] = sizeof(short int);
+}
+
 void Commande::remove()
 {
 	if (nb_element > 0)
@@ -57,6 +68,12 @@ octet* Commande::get(int i)
 {
 	if (i >= 0 && i < nb_element) return cmd[i];
 	else return NULL;
+}
+
+short int Commande::getint(int i)
+{
+	if (i >= 0 && i < nb_element) return (short int)cmd[i][0] * 0x100 + (short int)cmd[i][1];
+	else return 0;
 }
 
 octet* Commande::operator[](int i)

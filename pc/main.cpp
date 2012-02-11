@@ -7,47 +7,42 @@ using namespace std;
 
 int main()
 {
-	Led *leds[2];
+	AssocPeriphOdid tblassoc;
 	Gaop g("/dev/ttyACM0");
-	leds[0] = new Led(6);
-	leds[1] = new Led(9);
-	short int tblodid[2] = {6, 9};
+	Led led1(0, 6); tblassoc.add(led1);
+	Led led2(1, 9); tblassoc.add(led2);
 	//initailiation des device au bon gaop protocol
-	//les 3 lignes qui suivent devront etre refaites pour tout les slaves
-	g.initialise(tblodid, 2);
-	if (tblodid[0] >= 0) leds[0]->associe(g);
-	if (tblodid[1] >= 0) leds[1]->associe(g);
+	//la ligne qui suit devra etre refaite pour tous les slaves
+	g.initialise(tblassoc);
 
 
 /*	Boucle infini jour/nuit */
 	while (true)
 	{
-		leds[0]->allume();
-		leds[1]->eteint();
-		usleep(1000*1000);
-		leds[0]->eteint(); 
-		leds[1]->allume();
-		usleep(1000*1000);
+		led1.allume();
+		led2.eteint();
+		//usleep(1000*1000);
+		led1.eteint(); 
+		led2.allume();
+		//usleep(1000*1000);
 	}
 
 /* allume une led puis s'arrete */
 /*
-	leds[0]->allume();
+	led1.allume();
 	sleep(3);
 */
 	/* rapidite*/
 /*	time_t nb_sec = time(NULL);
-	for (unsigned long i = 0; i < 1000; i++)
+	for (unsigned long i = 0; i < 100000; i++)
 	{
-		leds[0]->allume();
-		leds[1]->allume();
-		leds[0]->eteint();
-		leds[1]->eteint();
+		led1.allume();
+		led2.allume();
+		led1.eteint();
+		led2.eteint();
 	}
 	cout << "temps ecoule : " << time(NULL) - nb_sec << " s" << endl;
-*/	
-	delete leds[0];
-	delete leds[1];
+*/
 	return 0;
 }
 

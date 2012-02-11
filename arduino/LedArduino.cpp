@@ -1,23 +1,24 @@
 #include "Led.h"
 
-Led::Led(octet odid) : Peripherique(odid) 
+Led::Led(octet odid, octet pin) : Peripherique(odid) 
 {
-	pinMode(odid, OUTPUT); //on utilise l'odid comme pin.
+	this->pin = pin;
+	pinMode(pin, OUTPUT); //on utilise l'odid comme pin.
 }
 void Led::allume()
 {
-	digitalWrite(odid, HIGH);
+	digitalWrite(pin, HIGH);
 }	
 void Led::eteint()
 {
-	digitalWrite(odid, LOW);
+	digitalWrite(pin, LOW);
 }
 bool Led::test()
 {
 	//1 court
-	digitalWrite(odid, HIGH);
+	digitalWrite(pin, HIGH);
 	delay(300);
-	digitalWrite(odid, LOW);
+	digitalWrite(pin, LOW);
 	return true;
 }
 

@@ -4,6 +4,7 @@ Gaop::Gaop()
 {
 	prochain = 0;
 	appel = 0;
+	stop_envoie = false;
 }
 
 Gaop::~Gaop()
@@ -11,37 +12,36 @@ Gaop::~Gaop()
 
 }
 
-void Gaop::initialise(short int odidPeripheriques[] , int nombre_de_devices)
+void Gaop::initialise(AssocPeriphOdid &tblassoc)
 {
 	Serial.begin(115200); //valeur maximal pour communication pc/arduino (http://arduino.cc/en/Serial/Begin) 
   	while (Serial.available() <= 0) //tant que personne ne nous demmande quoi que ce soit
 	{
-		//digitalWrite(13, HIGH);
-		//delay(250);
-		//digitalWrite(13, LOW);
 		delay(250); // wait
 	}
 	Serial.read(); //T'es la ?
 	Serial.write("y"); //Ok, je suis demare
     while (Serial.read() != '?'); //enlever tout les signaux "es tu demaree ?"
 	//Serial.read(); //combien de device ?
-	Serial.write(nombre_de_devices); //j'en ai x
-	for (int i = 0; i < nombre_de_devices; i++)
+	Serial.write(tblassoc.getNbDevices()); //j'en ai x
+	for (int i = 0; i < tblassoc.getNbDevices(); i++)
 	{
 		while (Serial.read() != 'i'); //Quel est l'ODID du device numero i
-		Serial.write(odidPeripheriques[i]);
+		Serial.write(tblassoc[i]->getOdid());
 		while (Serial.available() <= 0);
 		if (Serial.read() == 'x') //inconnu => on le desactive
 		{
-			odidPeripheriques[i] = -1;
+			tblassoc.rm(tblassoc[i]->getOdid());
 		} else //test le
 		{
-			if (odidPeripheriques[i] >= 0)
+			if (tblassoc[i]->test())
 			{
 				Serial.write('y');
+				tblassoc[i]->associe(this);
 			} else
 			{
 				Serial.write('n');
+				tblassoc.rm(tblassoc[i]->getOdid()); //ca marche pas => desactiver
 			}
 		}
 	}
@@ -79,14 +79,26 @@ bool Gaop::Send(Commande& cmd, octet odid)
 }
 
 //inverse de send
-bool Gaop::Receive(Commande &cmd, octet &odid) 
+bool Gaop::Receive(AssocPeriphOdid& tblassoc) 
 {    
-	int i = prochain++;
-	while (i != appel) { delayMicroseconds(50); }
+	Commande cmd;
+	octet odid;
+	if (!stop_envoie && Serial.available() > 48) //la pile se remplit dangeresement. on envoie une frame special pour arreter l'emmission
+	{
+		Send(cmd, 0xFF); //tu parles trop vite
+		stop_envoie = true;
+	} else if (stop_envoie && Serial.available() < 2) //c'est vide. On peut repartir
+	{
+		Send(cmd, 0xFF); //go
+		stop_envoie = false;
+	}
+	
+	int i; //= prochain++;
+	//while (i != appel) { delayMicroseconds(50); }
 	int j, nb_donnees, taille;
-	if (Serial.available() <= 0) { appel++; return false; }
+	if (Serial.available() <= 0) { /*appel++;*/ return false; }
 
-	while((octet)Serial.available() != Serial.peek()); //tant que tout les octets ne sont pas arrivéee.
+	while((octet)Serial.available() < Serial.peek()); //tant que tous les octets ne sont pas arrives.
 	Serial.read(); //taille de la frame
 	octet checksum = 0;
 	nb_donnees = Serial.read();
@@ -105,15 +117,15 @@ bool Gaop::Receive(Commande &cmd, octet &odid)
 			checksum ^= cmd[i][j]; //data
 		}
 	}
- 	
+ 		
 	if (checksum == Serial.read())
-	{ 
-		appel++;
+	{
+		//appel++; //on a fini. Donc, on appel le suivant
+		if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
 		return true;
 	} else
 	{
-		odid = 0;
-		appel++;
+		//appel++; //on a fini. Donc, on appel le suivant
 		return false;
 	}
 }

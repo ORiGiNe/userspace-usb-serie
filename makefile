@@ -3,8 +3,8 @@ CPP = g++
 EXT = cpp
 BIN = test
 
-#CFLAGS = -Wall -g -Wextra 
-CFLAGS = -O3
+CFLAGS = -Wall -g -Wextra 
+#CFLAGS = -O3
 
 FLAGS = ``
 OBJDIR1 = obj
@@ -24,7 +24,6 @@ OBJ2 = $(SRC2:$(SRCDIR2)/%.$(EXT)=$(OBJDIR2)/%.o)
 all: $(BIN)
 	 
 $(BIN): $(OBJ1) $(OBJ2)
-		echo $@ $^ $<
 		$(CPP) -o $(BINDIR)/$@ $^ $(LDFLAGS) $(CFLAGS)
 		 
 $(OBJDIR1)/%.o: $(SRCDIR1)/%.$(EXT)

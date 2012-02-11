@@ -1,20 +1,66 @@
 #include "Peripherique.h"
-
 #ifdef IAmNotOnThePandaBoard
   void __cxa_pure_virtual() { };
 #endif
 
-Peripherique::Peripherique(octet odid) { this->odid = odid; this->g = NULL; }
-Peripherique::Peripherique(const Peripherique& p) { this->odid = p.odid; this->g = p.g; }
-Peripherique::~Peripherique() { }
-
-int Peripherique::getOdid() { return odid; }
-void Peripherique::associe(Gaop &g) //dit au peripherique d'uitliser l'objet gaop g
-{
-	this->g = &g;
+Peripherique::Peripherique(octet odid) 
+{ 
+	this->odid = odid; 
+	this->g = NULL;
 }
 
-//bool Peripherique::test() { return true; } //test le fonctionnenment du peripherique, et renvoie faux si il ne marche pas
+Peripherique::~Peripherique() { }
+
+octet Peripherique::getOdid() { return odid; }
+
+void Peripherique::associe(AbstractGaop* g) { this->g = g; } //dit au peripherique d'utiliser l'objet gaop g
+
+bool Peripherique::test() { return true; } //test le fonctionnenment du peripherique, et renvoie faux si il ne marche pas
 
 //void Peripherique::Receive(Commande& c){  }
 
+AssocPeriphOdid::AssocPeriphOdid()
+{
+	t = NULL;
+	taille = 0;
+}
+
+AssocPeriphOdid::~AssocPeriphOdid()
+{
+	if (t) free(t);
+}
+
+void AssocPeriphOdid::add(Peripherique &p)
+{
+	taille++;
+	t = (Peripherique**)realloc(t, taille*sizeof(Peripherique*));
+	t[taille-1] = &p;
+}
+
+Peripherique* AssocPeriphOdid::operator[](int n)
+{
+	if (n >= 0 &&  n < taille) return t[n];
+	else return NULL;
+}
+
+Peripherique* AssocPeriphOdid::getbyodid(octet odid)
+{
+	for (int i = 0; i < taille; i++)
+	{
+		if (t[i]->getOdid() == odid) return t[i];
+	}
+	return NULL;
+}
+
+void AssocPeriphOdid::rm(octet odid)
+{
+	for (int i = 0; i < taille; i++)
+	{
+		if (t[i]->getOdid() == odid) {t[i] = NULL; break;}
+	}
+}
+
+int AssocPeriphOdid::getNbDevices()
+{
+	return taille;
+}
