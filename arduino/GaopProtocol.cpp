@@ -4,7 +4,6 @@ Gaop::Gaop()
 {
 	prochain = 0;
 	appel = 0;
-	stop_envoie = false;
 }
 
 Gaop::~Gaop()
@@ -49,25 +48,30 @@ void Gaop::initialise(AssocPeriphOdid &tblassoc)
 
 bool Gaop::Send(Commande& cmd, octet odid)
 {
-	int ind_buf = prochain++;
-	while (ind_buf != appel) { delayMicroseconds(50); } //tant que ce n'est pas notre tour
+	int ind_buf = prochain++, taille, i;
+;
+	unsigned long timeout = micros(); 
+	while (ind_buf != appel) 
+	{ 
+		if (timeout - micros() >= TIMEOUTSEC*1000000+TIMEOUTUSEC) { appel ++; return false;}
+		delayMicroseconds(50); 
+	} //tant que ce n'est pas notre tour
 	
 	octet buf[BUF_MAX]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
-	int ind_taille_donnee, ind_nb_donnee;
 	ind_buf = 1; //0 : taille de la frame
 	octet checksum = 0; //XOR SUM
 	buf[ind_buf++] = cmd.getNbCommandes();
 	checksum ^= cmd.getNbCommandes();
 	buf[ind_buf++] = odid; 
 	checksum ^= odid;
-	for (ind_nb_donnee = 0; ind_nb_donnee < cmd.getNbCommandes(); ind_nb_donnee++)
+	for (i = 0; i < cmd.getNbCommandes(); i++)
 	{
-		buf[ind_buf++] = cmd.getTaille(ind_nb_donnee);
-		checksum ^= cmd.getTaille(ind_nb_donnee);
-		for (ind_taille_donnee = 0; ind_taille_donnee < cmd.getTaille(ind_nb_donnee); ind_taille_donnee++) 
+		buf[ind_buf++] = cmd.getTaille(i);
+		checksum ^= cmd.getTaille(i);
+		for (taille = 0; taille < cmd.getTaille(i); taille++) 
 		{
-			buf[ind_buf++] = cmd[ind_nb_donnee][ind_taille_donnee];
-			checksum ^= cmd[ind_nb_donnee][ind_taille_donnee];
+			buf[ind_buf++] = cmd[i][taille];
+			checksum ^= cmd[i][taille];
 		}
 	}
 	buf[ind_buf++] = checksum;
@@ -83,15 +87,6 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
 	octet odid;
-	if (!stop_envoie && Serial.available() > 48) //la pile se remplit dangeresement. on envoie une frame special pour arreter l'emmission
-	{
-		Send(cmd, 0xFF); //tu parles trop vite
-		stop_envoie = true;
-	} else if (stop_envoie && Serial.available() < 2) //c'est vide. On peut repartir
-	{
-		Send(cmd, 0xFF); //go
-		stop_envoie = false;
-	}
 	
 	int i; //= prochain++;
 	//while (i != appel) { delayMicroseconds(50); }

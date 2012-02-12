@@ -38,8 +38,9 @@
 	#include <fcntl.h>		/*open*/
 	#include <sys/types.h>	/*kill*/
 	#include <signal.h>		/*kill*/
-	#include <unistd.h>		/*read, write, close, sleep, usleep, fork*/
-	#include <termios.h>	/*tcgetattr, cfsetospeed, cfsetispeed, tcsetattr, struct termios*/
+	#include <unistd.h>		/*read, write, close, fork*/
+	#include <termios.h>	/*tcgetattr, cfsetospeed, cfsetispeed, tcsetattr, tcdrain struct termios*/
+	#include <time.h>		/*clock_gettime (implique -lrt), nanosleep*/ 
 	#include <iostream>		/*cerr, cout, endl*/
 	#include <cstring>		/*strerr*/
 	#include <cerrno>		/*errno*/
@@ -49,7 +50,6 @@
 
 /* Une commande est vu comme une chaine de carartere. */
 /* Chaque peripheriques < devices > connait un gaop (passer via la fonction initialize) */
-/* l'odid 0xFF est utilise pour que le Gaop du slave et le Gaop du pc communique entre eux */
 class Gaop : public AbstractGaop
 {
 	public:
@@ -89,7 +89,6 @@ class Gaop : public AbstractGaop
 		 * du style premier arrive = premier servi. */
 		octet prochain; //prochain numero disponible (% 256)
 		octet appel; //candidat appele
-		bool stop_envoie; //buffer de reception plein => on n'arrete d'envoyer pendant un moment
 };
 
 #endif /*GAOPPROTOCOL */

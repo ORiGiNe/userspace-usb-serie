@@ -21,10 +21,10 @@ int main()
 	{
 		led1.allume();
 		led2.eteint();
-		//usleep(1000*1000);
+		usleep(1000*1000);
 		led1.eteint(); 
 		led2.allume();
-		//usleep(1000*1000);
+		usleep(1000*1000);
 	}
 
 /* allume une led puis s'arrete */
@@ -34,7 +34,7 @@ int main()
 */
 	/* rapidite*/
 /*	time_t nb_sec = time(NULL);
-	for (unsigned long i = 0; i < 100000; i++)
+	for (unsigned long i = 0; i < 10000; i++)
 	{
 		led1.allume();
 		led2.allume();

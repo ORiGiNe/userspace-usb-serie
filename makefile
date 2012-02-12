@@ -3,10 +3,10 @@ CPP = g++
 EXT = cpp
 BIN = test
 
-CFLAGS = -Wall -g -Wextra 
-#CFLAGS = -O3
+#CFLAGS = -Wall -g -Wextra 
+CFLAGS = -O3
 
-FLAGS = ``
+FLAGS = -lrt
 OBJDIR1 = obj
 OBJDIR2 = obj
 SRCDIR1 = commun

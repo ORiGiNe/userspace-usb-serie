@@ -4,7 +4,6 @@ Gaop::Gaop(const char *peripherique)
 {
 	prochain = 0;
 	appel = 0;
-	stop_envoie = false;
 	pid_fils = -1;
 	
 	device = open(peripherique, O_RDWR | O_NOCTTY | O_SYNC );
@@ -13,7 +12,8 @@ Gaop::Gaop(const char *peripherique)
 		std::cerr << strerror(errno) << std::endl;
 		throw strerror(errno);
 	}
-	usleep(2000*1000); //wait 2000ms
+	struct timespec now = {2, 0}; //wait 1 sec
+	nanosleep(&now, NULL);
 	struct termios options;
 	tcgetattr(device, &options);
 	cfsetospeed(&options, B115200);
@@ -82,10 +82,11 @@ void Gaop::initialise(AssocPeriphOdid &tblassoc)
 		pid_fils = fork();
 		if (pid_fils == 0) //je suis le fils
 		{	
+			struct timespec t = {0, 10000}; //10 microsecondes
 			while (true)
 		   	{
 				Receive(tblassoc);
-				//usleep(1*1000);
+				nanosleep(&t, NULL);
 			} //jusqu'a ce que je recoive un signal stop !
 		}
 	}
@@ -94,7 +95,31 @@ void Gaop::initialise(AssocPeriphOdid &tblassoc)
 bool Gaop::Send(Commande &cmd , octet odid)
 {
 	int ind_buf = prochain++;
-	while (ind_buf != appel || stop_envoie) { usleep(50); } //tant que ce n'est pas notre tour ou qu'il y a trop de monde
+	struct timespec apres, towait; 
+	clock_gettime(CLOCK_REALTIME, &apres);
+	while (ind_buf != appel) //tant que ce n'est pas notre tour ou qu'il y a trop de monde 
+	{ 
+		clock_gettime(CLOCK_REALTIME, &towait);
+		if (towait.tv_nsec - apres.tv_nsec < 0) //retenue
+		{
+			if (towait.tv_sec - apres.tv_sec -1 >= TIMEOUTSEC && apres.tv_nsec - towait.tv_nsec > TIMEOUTUSEC*1000) 
+			{
+				appel++;
+				return false;
+			}
+		} else
+		{
+			if (towait.tv_sec - apres.tv_sec >= TIMEOUTSEC && towait.tv_nsec - apres.tv_nsec > TIMEOUTUSEC*1000) 
+			{
+				appel++;
+				return false;
+			}
+		}
+
+		towait.tv_sec = 0;
+		towait.tv_nsec = 50000; //50 microsecondes
+		nanosleep(&towait, NULL);
+	} 
 	octet buf[BUF_MAX]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 	int ind_taille_donnee, ind_nb_donnee;
 	ind_buf = 1; //l'indice 0 contiendra la  taille de la frame
@@ -115,12 +140,12 @@ bool Gaop::Send(Commande &cmd , octet odid)
 	}
 	buf[ind_buf++] = checksum;
 	buf[0] = ind_buf;
+
 	ind_nb_donnee = write(device, buf, ind_buf*sizeof(octet));
-	//temps d'envoi en nanoseconde = nbroctet*sizeof(octe)*nbr_de_bit_par_octet*10^6(car res en ns)/nbr_de_symboles_maximum_par_seconde'
-	usleep((1.5*ind_buf*sizeof(octet)*8*1000000)/115200); //pour que l'arduino est le temps de digerer
-	//while (read(device, buf, 1) <= 0) {/*mettre un delay eventuellement*/ } //lire l'accuse de reception
+	tcdrain(device); //attendre que c'est bien ete envoye
+	
+	//l'apres devient l'avant
 	appel++; //appel le suivant
-	//std::cerr  << 'x' << ' ' << buf[0] << std::endl;
 	return (ind_nb_donnee == ind_buf*(int)(sizeof(octet)) && buf[0] == 'y');
 }
 
@@ -140,7 +165,6 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 		if (ind_buf == 0)
 		{
 			i = read(device, buf, 1); //pour etre sur de lire le bon nombre, ni plus, ni moins
-			//std::cout << (int)buf[0]<< ' ' <<   ind_buf << std::endl;
 		} else
 		{
 			i = read(device, buf+ind_buf, (buf[0]-ind_buf)*(sizeof(octet)));
@@ -172,8 +196,7 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 	if(buf[ind_buf++] == checksum)
 	{
 		//appel++;
-		if (odid == 0XFF) {stop_envoie = !stop_envoie; std::cerr << "STOP !" << std::endl;} //on parle trop vite ou on nous dit de reparir
-		else if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
+		if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
 		return true;
 	} else
 	{
