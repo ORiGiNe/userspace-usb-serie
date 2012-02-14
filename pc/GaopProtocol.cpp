@@ -5,7 +5,8 @@ Gaop::Gaop(const char *peripherique)
 	prochain = 0;
 	appel = 0;
 	pid_fils = -1;
-	blocked = false;	
+	blocked = true;	
+	blockedfriend = true;
 
 	device = open(peripherique, O_RDWR | O_NOCTTY | O_SYNC );
 	if (device < 0) 
@@ -155,6 +156,7 @@ bool Gaop::Send(Commande &cmd, octet odid)
 bool Gaop::Receive(AssocPeriphOdid& tblassoc) 
 {
 	Commande cmd;
+	if (blockedfriend == true) { Send(cmd, 0xFF); blockedfriend = false; }//pret a recevoir
 	octet odid;
 	int ind_buf;// = prochain++;
 	//while (ind_buf != appel) { /*usleep(50);*/ } //tant que ce n'est pas notre tour
@@ -174,6 +176,8 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 		ind_buf += i;	
 		if (ind_buf == 0 || i < 0 || ind_buf > BUF_MAX) { /*appel++;*/ return false; }
 	} while (ind_buf != buf[0] && i >= 0);
+	
+	blockedfriend = true; //si on recoi, c'est que l'autre est dans un etat bloque
 
 	ind_buf = 1; //indice[0] = taille de la frame
 	octet checksum = 0;
@@ -195,22 +199,16 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 		}
 	}
 
-	Commande r; //solution temporaire
 	if(buf[ind_buf++] == checksum)
 	{
 		//appel++;
 		if (odid == 0xFF) blocked = false; //frame pour dire que l'on peut envoye
-		else 
-		{
-			if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
-			Send(r, 0xFF); //j'ai tout lu, tu peux de nouveau emettre
-		}
+		else if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
 		return true;
 	} else
 	{
 		//appel++;
 		std::cerr << "Erreur de transmition ! " << std::endl;
-		Send(r, 0xFF);	
 		return false;
 	}
 }

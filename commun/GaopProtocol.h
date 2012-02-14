@@ -90,6 +90,7 @@ class Gaop : public AbstractGaop
 		octet prochain; //prochain numero disponible (% 256)
 		octet appel; //candidat appele
 		bool blocked; //bloquer les emissions lorsque c'est indisponible de l'autre cotgge
+		bool blockedfriend; //dit si ce qui est a l'autre bout est dans un etat bloque. Evite d'envoye des ordre de debloquage constament
 };
 
 #endif /*GAOPPROTOCOL */

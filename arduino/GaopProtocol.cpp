@@ -4,7 +4,8 @@ Gaop::Gaop()
 {
 	prochain = 0;
 	appel = 0;
-	blocked = false;
+	blocked = true;
+	blockedfriend = true;
 }
 
 Gaop::~Gaop()
@@ -89,6 +90,7 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
 	octet odid;
+	if (blockedfriend == true) { Send(cmd, 0xFF); blockedfriend = false; } //pret a recevoir
 	
 	int i; //= prochain++;
 	//while (i != appel) { delayMicroseconds(50); }
@@ -96,6 +98,9 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 	if (Serial.available() <= 0) { /*appel++;*/ return false; }
 
 	while((octet)Serial.available() < Serial.peek()); //tant que tous les octets ne sont pas arrives.
+	
+	blockedfriend = true; //si on recoi, c'est que l'autre est dans un etat bloque
+	
 	Serial.read(); //taille de la frame
 	octet checksum = 0;
 	nb_donnees = Serial.read();
@@ -115,16 +120,11 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 		}
 	}
  	
-	Commande r; //solution temporaire	
 	if (checksum == Serial.read())
 	{
 		//appel++; //on a fini. Donc, on appel le suivant
 		if (odid == 0xFF) blocked = false;
-		else 
-		{
-			if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
-			Send(r, 0xFF); //tu peux de nouveau emettre
-		}
+		else if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
 		return true;
 	} else
 	{
