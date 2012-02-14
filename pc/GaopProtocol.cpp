@@ -5,7 +5,8 @@ Gaop::Gaop(const char *peripherique)
 	prochain = 0;
 	appel = 0;
 	pid_fils = -1;
-	
+	blocked = false;	
+
 	device = open(peripherique, O_RDWR | O_NOCTTY | O_SYNC );
 	if (device < 0) 
 	{
@@ -92,12 +93,12 @@ void Gaop::initialise(AssocPeriphOdid &tblassoc)
 	}
 }
 
-bool Gaop::Send(Commande &cmd , octet odid)
+bool Gaop::Send(Commande &cmd, octet odid)
 {
 	int ind_buf = prochain++;
 	struct timespec apres, towait; 
 	clock_gettime(CLOCK_REALTIME, &apres);
-	while (ind_buf != appel) //tant que ce n'est pas notre tour ou qu'il y a trop de monde 
+	while (ind_buf != appel || blocked) //tant que ce n'est pas notre tour ou qu'il y a trop de monde 
 	{ 
 		clock_gettime(CLOCK_REALTIME, &towait);
 		if (towait.tv_nsec - apres.tv_nsec < 0) //retenue
@@ -146,6 +147,7 @@ bool Gaop::Send(Commande &cmd , octet odid)
 	
 	//l'apres devient l'avant
 	appel++; //appel le suivant
+	blocked = true;
 	return (ind_nb_donnee == ind_buf*(int)(sizeof(octet)) && buf[0] == 'y');
 }
 
@@ -193,15 +195,22 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 		}
 	}
 
+	Commande r; //solution temporaire
 	if(buf[ind_buf++] == checksum)
 	{
 		//appel++;
-		if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
+		if (odid == 0xFF) blocked = false; //frame pour dire que l'on peut envoye
+		else 
+		{
+			if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
+			Send(r, 0xFF); //j'ai tout lu, tu peux de nouveau emettre
+		}
 		return true;
 	} else
 	{
 		//appel++;
 		std::cerr << "Erreur de transmition ! " << std::endl;
+		Send(r, 0xFF);	
 		return false;
 	}
 }

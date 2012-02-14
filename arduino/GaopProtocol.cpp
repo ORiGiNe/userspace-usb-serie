@@ -4,6 +4,7 @@ Gaop::Gaop()
 {
 	prochain = 0;
 	appel = 0;
+	blocked = false;
 }
 
 Gaop::~Gaop()
@@ -51,7 +52,7 @@ bool Gaop::Send(Commande& cmd, octet odid)
 	int ind_buf = prochain++, taille, i;
 ;
 	unsigned long timeout = micros(); 
-	while (ind_buf != appel) 
+	while (ind_buf != appel || blocked) 
 	{ 
 		if (timeout - micros() >= TIMEOUTSEC*1000000+TIMEOUTUSEC) { appel ++; return false;}
 		delayMicroseconds(50); 
@@ -79,6 +80,7 @@ bool Gaop::Send(Commande& cmd, octet odid)
 
 	Serial.write(buf, ind_buf*sizeof(octet));
 	appel++; //on a fini. Donc on appel le suivant
+	blocked = true; //attente de disponiblilite
 	return true;
 }
 
@@ -112,15 +114,22 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 			checksum ^= cmd[i][j]; //data
 		}
 	}
- 		
+ 	
+	Commande r; //solution temporaire	
 	if (checksum == Serial.read())
 	{
 		//appel++; //on a fini. Donc, on appel le suivant
-		if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
+		if (odid == 0xFF) blocked = false;
+		else 
+		{
+			if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
+			Send(r, 0xFF); //tu peux de nouveau emettre
+		}
 		return true;
 	} else
 	{
 		//appel++; //on a fini. Donc, on appel le suivant
+		Send(r, 0xFF); //debloque l'objet
 		return false;
 	}
 }

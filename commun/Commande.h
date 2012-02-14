@@ -5,7 +5,7 @@
  * STL ne sont pas supportés par l'arduino */ 
 #include <stdlib.h>
 #include <string.h>
-
+#include "Config.h"
 
 typedef unsigned char octet;
 class Commande
@@ -34,6 +34,7 @@ class Commande
 		octet **cmd;
 		int nb_element;
 		int *taille_des_cmd;
+		int taille_de_la_frame;
 };
 
 #endif

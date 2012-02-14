@@ -5,6 +5,7 @@ Commande::Commande()
 	cmd = NULL;
 	nb_element = 0;
 	taille_des_cmd = NULL;
+	taille_de_la_frame = 4; //taille +  nbcommande + odid + checksum = taille minimal de la frame
 }
 Commande::Commande(const Commande &c)
 {
@@ -31,6 +32,8 @@ Commande::~Commande()
 
 void Commande::add(const octet* commande, int taille)
 {
+	if (taille_de_la_frame+1+taille >= TAILLE_MAX_FRAME) return;
+	taille_de_la_frame += 1 + taille;
 	/* temps pour les malloc, realloc, ... : de l'ordre de 2*10^-7 seconde pour 
 	4 octets de commande (sur machine  a 2,4Ghz). Negligeable par rapport au 
 	taux de transfert de l'usb*/
@@ -44,6 +47,8 @@ void Commande::add(const octet* commande, int taille)
 
 void Commande::add(short int i)
 {
+	if (taille_de_la_frame+1+sizeof(short int) >= TAILLE_MAX_FRAME) return;
+	taille_de_la_frame += 1 + sizeof(short int);
 	nb_element++;
 	cmd = (octet**)realloc(cmd, nb_element*sizeof(octet*));
 	cmd[nb_element-1] = (octet*)malloc(sizeof(short int));

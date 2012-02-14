@@ -89,6 +89,7 @@ class Gaop : public AbstractGaop
 		 * du style premier arrive = premier servi. */
 		octet prochain; //prochain numero disponible (% 256)
 		octet appel; //candidat appele
+		bool blocked; //bloquer les emissions lorsque c'est indisponible de l'autre cotgge
 };
 
 #endif /*GAOPPROTOCOL */

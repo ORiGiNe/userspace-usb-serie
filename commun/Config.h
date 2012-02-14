@@ -12,4 +12,7 @@
 // microseconde
 #define TIMEOUTUSEC 1000
 
+/* taille maximal de la frame */
+#define TAILLE_MAX_FRAME 128
+
 #endif /*FICHIERDECONFIGURATION*/
