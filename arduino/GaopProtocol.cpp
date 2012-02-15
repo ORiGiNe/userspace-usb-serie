@@ -129,7 +129,6 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 	} else
 	{
 		//appel++; //on a fini. Donc, on appel le suivant
-		Send(r, 0xFF); //debloque l'objet
 		return false;
 	}
 }
