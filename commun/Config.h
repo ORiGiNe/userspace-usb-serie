@@ -12,7 +12,7 @@
 // microseconde
 #define TIMEOUTUSEC 1000
 
-/* taille maximal de la frame */
+/* taille maximal de la frame (<= a 128, car apres buffer arduino plein)*/
 #define TAILLE_MAX_FRAME 128
 
 #endif /*FICHIERDECONFIGURATION*/

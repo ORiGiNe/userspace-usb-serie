@@ -31,12 +31,11 @@
 #include "Peripherique.h" /*Gaop connait peripherique*/
 #include "AbstractGaop.h" /*pour que peripherique puisse connaitre du GAOP*/
 
-#define BUF_MAX 128 /* la pile de transfert usb de l'arduino ne peut contenir que 128 octets (cf doc arduino)*/
-
 #ifndef IAmNotOnThePandaBoard
 	#include <sys/stat.h>	/*open*/
 	#include <fcntl.h>		/*open*/
-	#include <sys/types.h>	/*kill*/
+//	#include <sys/types.h>	/*kill*/
+	#include <pthread.h>	/*pthread_* */
 	#include <signal.h>		/*kill*/
 	#include <unistd.h>		/*read, write, close, fork*/
 	#include <termios.h>	/*tcgetattr, cfsetospeed, cfsetispeed, tcsetattr, tcdrain struct termios*/
@@ -83,14 +82,13 @@ class Gaop : public AbstractGaop
 	private:
 		#ifndef IAmNotOnThePandaBoard
 			int device; //file descriptor (open function)
-			int pid_fils; //pour le fork de Receive();
+			pthread_t fils; //pour le fork de Receive();
 		#endif
 		/* Le drivers est thread safe. on met en place un systeme de priorite du
 		 * du style premier arrive = premier servi. */
 		octet prochain; //prochain numero disponible (% 256)
 		octet appel; //candidat appele
-		bool blocked; //bloquer les emissions lorsque c'est indisponible de l'autre cotgge
-		bool blockedfriend; //dit si ce qui est a l'autre bout est dans un etat bloque. Evite d'envoye des ordre de debloquage constament
+		bool blocked; //bloquer les emissions lorsque c'est indisponible de l'autre cote
 };
 
 #endif /*GAOPPROTOCOL */

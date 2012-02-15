@@ -6,38 +6,44 @@ BIN = test
 #CFLAGS = -Wall -g -Wextra 
 CFLAGS = -O3
 
-FLAGS = -lrt
-OBJDIR1 = obj
-OBJDIR2 = obj
-SRCDIR1 = commun
-SRCDIR2 = pc
-INCDIR1 = $(SRCDIR1)
-INCDIR2 = $(SRCDIR2)
+FLAGS = -lrt -pthread
+OBJ = obj
+COMMUN = commun
+PC = pc
+ARDUINO = arduino
+SKETCHBOOK = ~/sketchbook
+INCDIR1 = $(COMMUN)
+INCDIR2 = $(PC)
 BINDIR = .
 LDFLAGS = -I$(INCDIR1) -I$(INCDIR2) $(FLAGS)
 
-SRC1 = $(wildcard $(SRCDIR1)/*.$(EXT))
-OBJ1 = $(SRC1:$(SRCDIR1)/%.$(EXT)=$(OBJDIR1)/%.o)
-SRC2 = $(wildcard $(SRCDIR2)/*.$(EXT))
-OBJ2 = $(SRC2:$(SRCDIR2)/%.$(EXT)=$(OBJDIR2)/%.o)
+SRC1 = $(wildcard $(COMMUN)/*.$(EXT))
+OBJCOMMUN = $(SRC1:$(COMMUN)/%.$(EXT)=$(OBJ)/%.o)
+SRC2 = $(wildcard $(PC)/*.$(EXT))
+OBJPC = $(SRC2:$(PC)/%.$(EXT)=$(OBJ)/%.o)
 
 all: $(BIN)
 	 
-$(BIN): $(OBJ1) $(OBJ2)
+$(BIN): $(OBJCOMMUN) $(OBJPC)
 		$(CPP) -o $(BINDIR)/$@ $^ $(LDFLAGS) $(CFLAGS)
 		 
-$(OBJDIR1)/%.o: $(SRCDIR1)/%.$(EXT)
+$(OBJ)/%.o: $(COMMUN)/%.$(EXT)
 		$(CPP) -o $@ -c $< $(CFLAGS) $(LDFLAGS) 
 
-$(OBJDIR2)/%.o: $(SRCDIR2)/%.$(EXT)
+$(OBJ)/%.o: $(PC)/%.$(EXT)
 		$(CPP) -o $@ -c $< $(CFLAGS) $(LDFLAGS) 
 		 
 clean:
-		rm -vf $(OBJDIR1)/*.o
-		rm -vf $(OBJDIR2)/*.o
+		rm -vf $(OBJ)/*.o
 
 mrproper: clean
 		rm -vf $(BINDIR)/$(BIN)
-			
+
+install-ide:
+	@cp -Ru $(ARDUINO)/* $(COMMUN)/* $(SKETCHBOOK)/userspaceUsbSerie/ #copie les sources cote ide. plus qu'a compiler avec celui ci.
+	@#edite le fichier de config pour que sa compile sur arduino
+	@sed -e 's/\/\/\s*#define\s\+IAmNotOnThePandaBoard/#define IAmNotOnThePandaBoard/' $(COMMUN)/Config.h > $(SKETCHBOOK)/userspaceUsbSerie/Config.h
+	@echo done
+
 #install: $(BIN)
 #		cp $(BINDIR)/$(BIN) /usr/bin/

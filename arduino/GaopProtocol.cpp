@@ -4,8 +4,7 @@ Gaop::Gaop()
 {
 	prochain = 0;
 	appel = 0;
-	blocked = true;
-	blockedfriend = true;
+	blocked = false;
 }
 
 Gaop::~Gaop()
@@ -51,7 +50,7 @@ void Gaop::initialise(AssocPeriphOdid &tblassoc)
 bool Gaop::Send(Commande& cmd, octet odid)
 {
 	int ind_buf = prochain++, taille, i;
-;
+
 	unsigned long timeout = micros(); 
 	while (ind_buf != appel || blocked) 
 	{ 
@@ -59,7 +58,7 @@ bool Gaop::Send(Commande& cmd, octet odid)
 		delayMicroseconds(50); 
 	} //tant que ce n'est pas notre tour
 	
-	octet buf[BUF_MAX]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
+	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 	ind_buf = 1; //0 : taille de la frame
 	octet checksum = 0; //XOR SUM
 	buf[ind_buf++] = cmd.getNbCommandes();
@@ -81,7 +80,7 @@ bool Gaop::Send(Commande& cmd, octet odid)
 
 	Serial.write(buf, ind_buf*sizeof(octet));
 	appel++; //on a fini. Donc on appel le suivant
-	blocked = true; //attente de disponiblilite
+	if (odid != 0xFF) blocked = true; //attente de disponiblilite
 	return true;
 }
 
@@ -90,6 +89,7 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
 	octet odid;
+	static bool blockedfriend = false;
 	if (blockedfriend == true) { Send(cmd, 0xFF); blockedfriend = false; } //pret a recevoir
 	
 	int i; //= prochain++;
@@ -99,7 +99,7 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 
 	while((octet)Serial.available() < Serial.peek()); //tant que tous les octets ne sont pas arrives.
 	
-	blockedfriend = true; //si on recoi, c'est que l'autre est dans un etat bloque
+	blockedfriend = true; //si on recoit, c'est que l'autre est dans un etat bloque
 	
 	Serial.read(); //taille de la frame
 	octet checksum = 0;
