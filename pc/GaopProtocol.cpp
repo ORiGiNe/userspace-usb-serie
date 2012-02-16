@@ -24,9 +24,8 @@ Gaop::Gaop(const char *peripherique)
 
 Gaop::~Gaop()
 {
-	if (device >= 0) close(device);
 	if (fils >= 0) pthread_kill(fils, SIGUSR1); //maintenant c'est fini
-	//if (pid_fils > 0) kill(pid_fils, SIGUSR1); //maintenant c'est fini
+	if (device >= 0) close(device);
 }
 
 void* run_gaop(void* arg)
@@ -90,20 +89,6 @@ void Gaop::initialise(AssocPeriphOdid &tblassoc)
 		} else write(device, "x", 1); //je ne le connais pas. desactive le
 	}
 
-	//on fork la fonction receive !
-	/*	if (pid_fils < 0) //si il n'y a pas eu de fork
-		{
-		pid_fils = fork();
-		if (pid_fils == 0) //je suis le fils
-		{	
-		struct timespec t = {0, 10000}; //10 microsecondes
-		while (true)
-		{
-		Receive(tblassoc);
-		nanosleep(&t, NULL);
-		} //jusqu'a ce que je recoive un signal stop !
-		}
-		}*/
 	//on thread la fonction receive
 	void *arg_t[2];
 	arg_t[0] = this;

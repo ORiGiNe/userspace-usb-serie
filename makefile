@@ -6,7 +6,7 @@ BIN = test
 #CFLAGS = -Wall -g -Wextra 
 CFLAGS = -O3
 
-FLAGS = -lrt -pthread
+LDFLAGS = -lrt -pthread
 OBJ = obj
 COMMUN = commun
 PC = pc
@@ -15,7 +15,7 @@ SKETCHBOOK = ~/sketchbook
 INCDIR1 = $(COMMUN)
 INCDIR2 = $(PC)
 BINDIR = .
-LDFLAGS = -I$(INCDIR1) -I$(INCDIR2) $(FLAGS)
+INCFLAGS = -I$(INCDIR1) -I$(INCDIR2) #$(FLAGS)
 
 SRC1 = $(wildcard $(COMMUN)/*.$(EXT))
 OBJCOMMUN = $(SRC1:$(COMMUN)/%.$(EXT)=$(OBJ)/%.o)
@@ -28,10 +28,10 @@ $(BIN): $(OBJCOMMUN) $(OBJPC)
 		$(CPP) -o $(BINDIR)/$@ $^ $(LDFLAGS) $(CFLAGS)
 		 
 $(OBJ)/%.o: $(COMMUN)/%.$(EXT)
-		$(CPP) -o $@ -c $< $(CFLAGS) $(LDFLAGS) 
+		$(CPP) -o $@ -c $< $(CFLAGS) $(INCFLAGS) 
 
 $(OBJ)/%.o: $(PC)/%.$(EXT)
-		$(CPP) -o $@ -c $< $(CFLAGS) $(LDFLAGS) 
+		$(CPP) -o $@ -c $< $(CFLAGS) $(INCFLAGS) 
 		 
 clean:
 		rm -vf $(OBJ)/*.o

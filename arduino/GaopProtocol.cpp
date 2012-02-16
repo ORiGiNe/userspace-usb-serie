@@ -123,7 +123,7 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 	if (checksum == Serial.read())
 	{
 		//appel++; //on a fini. Donc, on appel le suivant
-		if (odid == 0xFF) blocked = false;
+		if (odid == 0xFF) blocked = false; //a recut une frame de debloquage
 		else if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
 		return true;
 	} else
