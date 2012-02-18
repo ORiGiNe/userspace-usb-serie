@@ -5,13 +5,14 @@ Gaop::Gaop(const char *peripherique)
 	prochain = 0;
 	appel = 0;
 	fils = 0;
-	blocked = true;	
+	flags = 0;	
+	pthreadarg = new void*[2];
 
 	device = open(peripherique, O_RDWR | O_NOCTTY | O_SYNC );
 	if (device < 0) 
 	{
 		std::cerr << strerror(errno) << std::endl;
-		throw strerror(errno);
+		throw strerror(errno); //on n'essaye pas de poursuivre
 	}
 	struct timespec now = {2, 0}; //wait 1 sec
 	nanosleep(&now, NULL);
@@ -24,8 +25,9 @@ Gaop::Gaop(const char *peripherique)
 
 Gaop::~Gaop()
 {
-	if (fils >= 0) pthread_kill(fils, SIGUSR1); //maintenant c'est fini
+	if (fils) pthread_kill(fils, SIGUSR1); //maintenant c'est fini
 	if (device >= 0) close(device);
+	delete[] pthreadarg;
 }
 
 void* run_gaop(void* arg)
@@ -35,12 +37,13 @@ void* run_gaop(void* arg)
 	while (true)
 	{
 		((Gaop*)(argv[0]))->
-			Receive(*(AssocPeriphOdid*)(argv[1]));
+			Receive( *((AssocPeriphOdid*)(argv[1])) );
 		nanosleep(&t, NULL);
 	} //jusqu'a ce que je recoive un signal stop !
+	return NULL;
 }
 
-void Gaop::initialise(AssocPeriphOdid &tblassoc)
+void Gaop::initialise(AssocPeriphOdid *tblassoc)
 {
 	/* Protocole de communication : 
 	 * PC:
@@ -74,64 +77,79 @@ void Gaop::initialise(AssocPeriphOdid &tblassoc)
 		while( read(device, r, 1) == 0);		//tiens, voila
 		odid = r[0];
 
-		if (tblassoc.getbyodid(odid) != NULL) //je regarde si je le connait
+		if (tblassoc->getbyodid(odid) != NULL) //je regarde si je le connait
 		{
 			write(device, "t", 1); // test son fonctionnement (et desactive le si il ne marche pas)
 			while( read(device, r, 1) == 0);
 			if (r[0] != 'y') //si ca marche pas
 			{
-				tblassoc.rm(odid); //suppression par odid
+				tblassoc->rm(odid); //suppression par odid
 			} else
 			{
 				//ca marche bien. je dit au peripherique qu'il peut m'utiliser
-				tblassoc.getbyodid(odid)->associe(this);
+				tblassoc->getbyodid(odid)->associe(this);
 			}
 		} else write(device, "x", 1); //je ne le connais pas. desactive le
 	}
 
 	//on thread la fonction receive
-	void *arg_t[2];
-	arg_t[0] = this;
-	arg_t[1] = &tblassoc;
-	pthread_create(&fils, NULL, run_gaop, arg_t);	
+	pthreadarg[0] = this;
+	pthreadarg[1] = tblassoc;
+	pthread_create(&fils, NULL, run_gaop, pthreadarg);	
 }
 
-bool Gaop::Send(Commande &cmd, octet odid)
+bool Gaop::Send(Commande &cmd, int odid)
 {
-	int ind_buf = prochain++;
+	/*Si odid == 0xFF, on envoie une trame special de debloquage. Cette trame ne
+	 * doit pas faire la queue et doit passer en mode prioritaire. Elle suit
+	 * donc une autre procedure pour prendre un "ticket" */
+	int ind_buf;
 	struct timespec apres, towait; 
-	clock_gettime(CLOCK_REALTIME, &apres);
-	while (ind_buf != appel || blocked) //tant que ce n'est pas notre tour ou qu'il y a trop de monde 
-	{ 
-		clock_gettime(CLOCK_REALTIME, &towait);
-		if (towait.tv_nsec - apres.tv_nsec < 0) //retenue
-		{
-			if (towait.tv_sec - apres.tv_sec -1 >= TIMEOUTSEC && apres.tv_nsec - towait.tv_nsec > TIMEOUTUSEC*1000) 
-			{
-				appel++;
-				return false;
-			}
-		} else
-		{
-			if (towait.tv_sec - apres.tv_sec >= TIMEOUTSEC && towait.tv_nsec - apres.tv_nsec > TIMEOUTUSEC*1000) 
-			{
-				appel++;
-				return false;
-			}
-		}
 
+	if (odid != 0xFF)
+	{
+		ind_buf	= prochain++;
+		clock_gettime(CLOCK_REALTIME, &apres);
+		while (ind_buf != appel || flags & (GAOPBLK | GAOPSPE)) //tant que ce n'est pas notre tour ou qu'il y a trop de monde 
+		{
+			clock_gettime(CLOCK_REALTIME, &towait);
+			if (towait.tv_nsec - apres.tv_nsec < 0) //retenue
+			{
+				if (towait.tv_sec - apres.tv_sec -1 >= TIMEOUTSEC && apres.tv_nsec - towait.tv_nsec > TIMEOUTUSEC*1000) 
+				{
+					appel++;
+					return false;
+				}
+			} else
+			{
+				if (towait.tv_sec - apres.tv_sec >= TIMEOUTSEC && towait.tv_nsec - apres.tv_nsec > TIMEOUTUSEC*1000) 
+				{
+					appel++;
+					return false;
+				}
+			}
+			
+			towait.tv_sec = 0;
+			towait.tv_nsec = 50000; //50 microsecondes
+			nanosleep(&towait, NULL);
+		}
+	} else //trame special	
+	{
+		flags |= GAOPSPE; //pour eviter que le mec qui a le numero appel + 1 emmete en meme temps que nous
 		towait.tv_sec = 0;
 		towait.tv_nsec = 50000; //50 microsecondes
-		nanosleep(&towait, NULL);
-	} 
+		while (flags & GAOPSND) { nanosleep(&towait, NULL); } //qqn emmet => attente
+		
+	}
+	flags |= GAOPSND; //dire qu'il y a qqn qui emet
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 	int ind_taille_donnee, ind_nb_donnee;
 	ind_buf = 1; //l'indice 0 contiendra la  taille de la frame
 	octet checksum = 0; //XOR SUM
 	buf[ind_buf++] = cmd.getNbCommandes();
 	checksum ^= cmd.getNbCommandes();
-	buf[ind_buf++] = odid; 
-	checksum ^= odid;
+	buf[ind_buf++] = odid % 0x100; 
+	checksum ^= odid % 0x100;
 	for (ind_nb_donnee = 0; ind_nb_donnee < cmd.getNbCommandes(); ind_nb_donnee++)
 	{
 		buf[ind_buf++] = cmd.getTaille(ind_nb_donnee);
@@ -146,11 +164,18 @@ bool Gaop::Send(Commande &cmd, octet odid)
 	buf[0] = ind_buf;
 
 	ind_nb_donnee = write(device, buf, ind_buf*sizeof(octet));
-	tcdrain(device); //attendre que c'est bien ete envoye
+	tcdrain(device); //attendre que c'est bien envoye
 
 	//l'apres devient l'avant
-	appel++; //appel le suivant
-	if (odid != 0xFF) blocked = true;
+	if (odid != 0xFF) 
+	{
+		flags |= GAOPBLK; //on attend que la fonction distante se libere a nouveau pour reemettre
+		appel++; //appel le suivant
+	} else 
+	{
+		flags &= ~GAOPSPE; //fin de la requete de debloquage
+	}
+	flags &= ~GAOPSND; //fin de l'emmission
 	return (ind_nb_donnee == ind_buf*(int)(sizeof(octet)) && buf[0] == 'y');
 }
 
@@ -158,8 +183,7 @@ bool Gaop::Send(Commande &cmd, octet odid)
 bool Gaop::Receive(AssocPeriphOdid& tblassoc) 
 {
 	Commande cmd;
-	static bool blockedfriend = false;
-	if (blockedfriend == true) { Send(cmd, 0xFF); blockedfriend = false; }//pret a recevoir
+	if (flags & GAOPDBK) { Send(cmd, 0xFF); flags &= ~GAOPDBK; } //pret a recevoir
 	octet odid;
 	int ind_buf;// = prochain++;
 	//while (ind_buf != appel) { /*usleep(50);*/ } //tant que ce n'est pas notre tour
@@ -176,11 +200,9 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 		{
 			i = read(device, buf+ind_buf, (buf[0]-ind_buf)*(sizeof(octet)));
 		}
-		ind_buf += i;	
+		ind_buf += i;
 		if (ind_buf == 0 || i < 0 || ind_buf > TAILLE_MAX_FRAME) { /*appel++;*/ return false; }
 	} while (ind_buf != buf[0] && i >= 0);
-
-	blockedfriend = true; //si on recoit, c'est que l'autre est dans un etat bloque
 
 	ind_buf = 1; //indice[0] = taille de la frame
 	octet checksum = 0;
@@ -201,12 +223,14 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 			checksum ^= cmd[i][j]; //data
 		}
 	}
+	
+	if (odid != 0xFF) flags |= GAOPDBK; //si on recoit, c'est que l'autre est dans un etat bloque
 
 	if(buf[ind_buf++] == checksum)
 	{
 		//appel++;
-		if (odid == 0xFF) blocked = false; //frame pour dire que l'on peut envoye
-		else if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
+		if (odid == 0xFF) flags &= ~GAOPBLK; //frame pour dire que l'on peut envoye
+		else if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid((int)odid)->Receive(cmd);
 		return true;
 	} else
 	{

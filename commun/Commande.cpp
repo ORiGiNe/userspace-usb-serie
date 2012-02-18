@@ -7,18 +7,7 @@ Commande::Commande()
 	taille_des_cmd = NULL;
 	taille_de_la_frame = 4; //taille +  nbcommande + odid + checksum = taille minimal de la frame
 }
-Commande::Commande(const Commande &c)
-{
-	nb_element = c.nb_element;
-	cmd = (octet**)malloc(nb_element*sizeof(octet*));
-	taille_des_cmd = (int*)malloc(nb_element*sizeof(int));
-	for (int i = 0; i < nb_element; i++)
-	{
-		taille_des_cmd[i] = c.taille_des_cmd[i];
-		cmd[i] = (octet*)malloc(taille_des_cmd[i]*sizeof(octet));
-		memcpy(cmd[i], c.cmd[i], taille_des_cmd[i]*sizeof(octet));
-	}
-}
+
 Commande::~Commande()
 {
 	for (int i = 0; i < nb_element; i++)
@@ -45,7 +34,7 @@ void Commande::add(const octet* commande, int taille)
 	taille_des_cmd[nb_element - 1] = taille;
 }
 
-void Commande::add(short int i)
+void Commande::add(int i)
 {
 	if (taille_de_la_frame+1+sizeof(short int) >= TAILLE_MAX_FRAME) return;
 	taille_de_la_frame += 1 + sizeof(short int);

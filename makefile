@@ -3,8 +3,8 @@ CPP = g++
 EXT = cpp
 BIN = test
 
-#CFLAGS = -Wall -g -Wextra 
-CFLAGS = -O3
+CFLAGS = -Wall -g -Wextra 
+#CFLAGS = -O3
 
 LDFLAGS = -lrt -pthread
 OBJ = obj
@@ -15,7 +15,7 @@ SKETCHBOOK = ~/sketchbook
 INCDIR1 = $(COMMUN)
 INCDIR2 = $(PC)
 BINDIR = .
-INCFLAGS = -I$(INCDIR1) -I$(INCDIR2) #$(FLAGS)
+INCFLAGS = -I$(INCDIR1) -I$(INCDIR2) 
 
 SRC1 = $(wildcard $(COMMUN)/*.$(EXT))
 OBJCOMMUN = $(SRC1:$(COMMUN)/%.$(EXT)=$(OBJ)/%.o)
@@ -39,11 +39,29 @@ clean:
 mrproper: clean
 		rm -vf $(BINDIR)/$(BIN)
 
-install-ide:
-	@cp -Ru $(ARDUINO)/* $(COMMUN)/* $(SKETCHBOOK)/userspaceUsbSerie/ #copie les sources cote ide. plus qu'a compiler avec celui ci.
+#install ide
+
+.sketchbook:
+	@if ! test -d $(SKETCHBOOK); \
+	then mkdir $(SKETCHBOOK); \
+	fi
+	@if ! test -d $(SKETCHBOOK)/userspaceUsbSerie; \
+	then mkdir $(SKETCHBOOK)/userspaceUsbSerie; \
+	fi
+
+TMP1 = $(wildcard $(ARDUINO)/*)
+TMP2 = $(wildcard $(COMMUN)/*)
+ARDUINOSRC = $(TMP1:$(ARDUINO)/%=%) $(TMP2:$(COMMUN)/%=%)
+
+install-ide: .sketchbook $(ARDUINOSRC:%=$(SKETCHBOOK)/userspaceUsbSerie/%) 
 	@#edite le fichier de config pour que sa compile sur arduino
 	@sed -e 's/\/\/\s*#define\s\+IAmNotOnThePandaBoard/#define IAmNotOnThePandaBoard/' $(COMMUN)/Config.h > $(SKETCHBOOK)/userspaceUsbSerie/Config.h
-	@echo done
+
+$(SKETCHBOOK)/userspaceUsbSerie/%: $(ARDUINO)/%
+	cp  $< $@
+
+$(SKETCHBOOK)/userspaceUsbSerie/%: $(COMMUN)/%
+	cp  $< $@
 
 #install: $(BIN)
 #		cp $(BINDIR)/$(BIN) /usr/bin/

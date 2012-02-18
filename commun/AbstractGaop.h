@@ -16,7 +16,7 @@ class AbstractGaop
 		 * de l'emetteur, qui permet de connaitre aussi le destinataire 
 		 * renvoie false si erreur d'envoie
 		 */
-		virtual bool Send(Commande &c, octet odid) = 0; 		
+		virtual bool Send(Commande &c, int odid) = 0; 		
 		
 };
 

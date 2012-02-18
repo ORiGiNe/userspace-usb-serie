@@ -3,7 +3,7 @@
   void __cxa_pure_virtual() { };
 #endif
 
-Peripherique::Peripherique(octet odid) 
+Peripherique::Peripherique(int odid) 
 { 
 	this->odid = odid; 
 	this->g = NULL;
@@ -11,11 +11,22 @@ Peripherique::Peripherique(octet odid)
 
 Peripherique::~Peripherique() { }
 
-octet Peripherique::getOdid() { return odid; }
+int Peripherique::getOdid() { return odid; }
 
 void Peripherique::associe(AbstractGaop* g) { this->g = g; } //dit au peripherique d'utiliser l'objet gaop g
 
 bool Peripherique::test() { return true; } //test le fonctionnenment du peripherique, et renvoie faux si il ne marche pas
+
+bool Peripherique::operation()
+{
+	if (g == NULL) return false;
+	bool ret = g->Send(cmd, odid);
+	for (int i = 0; i < cmd.getNbCommandes(); i++)
+	{
+		cmd.remove(); //efface pour faire de la place ? optimal ?
+	}
+	return ret;
+}
 
 //void Peripherique::Receive(Commande& c){  }
 
@@ -30,11 +41,11 @@ AssocPeriphOdid::~AssocPeriphOdid()
 	if (t) free(t);
 }
 
-void AssocPeriphOdid::add(Peripherique &p)
+void AssocPeriphOdid::add(Peripherique *p)
 {
 	taille++;
 	t = (Peripherique**)realloc(t, taille*sizeof(Peripherique*));
-	t[taille-1] = &p;
+	t[taille-1] = p;
 }
 
 Peripherique* AssocPeriphOdid::operator[](int n)
@@ -43,7 +54,7 @@ Peripherique* AssocPeriphOdid::operator[](int n)
 	else return NULL;
 }
 
-Peripherique* AssocPeriphOdid::getbyodid(octet odid)
+Peripherique* AssocPeriphOdid::getbyodid(int odid)
 {
 	for (int i = 0; i < taille; i++)
 	{
@@ -52,7 +63,7 @@ Peripherique* AssocPeriphOdid::getbyodid(octet odid)
 	return NULL;
 }
 
-void AssocPeriphOdid::rm(octet odid)
+void AssocPeriphOdid::rm(int odid)
 {
 	for (int i = 0; i < taille; i++)
 	{

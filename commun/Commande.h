@@ -12,12 +12,11 @@ class Commande
 {
 	public:
 		Commande();
-		Commande(const Commande&);
 		~Commande();
 		
 		//ajoute la commande cmd. si cmd == NULL, seul la taille de la commande et alloue
 		void add(const octet* cmd, int taille);
-		void add(short int i); //envoie d'un entier
+		void add(int i); //envoie d'un entier
 		
 		//supprime la derniere
 		void remove();

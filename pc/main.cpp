@@ -9,11 +9,11 @@ int main()
 {
 	AssocPeriphOdid tblassoc;
 	Gaop g("/dev/ttyACM0");
-	Led led1(0, 6); tblassoc.add(led1);
-	Led led2(1, 9); tblassoc.add(led2);
+	Led led1(0, 6); tblassoc.add(&led1);
+	Led led2(1, 9); tblassoc.add(&led2);
 	//initailiation des device au bon gaop protocol
 	//la ligne qui suit devra etre refaite pour tous les slaves
-	g.initialise(tblassoc);
+	g.initialise(&tblassoc);
 
 
 /*	Boucle infini jour/nuit */
@@ -21,17 +21,17 @@ int main()
 	{
 		led1.allume();
 		led2.eteint();
-		usleep(1000*1000);
+		//usleep(1000*1000);
 		led1.eteint(); 
 		led2.allume();
-		usleep(1000*1000);
+		//usleep(1000*1000);
 	}
 
 /* allume une led puis s'arrete */
 /*
 	led1.allume();
 	sleep(3);
-*/
+*/	
 	/* rapidite*/
 /*	time_t nb_sec = time(NULL);
 	for (unsigned long i = 0; i < 10000; i++)

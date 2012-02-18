@@ -8,9 +8,9 @@
 
 /* delai de timeout */
 //  secondes
-#define TIMEOUTSEC 0
+#define TIMEOUTSEC 1
 // microseconde
-#define TIMEOUTUSEC 1000
+#define TIMEOUTUSEC 10000
 
 /* taille maximal de la frame (<= a 128, car apres buffer arduino plein)*/
 #define TAILLE_MAX_FRAME 128

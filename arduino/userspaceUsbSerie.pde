@@ -10,9 +10,9 @@ AssocPeriphOdid tblassoc;
 void setup()
 {
 	/**///pinMode(13, OUTPUT);	
-	tblassoc.add(led1);
-	tblassoc.add(led2);
-	brain.initialise(tblassoc); //Serial.begin(115200);
+	tblassoc.add(&led1);
+	tblassoc.add(&led2);
+	brain.initialise(&tblassoc); //Serial.begin(115200);
 }
 
 void loop()

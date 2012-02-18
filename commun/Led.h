@@ -5,13 +5,13 @@
 class Led : public Peripherique
 {
 	public:
-		Led(octet odid, octet pin);
-		void allume();
-		void eteint();
+		Led(int odid, int pin);
         bool test();
         void Receive(Commande&);
+		void allume();
+		void eteint();
 	private:
-		octet pin;
+		int pin;
 };
 
 #endif /*LEDOrIgInE*/

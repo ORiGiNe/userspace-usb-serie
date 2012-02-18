@@ -47,6 +47,12 @@
 	#include <WProgram.h> //to have HIGH, LOW, digitalWrite, digitalRead, Serial.*, ...
 #endif
 
+/* Definition des flags pour la gestions des threads "mutex" */
+#define GAOPBLK 0b00000001 /*0x01 emissions bloquees*/
+#define GAOPDBK 0b00000010 /*0x02 emissions de l'autre machine (distante bloquee) */
+#define GAOPSND 0b00000100 /*0x04 emission en cours */
+#define GAOPSPE 0b00001000 /*0x08 trame special en cours pour debloquer (odid == 0xFF) */
+
 /* Une commande est vu comme une chaine de carartere. */
 /* Chaque peripheriques < devices > connait un gaop (passer via la fonction initialize) */
 class Gaop : public AbstractGaop
@@ -59,12 +65,22 @@ class Gaop : public AbstractGaop
         #endif
         ~Gaop();
 		
+		/* 
+		 * initialise la connection et recupere  ce qui marche sur l'arduino. 
+		 * p est un tableau contenant l'odid de tout les peripheriques
+		 * appele apres la declaration des peripheriques.
+		 */
+		//void initialise(short int odidPeripheriques[] , int taille); //odidPeripheriques valeur = -1 <=> peripherique desactive
+		void initialise(AssocPeriphOdid*);
+
+	/* n'on pas besoin d'etre wrapper sous urbi. */
+
 		/*
 		 * envoie les commandes contenues dans c. odid et l'identifiant
 		 * de l'emetteur, qui permet de connaitre aussi le destinataire 
 		 * renvoie false si erreur d'envoie
 		 */
-		bool Send(Commande &c, octet odid); 		
+		bool Send(Commande &c, int odid); 		
 		
 		/*
 		 * reception des commandes dans l'objet c
@@ -73,22 +89,17 @@ class Gaop : public AbstractGaop
 		 */
 		bool Receive(AssocPeriphOdid&);
 		
-		/* 
-		 * initialise la connection et recupere  ce qui marche sur l'arduino. 
-		 * p est un tableau contenant l'odid de tout les peripheriques 
-		 */
-		//void initialise(short int odidPeripheriques[] , int taille); //odidPeripheriques valeur = -1 <=> peripherique desactive
-		void initialise(AssocPeriphOdid&);
 	private:
 		#ifndef IAmNotOnThePandaBoard
 			int device; //file descriptor (open function)
 			pthread_t fils; //pour le fork de Receive();
+			void **pthreadarg;
 		#endif
 		/* Le drivers est thread safe. on met en place un systeme de priorite du
 		 * du style premier arrive = premier servi. */
 		octet prochain; //prochain numero disponible (% 256)
 		octet appel; //candidat appele
-		bool blocked; //bloquer les emissions lorsque c'est indisponible de l'autre cote
+		octet flags; //GAOPSPE, GAOPBLK, GAOPDBK, GAOPSND
 };
 
 #endif /*GAOPPROTOCOL */
