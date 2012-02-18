@@ -8,7 +8,7 @@
 
 /* delai de timeout */
 //  secondes
-#define TIMEOUTSEC 1
+#define TIMEOUTSEC 0
 // microseconde
 #define TIMEOUTUSEC 10000
 

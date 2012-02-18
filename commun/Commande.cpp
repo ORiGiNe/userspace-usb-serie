@@ -52,6 +52,7 @@ void Commande::remove()
 	if (nb_element > 0)
 	{
 		nb_element--;
+		taille_de_la_frame -= 1 +  taille_des_cmd[nb_element];
 		free(cmd[nb_element]);
 		cmd = (octet**)realloc(cmd, nb_element*sizeof(octet*));
 		taille_des_cmd = (int*)realloc(taille_des_cmd, nb_element*sizeof(int));

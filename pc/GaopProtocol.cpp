@@ -105,7 +105,6 @@ bool Gaop::Send(Commande &cmd, int odid)
 	 * donc une autre procedure pour prendre un "ticket" */
 	int ind_buf;
 	struct timespec apres, towait; 
-
 	if (odid != 0xFF)
 	{
 		ind_buf	= prochain++;
