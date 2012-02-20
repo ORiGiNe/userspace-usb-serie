@@ -21,10 +21,6 @@ bool Peripherique::operation()
 {
 	if (g == NULL) return false;
 	bool ret = g->Send(cmd, odid);
-	for (int i = 0; i < cmd.getNbCommandes(); i++)
-	{
-		cmd.remove(); //efface pour faire de la place ? optimal ?
-	}
 	return ret;
 }
 

@@ -25,15 +25,15 @@ bool Led::test()
 
 void Led::Receive(Commande &c)
 {
-	if (c[0][0] == 'u') 
+	if (c[0] == 'u') 
 	{
 		allume();
-		cmd.add((octet*)"on", 2);
+		cmd[0] = 'Y';
 	}
 	else 
 	{
 		eteint();
-		cmd.add((octet*)"--", 2);
+		cmd[0] = 'N';
 	}
 	operation(); //envoie une reponse
 }

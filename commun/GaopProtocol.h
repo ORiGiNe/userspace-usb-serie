@@ -9,22 +9,14 @@
  *  Il y a une trame par commande.
  *  Exemple : envoye(a_quoi: moteur, arg1, arg2, ...)
  *  detail du protocol GAOP, GAOP is an origine protocol :
- *  Tous les champs seront codes sur 8bits, soit un octet.
- *  taille de la frame
- *  nombre de donnees = n
- *  odid du peripherique
- *  taille de la première donnee = t1
- *  octet 1
+ *  taille de la frame					//8 bits
+ *  odid du peripherique				//16 bits
+ *  octet 1.1							//8 bits =>1.1 et 1.2 definissient un ushort
+ *  octet 1.2							//8 bits
+ *  octet 2.1							//8 bits
+ *  octet 2.2							//8 bits
  *  ...
- *  octet t1
- *  taille de la deuxieme donnee = t2
- *  ...
- *  ...
- *  taille de la n-ieme donnee = tn
- *  octet 1
- *  ...
- *  octet tn
- *  checksum (ou checkxor plutot)
+ *  checksum (ou checkxor plutot)		//8 bits
  */
 /* on a la bonne frame ssi l'octet 0 == DEBUT et le dernier octet lu == FIN */
 
@@ -80,7 +72,7 @@ class Gaop : public AbstractGaop
 		 * de l'emetteur, qui permet de connaitre aussi le destinataire 
 		 * renvoie false si erreur d'envoie
 		 */
-		bool Send(Commande &c, int odid); 		
+		bool Send(Commande &c, unsigned short int odid); 		
 		
 		/*
 		 * reception des commandes dans l'objet c
