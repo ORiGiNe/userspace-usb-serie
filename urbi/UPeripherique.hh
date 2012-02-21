@@ -4,10 +4,10 @@
 #include "Peripherique.h"
 #include <iostream>
 
-// A UObject wrapping a custom object. 
 class UPeripherique
 {
 	public:	
-		virtual Peripherique* getPeripherique();
+		UPeripherique();
+		Peripherique* getPeripherique();
 }; 
 #endif // ! UPERIPHERIQUE_HH 
