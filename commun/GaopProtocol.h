@@ -46,7 +46,7 @@
 #define GAOPSPE 0b00001000 /*0x08 trame special en cours pour debloquer (odid == 0xFF) */
 
 /* Une commande est vu comme une chaine de carartere. */
-/* Chaque peripheriques < devices > connait un gaop (passer via la fonction initialize) */
+/* Chaque peripheriques < devices > connait un gaop (passer via la fonction initialise) */
 class Gaop : public AbstractGaop
 {
 	public:
@@ -92,6 +92,9 @@ class Gaop : public AbstractGaop
 		octet prochain; //prochain numero disponible (% 256)
 		octet appel; //candidat appele
 		octet flags; //GAOPSPE, GAOPBLK, GAOPDBK, GAOPSND
+		octet frames_envoyees;
+		octet frames_recues;
+
 };
 
 #endif /*GAOPPROTOCOL */

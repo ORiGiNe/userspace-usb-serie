@@ -3,8 +3,8 @@ CPP = g++
 EXT = cpp
 BIN = test
 
-CFLAGS = -Wall -g -Wextra 
-#CFLAGS = -O3
+#CFLAGS = -Wall -g -Wextra 
+CFLAGS = -O3
 
 LDFLAGS = -lrt -pthread
 OBJ = obj
