@@ -1,0 +1,4 @@
+var g = UGaop.new("/dev/ttyACM0")|
+var l = ULed.new(0,g)|
+g.initialise|
+l.allume;
