@@ -34,7 +34,7 @@ int main()
 */	
 	/* rapidite*/
 /*	time_t nb_sec = time(NULL);
-	for (unsigned long i = 0; i < 10000; i++)
+	for (unsigned long i = 0; i < 1000; i++)
 	{
 		led1.allume();
 		led2.allume();

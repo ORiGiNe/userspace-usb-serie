@@ -162,7 +162,7 @@ bool Gaop::Send(Commande &cmd, unsigned short int odid)
 	buf[ind_buf++] = checksum;
 
 	ind_nb_donnee = write(device, buf, ind_buf*sizeof(octet));
-	tcdrain(device); //attendre que c'est bien envoye
+	//tcdrain(device); //attendre que c'est bien envoye
 	
 	//l'apres devient l'avant
 	if (odid != ODIDSPECIAL) 
