@@ -8,6 +8,6 @@ class UPeripherique
 {
 	public:	
 		UPeripherique();
-		Peripherique* getPeripherique();
+		virtual Peripherique* getPeripherique() = 0;
 }; 
 #endif // ! UPERIPHERIQUE_HH 
