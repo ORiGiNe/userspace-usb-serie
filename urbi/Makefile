@@ -16,12 +16,10 @@ target: $(SOURCES)
 	$(CC) $(INCLUDES) $(CFLAGS) $(SOURCES) -o $(TARGET)
 
 run: $(TARGET)
-	 urbi-launch --start $(TARGET) -- --interactive
+	urbi-launch --start $(TARGET) -- main.u
+
+interactive: $(TARGET)
+	urbi-launch --start $(TARGET) -- --interactive
 
 clean:
-	rm *.o
 	rm $(TARGET)
-
-
-
-
