@@ -9,10 +9,9 @@
 // include custom lib
 #include "Led.h"
 #include "UGaop.hh"
-#include "UPeripherique.hh"
 
 // A UObject wrapping a custom object. 
-class ULed : public urbi::UObject, public UPeripherique
+class ULed : public urbi::UObject
 { 
 	public: 
 		// C++ contructor. 
@@ -26,9 +25,7 @@ class ULed : public urbi::UObject, public UPeripherique
 		void allume();
 		void eteint();
 
-		Peripherique* getPeripherique();
-
 	protected:
-		Led* led; 
+		Led* led;
 }; 
 #endif // ! UTEST_HH 

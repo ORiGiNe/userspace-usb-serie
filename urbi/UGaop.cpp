@@ -1,5 +1,4 @@
 #include "UGaop.hh"
-#include "UPeripherique.hh"
 
 // Register the UObject in the Urbi world. 
 UStart(UGaop); 
@@ -31,9 +30,8 @@ void UGaop::initialise() {
 }
 
 
-void UGaop::add(UObject* u) {
-	UPeripherique* p = dynamic_cast<UPeripherique*>(u);
-	tblassoc->add(p->getPeripherique());
+void UGaop::add(Peripherique* p) {
+	tblassoc->add(p);
 }
 
 Gaop* UGaop::getGaop() {

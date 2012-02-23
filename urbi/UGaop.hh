@@ -25,7 +25,7 @@ class UGaop : public urbi::UObject
 		void initialise();
 
 		// ajoute un périphérique à gérer
-		void add(UObject* u);
+		void add(Peripherique* p);
 
 		Gaop* getGaop();
 

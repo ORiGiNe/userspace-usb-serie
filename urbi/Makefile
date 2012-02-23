@@ -6,7 +6,6 @@ SOURCES = \
 	../commun/Peripherique.cpp \
 	../commun/Commande.cpp \
 	../pc/GaopProtocol.cpp \
-	UPeripherique.cpp \
 	UGaop.cpp \
 	../pc/Led.cpp \
         ULed.cpp

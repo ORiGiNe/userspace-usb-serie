@@ -22,8 +22,7 @@ int ULed::init(int odid, UObject* g) {
 	
 	led = new Led (0,6);
 	UGaop* ugaop = dynamic_cast<UGaop*>(g);
-	ugaop->add(this);
-	//Gaop* gaop = ugaop->getGaop();
+	ugaop->add(led);
 	//led->associe(*gaop);
 	return 0; 
 }
@@ -35,9 +34,4 @@ void ULed::allume() {
 
 void ULed::eteint() {
 	this->led->eteint();
-}
-
-Peripherique* ULed::getPeripherique()
-{
-	return led;
 }
