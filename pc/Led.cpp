@@ -3,7 +3,7 @@
 Led::Led(int odid, int pin) : Peripherique(odid) { this->pin = pin; }
 void Led::allume()
 {
-	cmd.add((octet*)"up", 2);
+	cmd[0] = 'u';
 	operation();
 }
 
@@ -11,11 +11,11 @@ bool Led::test() { return true; };
 
 void Led::eteint()
 {
-	cmd.add((octet*)"of", 2);
+	cmd[0] = 'o';
 	operation();
 }
 
 void Led::Receive(Commande& c)
 {
-	std::cout << "led" << (int)odid << ' ' << c[0][0] << c[0][1] << std::endl;
+	std::cout << "led" << (int)odid << ' ' << (char)c[0] << std::endl;
 }

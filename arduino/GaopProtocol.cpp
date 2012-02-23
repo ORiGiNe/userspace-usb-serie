@@ -5,6 +5,9 @@ Gaop::Gaop()
 	prochain = 0;
 	appel = 0;
 	flags = 0;
+	frames_recues = 0;
+	frames_envoyees = 0;
+
 }
 
 Gaop::~Gaop()
@@ -47,11 +50,11 @@ void Gaop::initialise(AssocPeriphOdid *tblassoc)
 	}
 }
 
-bool Gaop::Send(Commande& cmd, int odid)
+bool Gaop::Send(Commande& cmd, unsigned short int odid)
 {
-	int ind_buf, taille, i;
+	int ind_buf, i;
 
-	if (odid != 0xFF)
+	if (odid != ODIDSPECIAL)
 	{
 		ind_buf = prochain++;
 		unsigned long timeout = micros(); 
@@ -68,29 +71,27 @@ bool Gaop::Send(Commande& cmd, int odid)
 	
 	flags |= GAOPSND;
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
-	ind_buf = 1; //0 : taille de la frame
+	ind_buf = 0;
 	octet checksum = 0; //XOR SUM
-	buf[ind_buf++] = cmd.getNbCommandes();
-	checksum ^= cmd.getNbCommandes();
+	buf[ind_buf] = cmd.getTaille()*sizeof(short int) + INFOCPL;
+	checksum ^= buf[ind_buf++];
+	buf[ind_buf++] = odid / 0x100;
+	checksum ^= odid / 0x100;
 	buf[ind_buf++] = odid % 0x100;
 	checksum ^= odid % 0x100;
-	for (i = 0; i < cmd.getNbCommandes(); i++)
+	for (i = 0; i < cmd.getTaille(); i++)
 	{
-		buf[ind_buf++] = cmd.getTaille(i);
-		checksum ^= cmd.getTaille(i);
-		for (taille = 0; taille < cmd.getTaille(i); taille++) 
-		{
-			buf[ind_buf++] = cmd[i][taille];
-			checksum ^= cmd[i][taille];
-		}
+		buf[ind_buf] = cmd[i] / 0x100;
+		checksum ^= buf[ind_buf++];
+		buf[ind_buf] = cmd[i] % 0x100;
+		checksum ^= buf[ind_buf++];
 	}
 	buf[ind_buf++] = checksum;
-	buf[0] = (octet)ind_buf;
 
 	Serial.write(buf, ind_buf*sizeof(octet));
-	if (odid != 0xFF) 
+	if (odid != ODIDSPECIAL) 
 	{
-		flags |= GAOPBLK; //attente de disponiblilite
+		if (++frames_envoyees >= NB_FRAMES_MAX) flags |= GAOPBLK; //attente de disponiblilite
 		appel++; //on a fini. Donc on appel le suivant
 	} else
 	{
@@ -104,42 +105,34 @@ bool Gaop::Send(Commande& cmd, int odid)
 bool Gaop::Receive(AssocPeriphOdid& tblassoc) 
 {    
 	Commande cmd;
-	octet odid;
-	if (flags & GAOPDBK) { Send(cmd, 0xFF); flags &= ~GAOPDBK; } //pret a recevoir
+	unsigned short int odid;
+	if (flags & GAOPDBK) { Send(cmd, ODIDSPECIAL); flags &= ~GAOPDBK; frames_recues = 0; } //pret a recevoir
 	
 	int i; //= prochain++;
 	//while (i != appel) { delayMicroseconds(50); }
-	int j, nb_donnees, taille;
+	int nb_donnees;
 	if (Serial.available() <= 0) { /*appel++;*/ return false; }
 
 	while((octet)Serial.available() < Serial.peek()); //tant que tous les octets ne sont pas arrives.
 	
-	Serial.read(); //taille de la frame
+	nb_donnees = Serial.read(); //taille de la frame
 	octet checksum = 0;
-	nb_donnees = Serial.read();
 	checksum ^= nb_donnees;
-	odid = Serial.read();
-	checksum ^= odid;
+	nb_donnees = (nb_donnees - INFOCPL)/sizeof(short int);
+	odid = Serial.read()*0x100 + Serial.read();
+	checksum ^= (odid / 0x100 ) ^ (odid % 0x100);
 	for (i = 0; i < nb_donnees; i++)
 	{
-		taille = Serial.read();
-		checksum ^= taille;
-		
-		cmd.add(NULL, taille);
-		for (j = 0; j < taille; j++)
-		{			
-			cmd[i][j] = Serial.read();
-			checksum ^= cmd[i][j]; //data
-		}
+		cmd[i] = Serial.read() * 0x100 + Serial.read();
+		checksum ^= (cmd[i] / 0x100) ^ (cmd[i] % 0x100);
 	}
 	
-	if (odid != 0xFF) flags |= GAOPDBK; //si on recoit, c'est que l'autre est dans un etat bloque
- 	
+	if (odid != ODIDSPECIAL) { if (++frames_recues >= NB_FRAMES_MAX) flags |= GAOPDBK; } //si on recoit, c'est que l'autre est dans un etat bloque
 	if (checksum == Serial.read())
 	{
 		//appel++; //on a fini. Donc, on appel le suivant
-		if (odid == 0xFF) flags &= ~GAOPBLK; //a recut une frame de debloquage
-		else if (tblassoc.getbyodid((int)odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
+		if (odid == ODIDSPECIAL) { flags &= ~GAOPBLK; frames_envoyees = 0;} //a recut une frame de debloquage
+		else if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
 		return true;
 	} else
 	{
