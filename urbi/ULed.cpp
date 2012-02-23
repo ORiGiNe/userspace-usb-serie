@@ -23,15 +23,14 @@ int ULed::init(int odid, UObject* g) {
 	led = new Led (0,6);
 	UGaop* ugaop = dynamic_cast<UGaop*>(g);
 	ugaop->add(led);
-	//led->associe(*gaop);
 	return 0; 
 }
 
 void ULed::allume() {
 	std::cout << "coucou" << std::endl;
-	this->led->allume();
+	led->allume();
 }
 
 void ULed::eteint() {
-	this->led->eteint();
+	led->eteint();
 }

@@ -21,6 +21,7 @@ int UGaop::init(const char* device) {
 	UBindFunction(UGaop, add);
 	
 	g = new Gaop (device);
+	tblassoc = new AssocPeriphOdid;
 	return 0; 
 }
 
