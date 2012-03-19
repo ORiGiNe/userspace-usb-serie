@@ -23,7 +23,7 @@
 #include "Peripherique.h" /*Gaop connait peripherique*/
 #include "AbstractGaop.h" /*pour que peripherique puisse connaitre du GAOP*/
 
-#ifndef IAmNotOnThePandaBoard
+#if !IAmNotOnThePandaBoard
 	#include <sys/stat.h>	/*open*/
 	#include <fcntl.h>		/*open*/
 //	#include <sys/types.h>	/*kill*/
@@ -50,7 +50,7 @@
 class Gaop : public AbstractGaop
 {
 	public:
-		#ifndef IAmNotOnThePandaBoard
+		#if !IAmNotOnThePandaBoard
                 Gaop(const char *device); //"/dev/ttyACM0"
 		#else
                 Gaop();
@@ -82,7 +82,7 @@ class Gaop : public AbstractGaop
 		bool Receive(AssocPeriphOdid&);
 		
 	private:
-		#ifndef IAmNotOnThePandaBoard
+		#if !IAmNotOnThePandaBoard
 			int device; //file descriptor (open function)
 			pthread_t fils; //pour le fork de Receive();
 			void **pthreadarg;

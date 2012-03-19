@@ -1,5 +1,5 @@
 #include "Peripherique.h"
-#ifdef IAmNotOnThePandaBoard
+#if IAmNotOnThePandaBoard
   void __cxa_pure_virtual() { };
 #endif
 

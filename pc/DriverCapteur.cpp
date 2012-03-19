@@ -1,0 +1,29 @@
+#include "DriverCapteur.h"
+
+DriverCapteur::DriverCapteur(int odid) : Peripherique(odid)
+{
+	reponse = false;
+}
+
+DriverCapteur::~DriverCapteur() { }
+
+void DriverCapteur::Receive(Commande& c)
+{
+	cmd[0] = c[0];
+	reponse = true; 
+}
+
+int DriverCapteur::get()
+{
+	reponse = false;
+	operation(); //envoie la requete
+	//attend la reponse
+	//struct timespec avant, apres; 
+	//clock_gettime(CLOCK_REALTIME, &avant);
+//TODO : finir le timeout	
+	while (!reponse) //Ok car programmation multi-threade
+	{
+	
+	}
+	return cmd[0];
+}

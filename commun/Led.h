@@ -1,15 +1,13 @@
 #ifndef LEDOrIgInE
 #define LEDOrIgInE
-#include "Peripherique.h"
+#include "DriverEffecteur.h" 
 
-class Led : public Peripherique
+class Led : public DriverEffecteur
 {
 	public:
 		Led(int odid, int pin);
         bool test();
-        void Receive(Commande&);
-		void allume();
-		void eteint();
+		bool set(int); //0 : eteint. 1 si allumer
 	private:
 		int pin;
 };

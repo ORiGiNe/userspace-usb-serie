@@ -17,32 +17,33 @@ int main()
 
 
 /*	Boucle infini jour/nuit */
-	while (true)
+/*	while (true)
 	{
-		led1.allume();
-		led2.eteint();
+		led1.set(1);
+		led2.set(0);
 		usleep(1000*1000);
-		led1.eteint(); 
-		led2.allume();
+		led1.set(0); 
+		led2.set(1);
 		usleep(1000*1000);
 	}
-
-/* allume une led puis s'arrete */
+*/
+/* set(1) une led puis s'arrete */
 /*
-	led1.allume();
+	led1.set(1);
 	sleep(3);
 */	
 	/* rapidite*/
-/*	time_t nb_sec = time(NULL);
-	for (unsigned long i = 0; i < 1000; i++)
+
+	time_t nb_sec = time(NULL);
+	for (unsigned long i = 0; i < 10000; i++)
 	{
-		led1.allume();
-		led2.allume();
-		led1.eteint();
-		led2.eteint();
+		led1.set(1);
+		led2.set(1);
+		led1.set(0);
+		led2.set(0);
 	}
 	cout << "temps ecoule : " << time(NULL) - nb_sec << " s" << endl;
-*/
+
 	return 0;
 }
 

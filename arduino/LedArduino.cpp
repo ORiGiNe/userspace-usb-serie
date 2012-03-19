@@ -1,19 +1,20 @@
 #include "Led.h"
 
-Led::Led(int odid, int pin) : Peripherique(odid) 
+Led::Led(int odid, int pin) : DriverEffecteur(odid) 
 {
 	this->pin = pin;
 	pinMode(pin, OUTPUT); //on utilise l'odid comme pin.
 }
 
-void Led::allume()
+bool Led::set(int val)
 {
-	digitalWrite(pin, HIGH);
-}	
-void Led::eteint()
-{
-	digitalWrite(pin, LOW);
+	if (val == 0)
+		digitalWrite(pin, LOW);
+	else
+		digitalWrite(pin, HIGH);
+	return true;
 }
+
 bool Led::test()
 {
 	//1 court
@@ -23,17 +24,3 @@ bool Led::test()
 	return true;
 }
 
-void Led::Receive(Commande &c)
-{
-	if (c[0] == 'u') 
-	{
-		allume();
-		cmd[0] = 'Y';
-	}
-	else 
-	{
-		eteint();
-		cmd[0] = 'N';
-	}
-	operation(); //envoie une reponse
-}

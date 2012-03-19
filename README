@@ -1,0 +1,13 @@
+UserSpace usb-serie pandaboard/arduino
+->transfert des données via le protocole GAOP
+->abstraction logiciel (bridge pattern) cote arduino
+->heritage simple cote pc
+
+Pour compiler : 
+make : compile les sources pour la panda
+make install-ide : copie les sources dans le sketchbook
+logiciel arduino -> userspace-usb-serie : compile puis importe sur l'arduino
+
+	 
+
+

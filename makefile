@@ -3,8 +3,8 @@ CPP = g++
 EXT = cpp
 BIN = test
 
-#CFLAGS = -Wall -g -Wextra 
-CFLAGS = -O3
+#CFLAGS = -Wall -g -Wextra -DIAmNotOnThePandaBoard=0  
+CFLAGS = -O3 -DIAmNotOnThePandaBoard=0
 
 LDFLAGS = -lrt -pthread
 OBJ = obj
@@ -54,8 +54,7 @@ TMP2 = $(wildcard $(COMMUN)/*)
 ARDUINOSRC = $(TMP1:$(ARDUINO)/%=%) $(TMP2:$(COMMUN)/%=%)
 
 install-ide: .sketchbook $(ARDUINOSRC:%=$(SKETCHBOOK)/userspaceUsbSerie/%) 
-	@#edite le fichier de config pour que sa compile sur arduino
-	@sed -e 's/\/\/\s*#define\s\+IAmNotOnThePandaBoard/#define IAmNotOnThePandaBoard/' $(COMMUN)/Config.h > $(SKETCHBOOK)/userspaceUsbSerie/Config.h
+	@echo files succesfully copied
 
 $(SKETCHBOOK)/userspaceUsbSerie/%: $(ARDUINO)/%
 	cp  $< $@

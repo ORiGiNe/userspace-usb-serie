@@ -3,7 +3,9 @@
 
 /* Indique si le code tourne sur arduino ou sur pc : include differents. 
  * Decommenter la ligne si le programme tourne sur arduino */
-//#define IAmNotOnThePandaBoard
+#ifndef IAmNotOnThePandaBoard
+#define IAmNotOnThePandaBoard 1
+#endif /* IAmNotOnThePandaBoard */
 
 
 /* delai de timeout */

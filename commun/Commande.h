@@ -11,7 +11,11 @@ class Commande
 {
 	public:
 		Commande();
+#if IAmNotOnThePandaBoard
 		~Commande();
+#else 
+		virtual ~Commande();
+#endif
 		
 		short int& operator[](unsigned int i);
 		//taille de la ieme commande (0 si non dispo)
