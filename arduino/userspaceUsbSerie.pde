@@ -1,14 +1,14 @@
 #include "GaopProtocol.h"
-#include "Effecteur.h"
+#include "GeneriqueEffecteur.h"
 #include "Led.h"
 
 //Warning : on ne peut pas faire de new ou de delete (mais on peut faire du malloc), ni user de la STL
 Gaop brain;
-Led led1(0, 6);
-Led led2(1, 9);
+Led lled1(0, 6);
+Led lled2(1, 9);
 AssocPeriphOdid tblassoc;
-xEffecteur led1(&led1, &tblassoc);
-xEffecteur led2(&led2, &tblassoc);
+GeneriqueEffecteur led1(&lled1, &tblassoc);
+GeneriqueEffecteur led2(&lled2, &tblassoc);
 
 void setup()
 {

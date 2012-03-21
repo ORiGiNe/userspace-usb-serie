@@ -8,12 +8,6 @@ Effecteur::Effecteur(int odid, int lim_bas, int lim_haut) : Peripherique(odid)
 
 Effecteur::~Effecteur() { }
 
-bool Effecteur::test()
-{
-	//TODO : trouver une methode pour tester
-	return true;
-}
-
 void Effecteur::Receive(Commande& c)
 {
 	if (c[0] >= valInf && c[0] <= valSup) set(c[0]);
