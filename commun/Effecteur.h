@@ -1,14 +1,23 @@
-#ifndef GAOPEFFECTEUR
-#define GAOPEFFECTEUR
-#include "AbstractEffecteur.h"
+#ifndef DRIVEREFFECTEUR
+#define DRIVEREFFECTEUR
 
-class Effecteur : public AbstractEffecteur
+#include "Peripherique.h"
+
+class DriverEffecteur : public	Peripherique
 {
 	public:
-		//utilisation de pointeur pour wrapper sous urbi (eventuellement)
-		Effecteur(DriverEffecteur*, AssocPeriphOdid*);
-		~Effecteur();
-		bool set(int val); //doit etre implementer sur l'arduino par les objet qui herite de DriverEffecteur
+		DriverEffecteur(int odid, int valInf = -32768, int valSup = 32768);
+#if IAmNotOnThePandaBoard
+		~DriverEffecteur();
+#else
+		virtual ~DriverEffecteur();
+#endif
+		virtual bool set(int valeur) = 0;
+		bool test();
+		void Receive(Commande&);
+	protected:
+		int valInf;
+		int valSup;
 };
 
-#endif /*GAOPEFFECTEUR*/
+#endif
