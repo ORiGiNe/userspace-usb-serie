@@ -1,13 +1,20 @@
 #include "Capteur.h"
-Capteur::Capteur(int odid) : Peripherique(odid)
+
+Capteur::Capteur(Capteur* driver, AssocPeriphOdid* assoc)
 {
+	this->driver = driver;
+	assoc->add(driver);
 }
 
 Capteur::~Capteur() { }
 
-void Capteur::Receive(Commande& c)
+int Capteur::get()
 {
-	cmd[0] = get();
-	operation(); //antwort
+	return driver->get();
+}	
+
+bool Capteur::test()
+{
+	return true;
 }
 

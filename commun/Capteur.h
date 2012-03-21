@@ -1,20 +1,15 @@
-#ifndef DRIVERCAPTEUR
-#define DRIVERCAPTEUR
+#ifndef GAOPCAPTEUR
+#define GAOPCAPTEUR
+#include "AbstractCapteur.h"
 
-#include "Peripherique.h"
-
-class Capteur : public Peripherique
+class Capteur : public AbstractCapteur
 {
 	public:
-		Capteur(int odid);
-#if IAmNotOnThePandaBoard
+		//utilisation de pointeur pour wrapper sous urbi (eventuellement)
+		Capteur(Capteur*, AssocPeriphOdid*);
 		~Capteur();
-#else
-		virtual ~Capteur();
-#endif
-		virtual int get(); //= 0;
-		void Receive(Commande&);
-	private:
-		bool reponse; //vrai si il y a eu une reponse a la requete
+		int get(); //doit etre implementer sur l'arduino par les objet qui herite de Capteur
+		bool test();
 };
-#endif
+
+#endif /*GAOPCAPTEUR*/

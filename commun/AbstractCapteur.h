@@ -1,7 +1,7 @@
 #ifndef ABSTRACTCAPTEUR
 #define ABSTRACTCAPTEUR
 
-#include "Capteur.h"
+#include "DriverCapteur.h"
 
 class AbstractCapteur
 {
@@ -9,7 +9,7 @@ class AbstractCapteur
 		virtual int get() = 0;
 		virtual bool test() = 0;
 	protected:
-		Capteur* driver;
+		DriverCapteur* driver;
 };
 
 #endif /*ABSTRACTCAPTEUR*/
