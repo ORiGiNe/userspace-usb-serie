@@ -1,18 +1,18 @@
-#include "DriverEffecteur.h"
+#include "Effecteur.h"
 
-DriverEffecteur::DriverEffecteur(int oidi, int val_inf, int val_sup) : Peripherique(oidi)
+Effecteur::Effecteur(int oidi, int val_inf, int val_sup) : Peripherique(oidi)
 {
 	valInf = val_inf;
 	valSup = val_sup;
 }
-DriverEffecteur::~DriverEffecteur() { };
+Effecteur::~Effecteur() { };
 
-void DriverEffecteur::Receive(Commande& c)
+void Effecteur::Receive(Commande& c)
 {
 
 }
 
-bool DriverEffecteur::set(int o)
+bool Effecteur::set(int o)
 {
 	if (o >= valInf && o <= valSup)
 	{

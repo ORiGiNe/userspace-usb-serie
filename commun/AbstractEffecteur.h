@@ -1,14 +1,14 @@
 #ifndef ABSTRACTEFFECTEUR
 #define ABSTRACTEFFECTEUR
 
-#include "DriverEffecteur.h"
+#include "Effecteur.h"
 
 class AbstractEffecteur
 {
 	public:
 		virtual bool set(int valuetoset) = 0;
 	protected:
-		DriverEffecteur* driver;
+		Effecteur* driver;
 };
 
 #endif

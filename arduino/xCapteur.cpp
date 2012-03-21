@@ -1,14 +1,14 @@
-#include "Capteur.h"
+#include "xCapteur.h"
 
-Capteur::Capteur(DriverCapteur* driver, AssocPeriphOdid* assoc)
+xCapteur::xCapteur(Capteur* driver, AssocPeriphOdid* assoc)
 {
 	this->driver = driver;
 	assoc->add(driver);
 }
 
-Capteur::~Capteur() { }
+xCapteur::~xCapteur() { }
 
-int Capteur::get()
+int xCapteur::get()
 {
 	return driver->get();
 }	

@@ -1,20 +1,20 @@
-#include "DriverEffecteur.h"
+#include "Effecteur.h"
 
-DriverEffecteur::DriverEffecteur(int odid, int lim_bas, int lim_haut) : Peripherique(odid)
+Effecteur::Effecteur(int odid, int lim_bas, int lim_haut) : Peripherique(odid)
 {
 	valInf = lim_bas;
 	valSup = lim_haut;
 }
 
-DriverEffecteur::~DriverEffecteur() { }
+Effecteur::~Effecteur() { }
 
-bool DriverEffecteur::test()
+bool Effecteur::test()
 {
 	//TODO : trouver une methode pour tester
 	return true;
 }
 
-void DriverEffecteur::Receive(Commande& c)
+void Effecteur::Receive(Commande& c)
 {
 	if (c[0] >= valInf && c[0] <= valSup) set(c[0]);
 }

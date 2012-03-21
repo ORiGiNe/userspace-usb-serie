@@ -2,12 +2,12 @@
 #define GAOPEFFECTEUR
 #include "AbstractEffecteur.h"
 
-class Effecteur : public AbstractEffecteur
+class xEffecteur : public AbstractEffecteur
 {
 	public:
 		//utilisation de pointeur pour wrapper sous urbi (eventuellement)
-		Effecteur(DriverEffecteur*, AssocPeriphOdid*);
-		~Effecteur();
+		xEffecteur(Effecteur*, AssocPeriphOdid*);
+		~xEffecteur();
 		bool set(int val); //doit etre implementer sur l'arduino par les objet qui herite de DriverEffecteur
 };
 

@@ -1,14 +1,14 @@
 #ifndef ABSTRACTCAPTEUR
 #define ABSTRACTCAPTEUR
 
-#include "DriverCapteur.h"
+#include "Capteur.h"
 
 class AbstractCapteur
 {
 	public:
 		virtual int get() = 0;
 	protected:
-		DriverCapteur* driver;
+		Capteur* driver;
 };
 
 #endif /*ABSTRACTCAPTEUR*/

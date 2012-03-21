@@ -1,8 +1,8 @@
 #ifndef LEDOrIgInE
 #define LEDOrIgInE
-#include "DriverEffecteur.h" 
+#include "Effecteur.h" 
 
-class Led : public DriverEffecteur
+class Led : public Effecteur
 {
 	public:
 		Led(int odid, int pin);

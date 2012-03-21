@@ -1,6 +1,6 @@
 #include "Led.h"
 #include <iostream>
-Led::Led(int odid, int pin) : DriverEffecteur(odid) 
+Led::Led(int odid, int pin) : Effecteur(odid) 
 { 
 	this->pin = pin; 
 }

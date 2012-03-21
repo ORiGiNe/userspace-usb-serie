@@ -1,17 +1,17 @@
-#include "DriverCapteur.h"
-DriverCapteur::DriverCapteur(int odid) : Peripherique(odid)
+#include "Capteur.h"
+Capteur::Capteur(int odid) : Peripherique(odid)
 {
 }
 
-DriverCapteur::~DriverCapteur() { }
+Capteur::~Capteur() { }
 
-bool DriverCapteur::test()
+bool Capteur::test()
 {
 	//TODO : trouver une methode pour tester
 	return true;
 }
 
-void DriverCapteur::Receive(Commande& c)
+void Capteur::Receive(Commande& c)
 {
 	cmd[0] = get();
 	operation(); //antwort

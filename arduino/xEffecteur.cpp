@@ -1,14 +1,14 @@
-#include "Effecteur.h"
+#include "xEffecteur.h"
 
-Effecteur::Effecteur(DriverEffecteur* driver, AssocPeriphOdid* assoc)
+xEffecteur::xEffecteur(xEffecteur* driver, AssocPeriphOdid* assoc)
 {
 	this->driver = driver;
 	assoc->add(driver);
 }
 
-Effecteur::~Effecteur() { }
+xEffecteur::~xEffecteur() { }
 
-bool Effecteur::set(int value)
+bool xEffecteur::set(int value)
 {
 	return driver->set(value);
 }	

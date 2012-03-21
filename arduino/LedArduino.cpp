@@ -1,9 +1,9 @@
 #include "Led.h"
 
-Led::Led(int odid, int pin) : DriverEffecteur(odid) 
+Led::Led(int odid, int pin) : Effecteur(odid) 
 {
 	this->pin = pin;
-	pinMode(pin, OUTPUT); //on utilise l'odid comme pin.
+	pinMode(pin, OUTPUT); 
 }
 
 bool Led::set(int val)

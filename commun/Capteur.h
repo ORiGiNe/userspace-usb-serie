@@ -3,17 +3,16 @@
 
 #include "Peripherique.h"
 
-class DriverCapteur : public Peripherique
+class Capteur : public Peripherique
 {
 	public:
-		DriverCapteur(int odid);
+		Capteur(int odid);
 #if IAmNotOnThePandaBoard
-		~DriverCapteur();
+		~Capteur();
 #else
-		~DriverCapteur();
+		virtual ~Capteur();
 #endif
-		virtual int get() = 0;
-		bool test();
+		virtual int get(); //= 0;
 		void Receive(Commande&);
 	private:
 		bool reponse; //vrai si il y a eu une reponse a la requete
