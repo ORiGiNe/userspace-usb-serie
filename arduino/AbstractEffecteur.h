@@ -2,10 +2,10 @@
 #define ABSTRACTEFFECTEUR
 
 #include "Commande.h"
-#include "Peripherique.h"
 #include "DriverEffecteur.h" 
 
-class AbstractEffecteur : public Peripherique
+/* C'est une interface. On n'herite pas de Peripherique */
+class AbstractEffecteur
 {
 	public:
 		virtual bool set(int valuetoset) = 0;

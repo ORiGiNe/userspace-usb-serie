@@ -1,10 +1,9 @@
 #include "Capteur.h"
 Capteur::Capteur(int odid, DriverCapteur *driver) : Peripherique(odid)
 {
-	this->driver = driver
+	this->driver = driver;
 }
 
-Capteur::~Capteur() { };
 
 void Capteur::Receive(Commande& c)
 {

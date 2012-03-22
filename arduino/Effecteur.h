@@ -2,12 +2,12 @@
 #define GAOPEFFECTEUR
 
 #include "AbstractEffecteur.h"
+#include "Peripherique.h"
 
-class Effecteur : public AbstractEffecteur
+class Effecteur : public AbstractEffecteur, public Peripherique
 {
 	public:
 		Effecteur(int odid,  DriverEffecteur*);
-		~Effecteur();
 		bool set(int valeur);
 		void Receive(Commande&);
 };

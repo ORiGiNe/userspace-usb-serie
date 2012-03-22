@@ -2,12 +2,12 @@
 #define GAOPCAPTEUR
 
 #include "AbstractCapteur.h"
+#include "Peripherique.h"
 
-class Capteur : public AbstractCapteur
+class Capteur : public AbstractCapteur, public Peripherique
 {
 	public:
 		Capteur(int odid, DriverCapteur*);
-		~Capteur();
 		int get(); 
 		void Receive(Commande&);
 };
