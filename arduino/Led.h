@@ -1,12 +1,12 @@
 #ifndef LEDOrIgInE
 #define LEDOrIgInE
-#include "Effecteur.h" 
+#include "DriverEffecteur.h" 
+#include <WProgram.h>
 
-class Led : public Effecteur
+class Led : public DriverEffecteur
 {
 	public:
-		Led(int odid, int pin);
-        bool test();
+		Led(int pin);
 		bool set(int); //0 : eteint. 1 si allumer
 	private:
 		int pin;

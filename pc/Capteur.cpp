@@ -5,8 +5,6 @@ Capteur::Capteur(int odid) : Peripherique(odid)
 	reponse = false;
 }
 
-Capteur::~Capteur() { }
-
 void Capteur::Receive(Commande& c)
 {
 	cmd[0] = c[0];

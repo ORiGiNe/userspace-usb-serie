@@ -15,11 +15,7 @@ class Peripherique
 {
 	public:
 		Peripherique(int odid); //constructeur par default temporaire -> URBI
-		#if !IAmNotOnThePandaBoard
-			virtual ~Peripherique();
-		#else
-			~Peripherique(); //a virtual destructor requires the delete operator which in his turn requires stdlibc++ wich is not supported by avr-g++... (http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?action=print;num=1209026667)
-		#endif
+		
 		int getOdid();
 		
         virtual bool test(); //test le fonctionnement. Renvoie faux si ne marche pas

@@ -12,8 +12,6 @@ COMMUN = commun
 PC = pc
 ARDUINO = arduino
 SKETCHBOOK = ~/sketchbook
-INCDIR1 = $(COMMUN)
-INCDIR2 = $(PC)
 BINDIR = .
 INCFLAGS = -I$(INCDIR1) -I$(INCDIR2) 
 
@@ -28,10 +26,10 @@ $(BIN): $(OBJCOMMUN) $(OBJPC)
 		$(CPP) -o $(BINDIR)/$@ $^ $(LDFLAGS) $(CFLAGS)
 		 
 $(OBJ)/%.o: $(COMMUN)/%.$(EXT)
-		$(CPP) -o $@ -c $< $(CFLAGS) $(INCFLAGS) 
+		$(CPP) -o $@ -c $< $(CFLAGS) -I$(COMMUN) 
 
 $(OBJ)/%.o: $(PC)/%.$(EXT)
-		$(CPP) -o $@ -c $< $(CFLAGS) $(INCFLAGS) 
+		$(CPP) -o $@ -c $< $(CFLAGS) -I$(COMMUN) -I$(PC) 
 		 
 clean:
 		rm -vf $(OBJ)/*.o
@@ -62,5 +60,3 @@ $(SKETCHBOOK)/userspaceUsbSerie/%: $(ARDUINO)/%
 $(SKETCHBOOK)/userspaceUsbSerie/%: $(COMMUN)/%
 	cp  $< $@
 
-#install: $(BIN)
-#		cp $(BINDIR)/$(BIN) /usr/bin/

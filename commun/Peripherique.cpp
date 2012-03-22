@@ -9,8 +9,6 @@ Peripherique::Peripherique(int odid)
 	this->g = NULL;
 }
 
-Peripherique::~Peripherique() { }
-
 int Peripherique::getOdid() { return odid; }
 
 void Peripherique::associe(AbstractGaop* g) { this->g = g; } //dit au peripherique d'utiliser l'objet gaop g
