@@ -1,13 +1,14 @@
 #ifndef ABSTRACTCAPTEUR
 #define ABSTRACTCAPTEUR
 
+#include "Peripherique.h"
 #include "Commande.h"
 #include "DriverCapteur.h"
 
-/* C'est une interface. On n'herite pas de Peripherique */
-class AbstractCapteur 
+class AbstractCapteur : public Peripherique 
 {
 	public:
+		AbstractCapteur(int odid) : Peripherique(odid) { };
 		virtual int get() = 0;
 		virtual void Receive(Commande&) = 0;
 	protected:

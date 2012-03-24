@@ -4,7 +4,7 @@
 #include "AbstractEffecteur.h"
 #include "Peripherique.h"
 
-class Effecteur : public AbstractEffecteur, public Peripherique
+class Effecteur : public AbstractEffecteur
 {
 	public:
 		Effecteur(int odid,  DriverEffecteur*);

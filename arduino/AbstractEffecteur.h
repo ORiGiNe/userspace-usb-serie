@@ -1,13 +1,14 @@
 #ifndef ABSTRACTEFFECTEUR
 #define ABSTRACTEFFECTEUR
 
+#include "Peripherique.h"
 #include "Commande.h"
 #include "DriverEffecteur.h" 
 
-/* C'est une interface. On n'herite pas de Peripherique */
-class AbstractEffecteur
+class AbstractEffecteur : public Peripherique
 {
 	public:
+		AbstractEffecteur(int odid) : Peripherique(odid) { };
 		virtual bool set(int valuetoset) = 0;
     	virtual void Receive(Commande&) = 0;
 	protected:

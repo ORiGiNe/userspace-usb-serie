@@ -1,5 +1,5 @@
 #include "Capteur.h"
-Capteur::Capteur(int odid, DriverCapteur *driver) : Peripherique(odid)
+Capteur::Capteur(int odid, DriverCapteur *driver) : AbstractCapteur(odid)
 {
 	this->driver = driver;
 }
