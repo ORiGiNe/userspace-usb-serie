@@ -8,6 +8,8 @@
 class AbstractCapteur : public Peripherique 
 {
 	public:
+		//TODO Voir pour directement appeler le constructeur dans
+		// la classe Capteur
 		AbstractCapteur(int odid) : Peripherique(odid) { };
 		virtual int get() = 0;
 		virtual void Receive(Commande&) = 0;

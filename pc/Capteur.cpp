@@ -19,9 +19,7 @@ int Capteur::get()
 	//struct timespec avant, apres; 
 	//clock_gettime(CLOCK_REALTIME, &avant);
 //TODO : finir le timeout	
-	while (!reponse) //Ok car programmation multi-threade
-	{
+	while (!reponse); //Ok car programmation multi-threade
 	
-	}
 	return cmd[0];
 }
