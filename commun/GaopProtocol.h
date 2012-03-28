@@ -41,9 +41,9 @@
 
 /* Definition des flags pour la gestions des threads "mutex" */
 #define GAOPBLK 0b00000001 /*0x01 emissions bloquees*/
-#define GAOPDBK 0b00000010 /*0x02 emissions de l'autre machine (distante bloquee) */
+#define GAOPDBK 0b00000010 /*0x02 emissions de l'autre machine (distante bloquees) */
 #define GAOPSND 0b00000100 /*0x04 emission en cours */
-#define GAOPSPE 0b00001000 /*0x08 trame special en cours pour debloquer (odid == 0xFF) */
+#define GAOPSPE 0b00001000 /*0x08 trame speciale en cours pour debloquer (odid == 0xFF) */
 
 /* Une commande est vu comme une chaine de carartere. */
 /* Chaque peripheriques < devices > connait un gaop (passer via la fonction initialise) */

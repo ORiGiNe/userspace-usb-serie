@@ -8,11 +8,11 @@
 #endif /* IAmNotOnThePandaBoard */
 
 
-/* delai de timeout */
+/* delai de timeout. doit etre suffisament long pour que les capteur est le temps de répondre*/
 //  secondes
 #define TIMEOUTSEC 0
 // microseconde
-#define TIMEOUTUSEC 10000
+#define TIMEOUTUSEC 25000
 
 /* taille maximal de la frame  et nombre de frame maximum avant l'arret des emisions
  * TAILLE_MAX_FRAME defini le nombre d'octets maximum de la frame. (attention,
@@ -29,7 +29,7 @@
  * (frame d'authorisation d'emmission). L'odid est code sur 16 bit */
 #define ODIDSPECIAL 0xFFFF
 
-/* taille des infromations complemetaire : 
+/* taille des infromations complemetaires : 
  * taille	1
  * odid		2
  * checksum	1 */
