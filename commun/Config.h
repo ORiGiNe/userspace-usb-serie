@@ -10,7 +10,7 @@
 
 /* delai de timeout. doit etre suffisament long pour que les capteur est le temps de répondre*/
 //  secondes
-#define TIMEOUTSEC 0
+#define TIMEOUTSEC 1
 // microseconde
 #define TIMEOUTUSEC 25000
 

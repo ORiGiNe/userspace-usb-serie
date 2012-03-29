@@ -3,17 +3,16 @@
 #include "Effecteur.h"
 #include "Capteur.h"
 using namespace std;
-#include <unistd.h>
 #include <ctime>
 
 int main()
 {
 	AssocPeriphOdid tblassoc;
 	Gaop g("/dev/ttyACM0");
-	Effecteur led1(0);		//declaration de la led ayant l'odid 0
 	Capteur uson1(1);        //ultrason a l'odid 1
-	tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
-	tblassoc.add(&uson1);
+	Capteur uson2(2);        //ultrason a l'odid 1
+	tblassoc.add(&uson2);
+	tblassoc.add(&uson1);	
 	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 
 
@@ -26,7 +25,8 @@ int main()
 	{
 		inter = uson1.get();
 		if (inter < 0) val_neg++;
-		cout << inter << endl;
+		inter = uson2.get();
+		if (inter < 0) val_neg++;
 	}
 		
 	clock_gettime(CLOCK_REALTIME, &apres);
@@ -39,30 +39,6 @@ int main()
 	}
 	cout << "valeures negative : " << inter << endl;
 
-/*//	Boucle infini jour/nuit
-	while (true)
-	{
-		led1.set(1);
-		usleep(1000*1000);
-		led1.set(0); 
-		usleep(1000*1000);
-	}
-*/
-
-/*//allume une led puis s'arrete
-	led1.set(1);
-	sleep(3);
-*/	
-
-/*// rapidite
-	time_t nb_sec = time(NULL);
-	for (unsigned long i = 0; i < 10000; i++)
-	{
-		led1.set(1);
-		led1.set(0);
-	}
-	cout << "temps ecoule : " << time(NULL) - nb_sec << " s" << endl;
-*/
 	return 0;
 }
 

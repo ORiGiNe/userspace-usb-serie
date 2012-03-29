@@ -1,0 +1,12 @@
+Test effectuer sur une machine de 1.6 GHz, noyau 3.0.0-16-generic
+1 capteur, 3000 valeurs
+
+Ecouler : 9s 100006us
+valeurs negatives : 5
+
+Ecouler : 8s 116094us
+valeurs negatives : 11
+
+Ecouler : 8s 333107us
+valeurs negatives : 11
+
