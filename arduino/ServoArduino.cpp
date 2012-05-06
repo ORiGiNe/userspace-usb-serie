@@ -1,15 +1,23 @@
 #include "ClassServo.h"
 #include "/usr/share/arduino/libraries/Servo/Servo.h"
 
-EffecteurServo::EffecteurServo(int pin)
+EffecteurServo::EffecteurServo(int pin[], int nbr)
 {
-        this->pin = pin;
-	this->pos = 0; 
+				for (int i = 0; i < nbr; i++)
+				{
+								this->pin[i] = pin[i];
+				}
+
+				this->pos = 0;
+				this->nbr = nbr;
 }
 
 bool EffecteurServo::setup()
 {
-	this->myservo.attach(pin); //attaches the servo on pin to the servo object (pin 14 = analog 0);
+  for (int i = 0; i < this->nbr; i++)
+	{
+		this->myservo[i].attach(this->pin[i]); //attaches the servo on pin to the servo object (pin 14 = analog 0);
+	}
 }
 
 
@@ -24,7 +32,12 @@ bool EffecteurServo::set(int val)
               this->pos++; //step : 1 degree              
             else
               this->pos--;
-            myservo.write(this->pos);
+
+            for (int i = 0; i < this->nbr; i++)
+						{
+						  myservo[i].write(this->pos);
+						}
+						
             delay(15);
           }
           

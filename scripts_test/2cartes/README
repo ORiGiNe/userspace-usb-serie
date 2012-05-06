@@ -1,0 +1,5 @@
+Cet exemple comprend 2 cartes arduino :
+- la première utilise //userspaceUsbSerie.pde// et contient 3 servo;
+- la seconde utilise //userspaceUsbSerie2.pde// et contient un sonar trigger/echo.
+
+Le script urbi fait tourner les 3 servos (gérés par un seul driver donc correspondant à un seul effecteur côté pc) et questionne le sonar toutes les 0,05 secondes. Dès que la distance renvoyée par le sonar fait moins de 30cm, il stoppe les servos.
