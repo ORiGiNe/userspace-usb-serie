@@ -5,14 +5,11 @@
 #include "Wire.h"
 #include "Peripherique.h"
 #include "TriggerEcho.h"
-<<<<<<< HEAD
 #include "ClassServo.h"
 #include <WProgram.h>
 #include "Servo.h"
-=======
 #include "I2C.h"
 #include <Wire.h>
->>>>>>> d9d52a91cf30bf7ce1b0cf095d456fc5fb409a70
 
 //Warning : on ne peut pas faire de new ou de delete (mais on peut faire du malloc), ni user de la STL
 //Warning : a virtual destructor requires the delete operator which in his turn requires stdlibc++ wich is not supported by avr-g++... (http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?action=print;num=1209026667) 
