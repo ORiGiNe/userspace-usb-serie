@@ -3,16 +3,14 @@
 #include "Capteur.h"
 #include "Led.h"
 #include "Wire.h"
+#include "Jack.h"
 #include "Peripherique.h"
 #include "TriggerEcho.h"
-<<<<<<< HEAD
 #include "ClassServo.h"
 #include <WProgram.h>
 #include "Servo.h"
-=======
 #include "I2C.h"
 #include <Wire.h>
->>>>>>> d9d52a91cf30bf7ce1b0cf095d456fc5fb409a70
 
 //Warning : on ne peut pas faire de new ou de delete (mais on peut faire du malloc), ni user de la STL
 //Warning : a virtual destructor requires the delete operator which in his turn requires stdlibc++ wich is not supported by avr-g++... (http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?action=print;num=1209026667) 
@@ -30,17 +28,17 @@ Effecteur led1(0, &lled1);
 Capteur uson1(1, &uuson1);
 
 //*/
-EffecteurServo sservo1(9);
-Effecteur servo1(2, &sservo1);
+Jack jjack(3);
+Capteur jack(1, &jjack);
+
 void setup()
 {
 /*
 	tblassoc.add(&led1); //doit etre fait pour tout les devices
 	tblassoc.add(&uson1);
 //*/
-	sservo1.setup();
-	tblassoc.add(&servo1);
-	brain.initialise(&tblassoc); //Serial.begin(115200);
+	tblassoc.add(&jack);
+	brain.initialise(&tblassoc);
 }
 
 void loop()
