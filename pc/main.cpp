@@ -10,7 +10,6 @@ int main()
 {
 	AssocPeriphOdid tblassoc;
 	Gaop g("/dev/ttyACM0");
-<<<<<<< HEAD
 //	Effecteur led1(0);		//declaration de la led ayant l'odid 0
 //      bite
 //	Capteur uson(1);        //ultrason a l'odid 1
