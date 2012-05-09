@@ -59,26 +59,30 @@ void Gaop::initialise(AssocPeriphOdid *tblassoc)
 	 */
 
 	/* demade au slave (aduino) des informations sur ces devices (capteurs / effecteurs) */
-	octet r[1] =  {0};
-	int x = 0;
+	octet r[1] =  {0}; // FIXME Remplacer par un pointeur vers un octet, au moins, on sait ce qu'on fait comme ça
+	int x = 0; // x correspond au nombre de read sans rien à la base, mais plus à rien maintenant
 	octet odid;
-	while (r[0] == 0 && x < 100) //attente d'une connexion
+
+	//attente d'une connexion
+	while (r[0] == 0 && x < 100) 
 	{
 		write(device, ">", 1);	//Je suis demare. Tu es pret ?
-		while( read(device, r, 1) == 0);		//Oui
+		while(read(device, r, 1) == 0);		//Oui
 		x++;
-	} 
+	} // FIXME x ne peut pas etre superieur à 1, à cause du while 
 	//	if (x > 100) throw "connection timed out";
-	write(device, "?", 1);	//Tu as combien de peripheriques ?
+	write(device, "?", 1);	//Tu as combien de peripheriques ? // FIXME, voir wiki pour voir si c'est le vrai pb
 	while (read(device, r, 1) == 0);		//J'en ai x
 	x = r[0];
 	for (int i = 0; i < x; i++)
 	{
-		write(device, "i", 1);	//Donne moi l'ODID du device i si il marche, 0 sinon
-		while( read(device, r, 1) == 0);		//tiens, voila
-		odid = r[0];
+		//Donne moi l'ODID du device i si il marche, 0 sinon
+		write(device, "i", 1);
+		//tiens, voila
+		while( read(device, r, 1) == 0);
+		odid = r[0]; // FIXME l'identifiant est codé sur 1 octet et non 2 (pour les specs, c'est 2 à ce qu'on m'a dit)
 
-		if (tblassoc->getbyodid(odid) != NULL) //je regarde si je le connait
+		if (tblassoc->getbyodid(odid) != NULL) //je regarde si je le connais
 		{
 			write(device, "t", 1); // test son fonctionnement (et desactive le si il ne marche pas)
 			while( read(device, r, 1) == 0);
@@ -87,7 +91,7 @@ void Gaop::initialise(AssocPeriphOdid *tblassoc)
 				tblassoc->rm(odid); //suppression par odid
 			} else
 			{
-				//ca marche bien. je dit au peripherique qu'il peut m'utiliser
+				//ca marche bien. je dis au peripherique qu'il peut m'utiliser
 				tblassoc->getbyodid(odid)->associe(this);
 			}
 		} else write(device, "x", 1); //je ne le connais pas. desactive le
@@ -181,9 +185,14 @@ bool Gaop::Send(Commande &cmd, unsigned short int odid)
 bool Gaop::Receive(AssocPeriphOdid& tblassoc) 
 {
 	Commande cmd;
-	if (flags & GAOPDBK) { Send(cmd, ODIDSPECIAL); flags &= ~GAOPDBK; frames_recues = 0; } //pret a recevoir
 	unsigned short int odid;
 	int ind_buf = 0;// = prochain++;
+
+	if (flags & GAOPDBK) {
+	  Send(cmd, ODIDSPECIAL);
+	  flags &= ~GAOPDBK;
+	  frames_recues = 0;
+	} //pret a recevoir
 	//while (ind_buf != appel) { /*usleep(50);*/ } //tant que ce n'est pas notre tour
 	octet buf[TAILLE_MAX_FRAME];
 	int i, nb_donnees;
