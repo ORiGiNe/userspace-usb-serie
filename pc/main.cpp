@@ -9,25 +9,35 @@ using namespace std;
 int main()
 {
 	AssocPeriphOdid tblassoc;
-	Gaop g("/dev/ttyACM0");
+//	Gaop g("/dev/ttyACM0");  // Pour Arduino UNO
+	Gaop g("/dev/ttyUSB0");  // Pour Arduino Duemilanove
 
 //	Effecteur led1(0);		//declaration de la led ayant l'odid 0
-//      bite
 //	Capteur uson(1);        //ultrason a l'odid 1
 	Effecteur servo1(2);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
+	Effecteur servo2(3);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
 //	tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
 //	tblassoc.add(&uson);
 	tblassoc.add(&servo1);	
+	tblassoc.add(&servo2);	
 	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 
+ 
 
 	while (true)
-	{	
-		servo1.set(180);
-		usleep(3000*1000);
-		servo1.set(0); 
-		usleep(3000*1000);
+	{
+		cout << "Servo 2 - Aller : " << servo2.set(0) << endl;
+		cout << "Servo 1 - Aller : " << servo1.set(180) << endl;
+		sleep(3);
+		cout << "Servo 2 - Retour: " << servo2.set(180) << endl;
+		cout << "Servo 1 - Retour: " << servo1.set(0) << endl;
+		sleep(3);
 	}
+
+
+
+
+
 /* lire indéfiniement les valeurs de l'ultrason *//*
 	while (true)
 	Effecteur led1(0);		//declaration de la led ayant l'odid 0
@@ -36,7 +46,7 @@ int main()
 	tblassoc.add(&uson1);
 	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 
-/* 	TEST ULTRASONS I2C
+ 	TEST ULTRASONS I2C
 	int val_neg = 0, inter;
 	struct timespec avant, apres; 
 	clock_gettime(CLOCK_REALTIME, &avant);

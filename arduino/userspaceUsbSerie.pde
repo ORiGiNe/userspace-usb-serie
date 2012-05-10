@@ -27,8 +27,15 @@ Effecteur led1(0, &lled1);
 Capteur uson1(1, &uuson1);
 
 //*/
-EffecteurServo sservo1(9);
+int pin1[1] = {2};
+int pin2[1] = {3};
+
+EffecteurServo sservo1(pin1,1);
 Effecteur servo1(2, &sservo1);
+
+EffecteurServo sservo2(pin2,1);
+Effecteur servo2(3, &sservo2);
+
 void setup()
 {
 /*
@@ -36,7 +43,9 @@ void setup()
 	tblassoc.add(&uson1);
 //*/
 	sservo1.setup();
-	tblassoc.add(&servo1);
+	sservo2.setup();
+	tblassoc.add(&servo1);	
+        tblassoc.add(&servo2);
 	brain.initialise(&tblassoc); //Serial.begin(115200);
 }
 
