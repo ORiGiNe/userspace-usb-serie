@@ -67,7 +67,7 @@ void Gaop::initialise(AssocPeriphOdid *tblassoc)
 	while (r[0] == 0 && x < 100) 
 	{
 		write(device, ">", 1);	//Je suis demare. Tu es pret ?
-		while(read(device, r, 1) == 0);		//Oui
+		while(read(device, r, 1) == 0);	//Oui
 		x++;
 	} // FIXME x ne peut pas etre superieur à 1, à cause du while 
 	//	if (x > 100) throw "connection timed out";
