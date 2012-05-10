@@ -205,7 +205,10 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 	octet checksum = 0;
 	nb_donnees = buf[ind_buf++]; //nb_donnees < 128
 	checksum ^= nb_donnees;
-	nb_donnees = (nb_donnees - INFOCPL)/sizeof(short int);
+	if ((nb_donnees - INFOCPL) > 0)
+		nb_donnees = (nb_donnees - INFOCPL)/sizeof(short int);
+	else
+		nb_donnees = 0;
 	odid = buf[ind_buf]*0x100 + buf[ind_buf+1];
 	ind_buf += 2;
 	checksum ^= (odid / 0x100) ^ (odid % 0x100);
