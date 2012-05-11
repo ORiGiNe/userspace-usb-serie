@@ -75,7 +75,7 @@ bool Gaop::Send(Commande& cmd, unsigned short int odid)
 	ind_buf = 5; //debut des donnees 
 	octet checksum = 0; //XOR SUM
 	buf[0] = DEBUT;
-	//buf[1] = <seq>
+	buf[1] = appel;
 	checksum ^= buf[1];
 	buf[2] = (cmd.getTaille()*sizeof(short int));
 	checksum ^= buf[2];
