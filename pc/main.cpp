@@ -9,22 +9,22 @@ using namespace std;
 int main()
 {
 	AssocPeriphOdid tblassoc;
-//	Gaop g("/dev/ttyACM0");  // Pour Arduino UNO
-	Gaop g("/dev/ttyUSB0");  // Pour Arduino Duemilanove
+	Gaop g("/dev/ttyACM0");  // Pour Arduino UNO
+//	Gaop g("/dev/ttyUSB0");  // Pour Arduino Duemilanove
 
-//	Effecteur led1(0);		//declaration de la led ayant l'odid 0
+	Effecteur led1(0);		//declaration de la led ayant l'odid 0
 //	Capteur uson(1);        //ultrason a l'odid 1
-	Effecteur servo1(2);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
-	Effecteur servo2(3);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
-//	tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
+//	Effecteur servo1(2);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
+//	Effecteur servo2(3);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
+		tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
 //	tblassoc.add(&uson);
-	tblassoc.add(&servo1);	
-	tblassoc.add(&servo2);	
+//	tblassoc.add(&servo1);	
+//	tblassoc.add(&servo2);	
 	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 
  
 
-	while (true)
+/*	while (true)
 	{
 		cout << "Servo 2 - Aller : " << servo2.set(0) << endl;
 		cout << "Servo 1 - Aller : " << servo1.set(180) << endl;
@@ -35,7 +35,7 @@ int main()
 	}
 
 
-
+*/
 
 
 /* lire indéfiniement les valeurs de l'ultrason *//*
@@ -68,7 +68,7 @@ int main()
 	}
 	cout << "valeures negative : " << inter << endl;
 */
-/*//	Boucle infini jour/nuit
+//	Boucle infini jour/nuit
 	while (true)
 	{
 		led1.set(1);
@@ -76,7 +76,6 @@ int main()
 		led1.set(0); 
 		usleep(1000*1000);
 	}
-*/
 
 /*//allume une led puis s'arrete
 	led1.set(1);

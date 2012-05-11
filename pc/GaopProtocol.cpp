@@ -69,7 +69,7 @@ void Gaop::initialise(AssocPeriphOdid *tblassoc)
 		write(device, ">", 1);	//Je suis demare. Tu es pret ?
 		while(read(device, r, 1) == 0);	//Oui
 		x++;
-	} // FIXME x ne peut pas etre superieur à 1, à cause du while 
+	} // FIXME x ne peut pas etre superieur à 1, à cause du while | Skelz : agreed, on jarte 
 	//	if (x > 100) throw "connection timed out";
 	write(device, "?", 1);	//Tu as combien de peripheriques ? // FIXME, voir wiki pour voir si c'est le vrai pb
 	while (read(device, r, 1) == 0);		//J'en ai x

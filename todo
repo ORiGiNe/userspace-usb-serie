@@ -1,6 +1,46 @@
 exemple avec un effecteur (servo moteur)
-niv arduino : associer odid avec addresse 
-vérifier le programme sur la panda
-coder le driver I2C
 implémenter les drivers des effecteurs (servos, asserv)
 
+REIMPLEMENTATION:
+specs en plus:
+trame =>
+* D = 1o : constante de debut
+* seq = 1o : n° sequence => relation d'ordre
+* t = 1o : taille data
+* CS = 1o : checksum == checkxor
+* odid = 1o : odid du periph
+* data = t*1o
+* F = 1o : constante de fin
+
+ack : nécessaire ? pas convaincu (Skelz)
+
+implementation:
+typedef struct trame Trame;
+typedef struct listedFile ListedFile;
+
+// Cote pc : peut avoir a accumuler enormement de valeurs d'un capteur
+struct listedFile {
+	Trame trame;
+	ListedFile* next;
+};
+
+struct trame {
+	byte[MAX_TRAME_SIZE];
+	byte odid;
+	byte size;
+	byte seq;
+};
+
+howto:
+creer nos propres write & read x 2 : arduino & panda
+macro de debug => juste dans les write & read
+prog d'analyse de frames => TRI-VIAL
+verif de chaque morceau & operation : sections critiques
+
+observation sur arm:
+valeur aléatoire des le debut : wtf ? open avec mauvais flags ?
+
+ressources :
+http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1222099519
+http://web.mac.com/miked13/Arduino/Serial_Write.html
+http://cs.smith.edu/dftwiki/index.php/CSC231_Arduino-serial.c
