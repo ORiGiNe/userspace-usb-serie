@@ -178,7 +178,7 @@ bool Gaop::Send(Commande &cmd, unsigned short int odid)
 		flags &= ~GAOPSPE; //fin de la requete de debloquage
 	}
 	flags &= ~GAOPSND; //fin de l'emmission
-	return (ind_nb_donnee == ind_buf + INFOCPL);
+	return (ind_nb_donnee == ind_buf);
 }
 
 //inverse de send

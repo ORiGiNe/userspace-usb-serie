@@ -94,7 +94,7 @@ bool Gaop::Send(Commande& cmd, unsigned short int odid)
 	buf[3] = checksum;
 	buf[ind_buf++] = FIN;
 
-	ind_nb_donnee = Serial.write(buf, ind_buf*sizeof(octet));
+	Serial.write(buf, ind_buf*sizeof(octet));
 	//tcdrain(device); //attendre que c'est bien envoye
 	
 	//l'apres devient l'avant
@@ -107,20 +107,19 @@ bool Gaop::Send(Commande& cmd, unsigned short int odid)
 		flags &= ~GAOPSPE; //fin de la requete de debloquage
 	}
 	flags &= ~GAOPSND; //fin de l'emmission
-	return (ind_nb_donnee == ind_buf + INFOCPL);
+	return true;
 }
 
 //inverse de send
 bool Gaop::Receive(AssocPeriphOdid& tblassoc) 
 {    
 	Commande cmd;
-	unsigned short int odid;
 	if (flags & GAOPDBK) { Send(cmd, ODIDSPECIAL); flags &= ~GAOPDBK; frames_recues = 0; } //pret a recevoir
 	
 	int i; //= prochain++;
 	//while (i != appel) { delayMicroseconds(50); }
 	
-	while (Serial.peek() != DEBUT && Serial.available > 0) Serial.read(); //syncronisation sur le debut
+	while (Serial.peek() != DEBUT && Serial.available() > 0) Serial.read(); //syncronisation sur le debut
 	if (Serial.available() <= 0) return false;
 	
 	octet num_seq = Serial.read();
