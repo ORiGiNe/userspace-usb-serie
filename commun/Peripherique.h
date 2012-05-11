@@ -25,7 +25,7 @@ class Peripherique
     	virtual void Receive(Commande&) = 0; //peripherique recoit des donnees
 		void associe(AbstractGaop* g); //dit au peripherique d'uitliser l'objet gaop g
 	protected:
-		int odid; //Numero unique identifiant le peripherique
+		octet odid; //Numero unique identifiant le peripherique
 		Commande cmd;
 	private:
 		AbstractGaop* g; //gaop

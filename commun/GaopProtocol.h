@@ -9,19 +9,29 @@
  *  Il y a une trame par commande.
  *  Exemple : envoye(a_quoi: moteur, arg1, arg2, ...)
  *  detail du protocol GAOP, GAOP is an origine protocol :
- *  taille de la frame					//8 bits
- *  odid du peripherique				//16 bits
+ *  octet de debut						//8 bits
+ *  num de sequence						//8 bits
+ *  taille des donnees (en octets)		//8 bits
+ *  checksum (ou checkxor plutot)		//8 bits
+ *  odid du peripherique				//8 bits
  *  octet 1.1							//8 bits =>1.1 et 1.2 definissient un ushort
  *  octet 1.2							//8 bits
  *  octet 2.1							//8 bits
  *  octet 2.2							//8 bits
- *  ...
- *  checksum (ou checkxor plutot)		//8 bits
+ *  octet de fin						//8 bits
  */
-/* on a la bonne frame ssi l'octet 0 == DEBUT et le dernier octet lu == FIN */
+
+/* Verifcication des frames
+ * checksum : num seq+taille+odid+Sum(data)
+ * octet de debut : pour resynchronisation du flux
+ * octet de fin : doit se trouver au bon endroit lors de la lecture (sinon err)
+ */
 
 #include "Peripherique.h" /*Gaop connait peripherique*/
 #include "AbstractGaop.h" /*pour que peripherique puisse connaitre du GAOP*/
+
+#define DEBUT 0xF0
+#define FIN 0x0F
 
 #if !IAmNotOnThePandaBoard
 	#include <sys/stat.h>	/*open*/

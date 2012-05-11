@@ -69,36 +69,45 @@ bool Gaop::Send(Commande& cmd, unsigned short int odid)
 		while (flags & GAOPSND) delayMicroseconds(50); //il y a deja qqn
 	}
 	
-	flags |= GAOPSND;
+	flags |= GAOPSND; //dire qu'il y a qqn qui emet
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
-	ind_buf = 0;
+	int ind_nb_donnee;
+	ind_buf = 5; //debut des donnees 
 	octet checksum = 0; //XOR SUM
-	buf[ind_buf] = cmd.getTaille()*sizeof(short int) + INFOCPL;
-	checksum ^= buf[ind_buf++];
-	buf[ind_buf++] = odid / 0x100;
-	checksum ^= odid / 0x100;
-	buf[ind_buf++] = odid % 0x100;
-	checksum ^= odid % 0x100;
-	for (i = 0; i < cmd.getTaille(); i++)
+	buf[0] = DEBUT;
+	//buf[1] = <seq>
+	checksum ^= buf[1];
+	buf[2] = (cmd.getTaille()*sizeof(short int));
+	checksum ^= buf[2];
+	//buf[3] is checksum
+	buf[4] = odid; 
+	checksum ^= odid;
+
+	//donnes
+	for (ind_nb_donnee = 0; ind_nb_donnee < cmd.getTaille(); ind_nb_donnee++)
 	{
-		buf[ind_buf] = cmd[i] / 0x100;
+		buf[ind_buf] = cmd[ind_nb_donnee] / 0x100;
 		checksum ^= buf[ind_buf++];
-		buf[ind_buf] = cmd[i] % 0x100;
+		buf[ind_buf] = cmd[ind_nb_donnee] % 0x100; //short int -> char
 		checksum ^= buf[ind_buf++];
 	}
-	buf[ind_buf++] = checksum;
+	buf[3] = checksum;
+	buf[ind_buf++] = FIN;
 
-	Serial.write(buf, ind_buf*sizeof(octet));
+	ind_nb_donnee = Serial.write(buf, ind_buf*sizeof(octet));
+	//tcdrain(device); //attendre que c'est bien envoye
+	
+	//l'apres devient l'avant
 	if (odid != ODIDSPECIAL) 
 	{
-		if (++frames_envoyees >= NB_FRAMES_MAX) flags |= GAOPBLK; //attente de disponiblilite
-		appel++; //on a fini. Donc on appel le suivant
-	} else
+		if (++frames_envoyees >= NB_FRAMES_MAX) flags |= GAOPBLK; //on attend que la fonction distante se libere a nouveau pour reemettre
+		appel++; //appel le suivant
+	} else 
 	{
-		flags &= ~GAOPSPE;
+		flags &= ~GAOPSPE; //fin de la requete de debloquage
 	}
-	flags &= ~GAOPSND;
-	return true;
+	flags &= ~GAOPSND; //fin de l'emmission
+	return (ind_nb_donnee == ind_buf + INFOCPL);
 }
 
 //inverse de send
@@ -110,24 +119,29 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 	
 	int i; //= prochain++;
 	//while (i != appel) { delayMicroseconds(50); }
-	int nb_donnees;
-	if (Serial.available() <= 0) { /*appel++;*/ return false; }
-
-	while((octet)Serial.available() < Serial.peek()); //tant que tous les octets ne sont pas arrives.
 	
-	nb_donnees = Serial.read(); //taille de la frame
+	while (Serial.peek() != DEBUT && Serial.available > 0) Serial.read(); //syncronisation sur le debut
+	if (Serial.available() <= 0) return false;
+	
+	octet num_seq = Serial.read();
+	octet nb_donnees = Serial.read();
+	octet checksum_recu = Serial.read();
+	octet odid = Serial.read();
+
+	if (nb_donnees > 127) return false;
+	//verif octet de fin a sa place
+
 	octet checksum = 0;
-	checksum ^= nb_donnees;
-	nb_donnees = (nb_donnees - INFOCPL)/sizeof(short int);
-	odid = Serial.read()*0x100 + Serial.read();
-	checksum ^= (odid / 0x100 ) ^ (odid % 0x100);
+	checksum ^= nb_donnees ^ num_seq ^ nb_donnees ^ odid;
 	for (i = 0; i < nb_donnees; i++)
 	{
 		cmd[i] = Serial.read() * 0x100 + Serial.read();
 		checksum ^= (cmd[i] / 0x100) ^ (cmd[i] % 0x100);
 	}
 	
-	if (odid != ODIDSPECIAL) { if (++frames_recues >= NB_FRAMES_MAX) flags |= GAOPDBK; } //si on recoit, c'est que l'autre est dans un etat bloque
+
+	if (odid != ODIDSPECIAL) { if (++frames_recues >= NB_FRAMES_MAX/2) flags |= GAOPDBK; } //si on recoit, c'est que l'autre est dans un etat bloque
+	if( Serial.read() != FIN) return false;
 	if (checksum == Serial.read())
 	{
 		//appel++; //on a fini. Donc, on appel le suivant

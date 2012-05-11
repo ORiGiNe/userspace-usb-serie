@@ -60,15 +60,13 @@ void Gaop::initialise(AssocPeriphOdid *tblassoc)
 
 	/* demade au slave (aduino) des informations sur ces devices (capteurs / effecteurs) */
 	octet r[1] =  {0};
-	int x = 0;
+	int x;
 	octet odid;
-	while (r[0] == 0 && x < 100) //attente d'une connexion
-	{
-		write(device, ">", 1);	//Je suis demare. Tu es pret ?
-		while( read(device, r, 1) == 0);		//Oui
-		x++;
-	} 
-	//	if (x > 100) throw "connection timed out";
+	
+	//attente d'une connexion
+	write(device, ">", 1);	//Je suis demare. Tu es pret ?
+	while( read(device, r, 1) == 0);		//Oui
+	
 	write(device, "?", 1);	//Tu as combien de peripheriques ?
 	while (read(device, r, 1) == 0);		//J'en ai x
 	x = r[0];
@@ -141,17 +139,22 @@ bool Gaop::Send(Commande &cmd, unsigned short int odid)
 		while (flags & GAOPSND) { nanosleep(&towait, NULL); } //qqn emmet => attente
 		
 	}
+
 	flags |= GAOPSND; //dire qu'il y a qqn qui emet
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 	int ind_nb_donnee;
-	ind_buf = 0;
+	ind_buf = 5; //debut des donnees 
 	octet checksum = 0; //XOR SUM
-	buf[ind_buf] = (cmd.getTaille()*sizeof(short int)) + INFOCPL;
-	checksum ^= buf[ind_buf++];
-	buf[ind_buf++] = odid / 0x100; 
-	checksum ^= odid / 0x100;
-	buf[ind_buf++] = odid % 0x100;
-	checksum ^= odid % 0x100;
+	buf[0] = DEBUT;
+	//buf[1] = <seq>
+	checksum ^= buf[1];
+	buf[2] = (cmd.getTaille()*sizeof(short int));
+	checksum ^= buf[2];
+	//buf[3] is checksum
+	buf[4] = odid; 
+	checksum ^= odid;
+
+	//donnes
 	for (ind_nb_donnee = 0; ind_nb_donnee < cmd.getTaille(); ind_nb_donnee++)
 	{
 		buf[ind_buf] = cmd[ind_nb_donnee] / 0x100;
@@ -159,7 +162,8 @@ bool Gaop::Send(Commande &cmd, unsigned short int odid)
 		buf[ind_buf] = cmd[ind_nb_donnee] % 0x100; //short int -> char
 		checksum ^= buf[ind_buf++];
 	}
-	buf[ind_buf++] = checksum;
+	buf[3] = checksum;
+	buf[ind_buf++] = FIN;
 
 	ind_nb_donnee = write(device, buf, ind_buf*sizeof(octet));
 	//tcdrain(device); //attendre que c'est bien envoye
@@ -174,7 +178,7 @@ bool Gaop::Send(Commande &cmd, unsigned short int odid)
 		flags &= ~GAOPSPE; //fin de la requete de debloquage
 	}
 	flags &= ~GAOPSND; //fin de l'emmission
-	return (ind_nb_donnee == ind_buf);
+	return (ind_nb_donnee == ind_buf + INFOCPL);
 }
 
 //inverse de send
@@ -182,8 +186,8 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 {
 	Commande cmd;
 	if (flags & GAOPDBK) { Send(cmd, ODIDSPECIAL); flags &= ~GAOPDBK; frames_recues = 0; } //pret a recevoir
-	unsigned short int odid;
-	int ind_buf = 0;// = prochain++;
+	octet odid;
+	int ind_buf = 0;
 	//while (ind_buf != appel) { /*usleep(50);*/ } //tant que ce n'est pas notre tour
 	octet buf[TAILLE_MAX_FRAME];
 	int i, nb_donnees;
@@ -192,26 +196,29 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 	{
 		if (ind_buf == 0)
 		{
-			i = read(device, buf, 1); //pour etre sur de lire le bon nombre, ni plus, ni moins
+			i = read(device, buf, 1); 
+			if (buf[0] != DEBUT || i <= 0) return false;
+			ind_buf += 1;
+			i = read(device, buf+1, INFOCPL-2); //lecture des entetes
+			if (buf[2] > TAILLE_MAX_FRAME - INFOCPL) return false; //erreur de taille : trop grande
 		} else
 		{
-			i = read(device, buf+ind_buf, (buf[0]-ind_buf)*(sizeof(octet)));
+			i = read(device, buf+ind_buf, (buf[2]-ind_buf)*(sizeof(octet)));
 		}
-		ind_buf += i;
-		if (ind_buf == 0 || i < 0 || ind_buf > TAILLE_MAX_FRAME) { /*appel++;*/ return false; }
-	} while (ind_buf != buf[0] && i >= 0);
+		ind_buf += i; //nb d'octet effectivement lu
+		if (ind_buf == 0 || i < 0 || ind_buf > TAILLE_MAX_FRAME) { return false; }
+	} while (ind_buf != buf[2] + INFOCPL && i >= 0); //buf[2] + INFOCPL : y compris la fin
 
-	ind_buf = 0; 
+	//on verifie avent de continuer que l'octet de fin est bien a sa place (err de taille)
+	if (buf[2] > 127 || buf[buf[2] + INFOCPL -1] != FIN) return false;
+
+	ind_buf = INFOCPL - 1 - 1;  //taille_total - taille de fin - 1
 	octet checksum = 0;
-	nb_donnees = buf[ind_buf++]; //nb_donnees < 128
+	//nb_donnee est la taille des donnees user, sans les encapsulations
+	nb_donnees = buf[2]; //nb_donnees < 128
 	checksum ^= nb_donnees;
-	if ((nb_donnees - INFOCPL) > 0)
-		nb_donnees = (nb_donnees - INFOCPL)/sizeof(short int);
-	else
-		nb_donnees = 0;
-	odid = buf[ind_buf]*0x100 + buf[ind_buf+1];
-	ind_buf += 2;
-	checksum ^= (odid / 0x100) ^ (odid % 0x100);
+	odid = buf[4];
+	checksum ^= odid / 0x100;
 
 	for (i = 0; i < nb_donnees; i++)
 	{
@@ -220,17 +227,15 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 		checksum ^= (cmd[i] / 0x100) ^ (cmd[i] % 0x100);
 	}
 	
-	if (odid != ODIDSPECIAL) {if (++frames_recues >= NB_FRAMES_MAX) flags |= GAOPDBK; } //si on recoit, c'est que l'autre est dans un etat bloque
+	if (odid != ODIDSPECIAL) {if (++frames_recues >= NB_FRAMES_MAX/2) flags |= GAOPDBK; } //si on recoit, c'est que l'autre est dans un etat bloque
 
-	if(buf[ind_buf++] == checksum)
+	if(buf[3] == checksum)
 	{
-		//appel++;
 		if (odid == ODIDSPECIAL) { flags &= ~GAOPBLK; frames_envoyees = 0; } //frame pour dire que l'on peut envoye
 		else if (tblassoc.getbyodid(odid) != NULL) tblassoc.getbyodid(odid)->Receive(cmd);
 		return true;
 	} else
 	{
-		//appel++;
 		std::cerr << "Erreur de transmition ! " << std::endl;
 		return false;
 	}

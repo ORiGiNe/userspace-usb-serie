@@ -22,17 +22,21 @@
  * l'arduino est de 128 octets. donc, TAILLE_MAX_FRAME * NB_FRAMES_MAX < 128
  * plus NB_FRAMES_MAX et grand, plus le programme est rapide, mais mon la
  * longeur des donnees pouvant etre envoyee est importante*/
-#define TAILLE_MAX_FRAME 12 /* 12 => 8 octets (12-INFOCPL) => 4 donnees (short int) */
+#define TAILLE_MAX_FRAME 14 /* 14 => 8 octets (14-INFOCPL) => 4 donnees (short int) */
 #define NB_FRAMES_MAX 10
 
 /* odid special utilise pour que le gaop du pc et le gaop de l'arduino communique entre eux
  * (frame d'authorisation d'emmission). L'odid est code sur 16 bit */
-#define ODIDSPECIAL 0xFFFF
+#define ODIDSPECIAL 0xFF
 
 /* taille des infromations complemetaires : 
+ * debut	1
  * taille	1
- * odid		2
- * checksum	1 */
-#define INFOCPL 4
+ * sequence 1
+ * checksum	1 
+ * odid		1
+ * fin		1
+ */
+#define INFOCPL 6
 
 #endif /*FICHIERDECONFIGURATION*/
