@@ -11,7 +11,7 @@
  *	\def	IAmNotOnThePandaBoard
  *	\brief	Indique si le code tourne sur arduino ou sur pc : include differents
  * 	et hacks trickys pour faire tourner du cpp sous l'arduino.
- *	A la compilation sur le pc, on passe la valeur de cette macro à 0 (-D inside). 
+ *	A la compilation sur le pc, on passe la valeur de cette macro à 0 (-D inside).
  */
 #ifndef IAmNotOnThePandaBoard
 #define IAmNotOnThePandaBoard 1
@@ -41,10 +41,10 @@ typedef unsigned char octet;
  **/
 typedef struct trame Trame;
 struct trame {
-	byte[MAX_TRAME_SIZE];
-	byte odid;
-	byte size;
-	byte seq;
+		byte[MAX_TRAME_SIZE];
+		byte odid;
+		byte size;
+		byte seq;
 };
 
 //TODO:a move + std::list
@@ -54,9 +54,9 @@ struct trame {
  */
 typedef struct listedLine ListedLine;
 struct listedFile {
-	Trame trame;
-	ListedFile* next;
-	octet number;
+		Trame trame;
+		ListedFile* next;
+		octet number;
 };
 
 /*!
@@ -77,7 +77,7 @@ struct listedFile {
  *	Il s'agit de :
  * taille	1o
  * odid		1o
- * checksum	1o 
+ * checksum	1o
  */
 #define INFOCPL 4
 
@@ -98,7 +98,7 @@ struct listedFile {
 	* \def TAILLE_MAX_FRAME
 	*	\brief Taille maximum autorisée pour une frame
 	* Cette valeur dépend de la constante INFOCPL, et du nombre de commandes
-	*	par frames.	
+	*	par frames.
 */
 #define TAILLE_MAX_FRAME (COMMAND_SIZE*NBR_COMMAND_FRAME)+INFOCPL
 
@@ -112,7 +112,7 @@ struct listedFile {
 
 //TODO:MOVE ME ON Gaop.h
 /*!
- *	\brief Definition des flags pour la gestions des threads "mutex" 
+ *	\brief Definition des flags pour la gestions des threads "mutex"
  */
 /*!
  *	\def GAOPBLK

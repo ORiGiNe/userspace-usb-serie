@@ -1,27 +1,23 @@
-#ifndef GAOPPROTOCOL
-#define GAOPPROTOCOL
+#ifndef GAOPPROTOCOL_H
+#define GAOPPROTOCOL_H
 
-#include "Peripherique.h" 
 #include "AbstractGaop.h"
-#include <WProgram.h> 
+#include "AssocPeriphOdid.h"
 
 /*!
  *	\class Gaop
  *	\brief GAOP is An ORiGiNe protocole
  *	GAOP coté arduino
  */
-class Gaop : public AbstractGaop
+class ArduinoGaop : public AbstractGaop
 {
 	public:
-		Gaop();
-    
-		~Gaop();
-		
-		void initialise(AssocPeriphOdid*);
+		ArduinoGaop();
+		~ArduinoGaop();
 
-		bool Send(Commande &c, unsigned short int odid); 		
-		
-		bool Receive(AssocPeriphOdid&);
+		void initialise(AssocPeriphOdid*);
+		bool send(Commande &c, unsigned short int odid);
+		bool receive(AssocPeriphOdid&);
 };
 
 #endif /*GAOPPROTOCOL */

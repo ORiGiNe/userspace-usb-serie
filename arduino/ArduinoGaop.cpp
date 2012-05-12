@@ -1,24 +1,25 @@
 #include "ArduinoGaop.h"
+#include <WProgram.h>
 
-Gaop::Gaop() : AbstractGaop()
+ArduinoGaop::ArduinoGaop() : AbstractGaop()
 {
 
 }
 
-Gaop::~Gaop()
+ArduinoGaop::~ArduinoGaop()
 {
 
 }
 
-void Gaop::initialise(AssocPeriphOdid *tblassoc)
+void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 {
-	Serial.begin(115200); //valeur maximal pour communication pc/arduino (http://arduino.cc/en/Serial/Begin) 
-  while (Serial.available() <= 0) //tant que personne ne nous demmande quoi que ce soit
+	Serial.begin(115200); //valeur maximal pour communication pc/arduino (http://arduino.cc/en/Serial/Begin)
+	while (Serial.available() <= 0) //tant que personne ne nous demmande quoi que ce soit
 		delay(250); // wait
 	
 	Serial.read(); //T'es la ?
 	Serial.write("y"); //Ok, je suis demare
-  while (Serial.read() != '?'); //enlever tout les signaux "es tu demaree ?"
+	while (Serial.read() != '?'); //enlever tout les signaux "es tu demaree ?"
 	//Serial.read(); //combien de device ?
 	Serial.write(tblassoc->getNbDevices()); //j'en ai x
 	
@@ -50,36 +51,36 @@ void Gaop::initialise(AssocPeriphOdid *tblassoc)
 	}
 }
 
-bool Gaop::Send(Commande& cmd, unsigned short int odid)
+bool ArduinoGaop::Send(Commande& cmd, unsigned short int odid)
 {
 	int ind_buf, i;
 
 	if (odid != ODIDSPECIAL)
 	{
 		ind_buf = prochain++;
-		unsigned long timeout = micros(); 
-	
-		// Tanr que ce n'est pas notre tour	
-		while (ind_buf != appel || flags & (GAOPBLK | GAOPSPE)  ) 
-		{ 
+		unsigned long timeout = micros();
+
+		// Tanr que ce n'est pas notre tour
+		while (ind_buf != appel || flags & (ArduinoGaopBLK | ArduinoGaopSPE)  )
+		{
 			if (micros() - timeout >= TIMEOUTSEC*1000000+TIMEOUTUSEC)
 			{
 				appel ++;
 				return false;
 			}
 			
-			delayMicroseconds(50); 
+			delayMicroseconds(50);
 		}
 	}
-	else 
+	else
 	{
-		flags |= GAOPSPE;
-		while (flags & GAOPSND)
-			delayMicroseconds(50); 
+		flags |= ArduinoGaopSPE;
+		while (flags & ArduinoGaopSND)
+			delayMicroseconds(50);
 	}
 	
 	// Envoi
-	flags |= GAOPSND;
+	flags |= ArduinoGaopSND;
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 	ind_buf = 0;
 	octet checksum = 0; //XOR SUM
@@ -99,27 +100,27 @@ bool Gaop::Send(Commande& cmd, unsigned short int odid)
 	buf[ind_buf++] = checksum;
 
 	Serial.write(buf, ind_buf*sizeof(octet));
-	if (odid != ODIDSPECIAL) 
+	if (odid != ODIDSPECIAL)
 	{
-		if (++frames_envoyees >= NB_FRAMES_MAX) 
-			flags |= GAOPBLK; //attente de disponiblilite
+		if (++frames_envoyees >= NB_FRAMES_MAX)
+			flags |= ArduinoGaopBLK; //attente de disponiblilite
 		appel++; //on a fini. Donc on appel le suivant
 	}
 	else
-		flags &= ~GAOPSPE;
+		flags &= ~ArduinoGaopSPE;
 	
-	flags &= ~GAOPSND;
+	flags &= ~ArduinoGaopSND;
 	return true;
 }
 
-bool Gaop::Receive(AssocPeriphOdid& tblassoc) 
+bool ArduinoGaop::Receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
 	unsigned short int odid;
-	if (flags & GAOPDBK)
+	if (flags & ArduinoGaopDBK)
 	{
 		Send(cmd, ODIDSPECIAL);
-		flags &= ~GAOPDBK;
+		flags &= ~ArduinoGaopDBK;
 		frames_recues = 0;
 	} //pret a recevoir
 	
@@ -127,7 +128,7 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 	//while (i != appel) { delayMicroseconds(50); }
 	int nb_donnees;
 	if (Serial.available() <= 0)
-	{ 
+	{
 		/*appel++;*/
 		return false;
 	}
@@ -150,7 +151,7 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 	if (odid != ODIDSPECIAL)
 	{
 		if (++frames_recues >= NB_FRAMES_MAX)
-			flags |= GAOPDBK;
+			flags |= ArduinoGaopDBK;
 	} //si on recoit, c'est que l'autre est dans un etat bloque
 	
 	if (checksum == Serial.read())
@@ -158,14 +159,14 @@ bool Gaop::Receive(AssocPeriphOdid& tblassoc)
 		//appel++; //on a fini. Donc, on appel le suivant
 		if (odid == ODIDSPECIAL)
 		{
-			flags &= ~GAOPBLK;
+			flags &= ~ArduinoGaopBLK;
 			frames_envoyees = 0;
 		} //a recut une frame de debloquage
 		else if (tblassoc.getbyodid(odid) != NULL)
 			tblassoc.getbyodid(odid)->Receive(cmd);
 		
 		return true;
-	} 
+	}
 	else
 	{
 		//appel++; //on a fini. Donc, on appel le suivant

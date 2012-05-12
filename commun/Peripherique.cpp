@@ -1,11 +1,12 @@
 #include "Peripherique.h"
+
 #if IAmNotOnThePandaBoard
-  void __cxa_pure_virtual() { };
+void __cxa_pure_virtual() { };
 #endif
 
 Peripherique::Peripherique(int odid) 
 { 
-	this->odid = odid; 
+	this->odid = odid;
 	this->g = NULL;
 }
 
@@ -13,7 +14,6 @@ int Peripherique::getOdid()
 {
 	return odid;
 }
-
 
 void Peripherique::associe(AbstractGaop* g)
 {
@@ -68,7 +68,7 @@ Peripherique* AssocPeriphOdid::operator[](int n)
 		return NULL;
 }
 
-Peripherique* AssocPeriphOdid::getbyodid(int odid)
+Peripherique* AssocPeriphOdid::getByODID(int odid)
 {
 	for (int i = 0; i < taille; i++)
 	{
@@ -84,7 +84,7 @@ void AssocPeriphOdid::rm(int odid)
 	{
 		if (t[i]->getOdid() == odid)
 		{
-			t[i] = NULL; 
+			t[i] = NULL;
 			break;
 		}
 	}

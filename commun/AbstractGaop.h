@@ -4,12 +4,14 @@
  *	\file AbstractGaop.h
  *	\brief Déclaration de l'abstract Gaop : header commun
  */
+
 #include "Config.h"
+#include "AssocPeriphOdid.h"
 #include "Commande.h"
 
 /*!
  *	\class AbstractGaop
- *	\brief Classe commune pour l'arduino et et le pc 
+ *	\brief Classe commune pour l'arduino et et le pc
  * 	On définit ici les attributs et méthodes communes du Gaop
  */
 class AbstractGaop
@@ -20,9 +22,9 @@ class AbstractGaop
 			*/
 		AbstractGaop();
 
-		/*! 
+		/*!
 		 * 	\brief Initialisation du GAOP
-		 * 	Le protocole de communication au démarrage est le suivant : 
+		 * 	Le protocole de communication au démarrage est le suivant :
 		 * 	PC => slave : je suis démarré, tu es prêt?
 		 * 	PC <= slave : Oui
 		 * 	PC => slave : Combien as-tu de devices ?
@@ -36,7 +38,7 @@ class AbstractGaop
 		 *	end
 		 */
 
-		 /* Coté PC:
+		/* Coté PC:
 		 * PC : '>' Je suis demare. Tu es pret
 		 * '?' : Tu as combien de devices ?
 		 * 'i' : donne moi l'odid du device i
@@ -53,9 +55,9 @@ class AbstractGaop
 		 *	\brief Envoi de donnée
 		 *	@param &c : Commande a envoyer
 		 *	@param odid : ODID auquel la commande est envoyee
-		 *	@return : False en cas d'echec d'envoi 
+		 *	@return : False en cas d'echec d'envoi
 		 */
-		virtual bool Send(Commande &c, unsigned short int odid) = 0; 		
+		virtual bool send(Commande &c, unsigned short int odid) = 0;
 		
 		/*!
 		 * 	\brief : Réception de commande
@@ -63,9 +65,9 @@ class AbstractGaop
 		 * Cette méthode tourne en boucle, elle permet de recevoir les données.
 		 * A la réception des données, celui-ci envoi au bon device (l'odid est dans la commande) via sa méthode Receive (TODO:changer ce nom)
 		 */
-		virtual bool Receive(AssocPeriphOdid&);
+		virtual bool receive(AssocPeriphOdid&);
 
-	private:
+	protected:
 		/*!
 			* Construction du checksum
 			*/

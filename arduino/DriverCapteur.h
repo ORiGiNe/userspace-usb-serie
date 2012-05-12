@@ -1,5 +1,5 @@
-#ifndef DRIVERCAPTEUR
-#define DRIVERCAPTEUR
+#ifndef DRIVERCAPTEUR_H
+#define DRIVERCAPTEUR_H
 
 class DriverCapteur
 {

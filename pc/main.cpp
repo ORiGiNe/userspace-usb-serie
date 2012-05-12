@@ -1,5 +1,5 @@
 #include <iostream>
-#include "GaopProtocol.h"
+#include "gaopfactory.h"
 #include "Effecteur.h"
 #include "Capteur.h"
 using namespace std;
@@ -9,22 +9,22 @@ using namespace std;
 int main()
 {
 	AssocPeriphOdid tblassoc;
-	Gaop g("/dev/ttyACM0");  // Pour Arduino UNO
-//	Gaop g("/dev/ttyUSB0");  // Pour Arduino Duemilanove
+	AbstractGaop *g = new GaopFactory("/dev/ttyACM0");  // Pour Arduino UNO
+	//	Gaop g("/dev/ttyUSB0");  // Pour Arduino Duemilanove
 
 	Effecteur led1(0);		//declaration de la led ayant l'odid 0
-//	Capteur uson(1);        //ultrason a l'odid 1
-//	Effecteur servo1(2);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
-//	Effecteur servo2(3);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
-		tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
-//	tblassoc.add(&uson);
-//	tblassoc.add(&servo1);	
-//	tblassoc.add(&servo2);	
-	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
+	//	Capteur uson(1);        //ultrason a l'odid 1
+	//	Effecteur servo1(2);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
+	//	Effecteur servo2(3);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
+	tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
+	//	tblassoc.add(&uson);
+	//	tblassoc.add(&servo1);
+	//	tblassoc.add(&servo2);
+	g->initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 
- 
 
-/*	while (true)
+
+	/*	while (true)
 	{
 		cout << "Servo 2 - Aller : " << servo2.set(0) << endl;
 		cout << "Servo 1 - Aller : " << servo1.set(180) << endl;
@@ -38,7 +38,7 @@ int main()
 */
 
 
-/* lire indéfiniement les valeurs de l'ultrason *//*
+	/* lire indéfiniement les valeurs de l'ultrason *//*
 	while (true)
 	Effecteur led1(0);		//declaration de la led ayant l'odid 0
 	Capteur uson1(1);        //ultrason a l'odid 1
@@ -46,9 +46,9 @@ int main()
 	tblassoc.add(&uson1);
 	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 
- 	TEST ULTRASONS I2C
+	TEST ULTRASONS I2C
 	int val_neg = 0, inter;
-	struct timespec avant, apres; 
+	struct timespec avant, apres;
 	clock_gettime(CLOCK_REALTIME, &avant);
 
 	for (int i = 0; i < 1500; i++)
@@ -57,7 +57,7 @@ int main()
 		if (inter < 0) val_neg++;
 		cout << inter << endl;
 	}
-		
+
 	clock_gettime(CLOCK_REALTIME, &apres);
 	if (apres.tv_nsec - avant.tv_nsec < 0) //retenue
 	{
@@ -68,21 +68,21 @@ int main()
 	}
 	cout << "valeures negative : " << inter << endl;
 */
-//	Boucle infini jour/nuit
+	//	Boucle infini jour/nuit
 	while (true)
 	{
 		led1.set(1);
 		usleep(1000*1000);
-		led1.set(0); 
+		led1.set(0);
 		usleep(1000*1000);
 	}
 
-/*//allume une led puis s'arrete
+	/*//allume une led puis s'arrete
 	led1.set(1);
 	sleep(3);
 */	
 
-/*// rapidite
+	/*// rapidite
 	time_t nb_sec = time(NULL);
 	for (unsigned long i = 0; i < 10000; i++)
 	{

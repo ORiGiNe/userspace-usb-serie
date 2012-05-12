@@ -1,5 +1,5 @@
-#ifndef TRIGGERECHO
-#define TRIGGERECHO
+#ifndef TRIGGERECHO_H
+#define TRIGGERECHO_H
 
 #include "DriverCapteur.h"
 
@@ -13,4 +13,5 @@ class TriggerEcho : public DriverCapteur
 		int trigger;
 		int echo;
 };
+
 #endif /*TRIGGERECHO*/
