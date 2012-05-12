@@ -1,5 +1,7 @@
 #include <iostream>
 #include "gaopfactory.h"
+#include "PCGaop.h"
+#include "AssocPeriphOdid.h"
 #include "Effecteur.h"
 #include "Capteur.h"
 using namespace std;
@@ -9,8 +11,8 @@ using namespace std;
 int main()
 {
 	AssocPeriphOdid tblassoc;
-	AbstractGaop *g = new GaopFactory("/dev/ttyACM0");  // Pour Arduino UNO
-	//	Gaop g("/dev/ttyUSB0");  // Pour Arduino Duemilanove
+	//AbstractGaop *g = new GaopFactory("/dev/ttyACM0");  // Pour Arduino UNO
+	PCGaop g("/dev/ttyACM0");
 
 	Effecteur led1(0);		//declaration de la led ayant l'odid 0
 	//	Capteur uson(1);        //ultrason a l'odid 1
@@ -20,7 +22,7 @@ int main()
 	//	tblassoc.add(&uson);
 	//	tblassoc.add(&servo1);
 	//	tblassoc.add(&servo2);
-	g->initialise(&tblassoc); //initailiation des devices au bon gaop protocol
+	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 
 
 

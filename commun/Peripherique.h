@@ -10,7 +10,6 @@
 
 #if IAmNotOnThePandaBoard
 extern "C" void __cxa_pure_virtual();
-#include <WProgram.h> //to have HIGH, LOW, digitalWrite, digitalRead, Serial.*, ...
 #endif
 
 class Peripherique
@@ -24,13 +23,13 @@ class Peripherique
 		bool operation(); //fait l'operation distante
 		
 		/* N'ont pas besoin d'etre wrapper sous urbi */
-		virtual void Receive(Commande&) = 0; //peripherique recoit des donnees
+		virtual void receive(Commande&) = 0; //peripherique recoit des donnees
 
 		/**
 			* @param g
 			Gaop a associer au peripherique
 		*/
-		void associe(AbstractGaop* g); //dit au peripherique d'uitliser l'objet gaop g
+		void associe(AbstractGaop* g); 
 	protected:
 		int odid; //Numero unique identifiant le peripherique
 		Commande cmd;

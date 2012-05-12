@@ -5,7 +5,6 @@
 
 #include <pthread.h>	/*pthread_* */
 
-
 /*!
  *	\class Gaop
  *	\brief GAOP is An ORiGiNe protocole

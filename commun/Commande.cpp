@@ -1,4 +1,6 @@
 #include "Commande.h"
+#include "Config.h"
+#include <stdlib.h>
 
 Commande::Commande()
 {

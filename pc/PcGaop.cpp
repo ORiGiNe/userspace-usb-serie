@@ -1,4 +1,5 @@
 #include "PCGaop.h"
+#include "AssocPeriphOdid.h"
 
 #include <sys/stat.h>	/*open*/
 #include <fcntl.h>		/*open*/
@@ -9,7 +10,6 @@
 #include <iostream>		/*cerr, cout, endl*/
 #include <cstring>		/*strerr*/
 #include <cerrno>		/*errno*/
-#include <WProgram.h> //to have HIGH, LOW, digitalWrite, digitalRead, Serial.*, ...
 
 /*!
 *	Constructeur du protocole GAOP coté PC
@@ -54,7 +54,7 @@ PCGaop::~PCGaop()
 }
 
 /*!
- * Thread qui appellera en boucle la fonction Receive du GAOP
+ * Thread qui appellera en boucle la fonction receive du GAOP
  * avec son tableau d'ODID.
  * Ce thread est tué par le destructeur du GAOP
  */
@@ -65,8 +65,8 @@ void* run_gaop(void* arg)
 	
 	while (true)
 	{
-		((Gaop*)(argv[0]))->
-				Receive( *((AssocPeriphOdid*)(argv[1])) );
+		((PCGaop*)(argv[0]))->
+				receive( *((AssocPeriphOdid*)(argv[1])) );
 		nanosleep(&t, NULL);
 	}
 	
@@ -104,7 +104,7 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 		while( read(device, r, 1) == 0);
 		odid = r[0]; // FIXME l'identifiant est codé sur 1 octet et non 2 (pour les specs, c'est 2 à ce qu'on m'a dit)
 
-		if (tblassoc->getbyodid(odid) != NULL) //je regarde si je le connais
+		if (tblassoc->getByODID(odid) != NULL) //je regarde si je le connais
 		{
 			write(device, "t", 1); // test son fonctionnement (et desactive le si il ne marche pas) XXX:magie du saint-esprit ?
 			while( read(device, r, 1) == 0);
@@ -112,7 +112,7 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 				tblassoc->rm(odid); //suppression par odid
 			else
 				//ca marche bien. je dis au peripherique qu'il peut m'utiliser
-				tblassoc->getbyodid(odid)->associe(this);
+				tblassoc->getByODID(odid)->associe(this);
 		}
 		else
 			write(device, "x", 1); //je ne le connais pas. desactive le
@@ -124,7 +124,7 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 	pthread_create(&fils, NULL, run_gaop, pthreadarg);
 }
 
-bool PCGaop::Send(Commande &cmd, octet odid)
+bool PCGaop::send(Commande &cmd, octet odid)
 {
 	/*Si odid == ODIDSPECIAL, on envoie une trame special de debloquage. Cette trame ne
 	 * doit pas faire la queue et doit passer en mode prioritaire. Elle suit
@@ -195,7 +195,7 @@ bool PCGaop::Send(Commande &cmd, octet odid)
 	return (octets_envoye == taille_trame);
 }
 
-bool PCGaop::Receive(AssocPeriphOdid& tblassoc)
+bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 {
 	Commande cmd;
 	octet odid;
@@ -205,7 +205,7 @@ bool PCGaop::Receive(AssocPeriphOdid& tblassoc)
 	
 	if (flags & GAOPDBK)
 	{
-		Send(cmd, ODIDSPECIAL);
+		send(cmd, ODIDSPECIAL);
 		flags &= ~GAOPDBK;
 		frames_recues = 0; //pret a recevoir
 	} 
@@ -240,11 +240,12 @@ bool PCGaop::Receive(AssocPeriphOdid& tblassoc)
 			flags &= ~GAOPBLK;
 			frames_envoyees = 0;
 		} //frame pour dire que l'on peut envoye
-		else if (tblassoc.getbyodid(odid) != NULL)
+		else if (tblassoc.getByODID(odid) != NULL)
 		{
 			if (++frames_recues >= NB_FRAMES_MAX) flags |= GAOPDBK;
-			tblassoc.getbyodid(odid)->Receive(cmd);
+			tblassoc.getByODID(odid)->Receive(cmd);
 		}
+		
 		return true;
 	}
 	else
