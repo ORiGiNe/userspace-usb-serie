@@ -60,7 +60,7 @@ bool ArduinoGaop::Send(Commande& cmd, unsigned short int odid)
 		ind_buf = prochain++;
 		unsigned long timeout = micros();
 
-		// Tanr que ce n'est pas notre tour
+		// Tant que ce n'est pas notre tour
 		while (ind_buf != appel || flags & (ArduinoGaopBLK | ArduinoGaopSPE)  )
 		{
 			if (micros() - timeout >= TIMEOUTSEC*1000000+TIMEOUTUSEC)
@@ -79,27 +79,13 @@ bool ArduinoGaop::Send(Commande& cmd, unsigned short int odid)
 			delayMicroseconds(50);
 	}
 	
-	// Envoi
 	flags |= ArduinoGaopSND;
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
-	ind_buf = 0;
-	octet checksum = 0; //XOR SUM
-	buf[ind_buf] = cmd.getTaille()*sizeof(short int) + INFOCPL;
-	checksum ^= buf[ind_buf++];
-	buf[ind_buf++] = odid / 0x100;
-	checksum ^= odid / 0x100;
-	buf[ind_buf++] = odid % 0x100;
-	checksum ^= odid % 0x100;
-	for (i = 0; i < cmd.getTaille(); i++)
-	{
-		buf[ind_buf] = cmd[i] / 0x100;
-		checksum ^= buf[ind_buf++];
-		buf[ind_buf] = cmd[i] % 0x100;
-		checksum ^= buf[ind_buf++];
-	}
-	buf[ind_buf++] = checksum;
+	
+	// Envoi
+	create_trame(buf, cmd, odid);
+	Serial.write(buf, taille_trame*sizeof(octet));	
 
-	Serial.write(buf, ind_buf*sizeof(octet));
 	if (odid != ODIDSPECIAL)
 	{
 		if (++frames_envoyees >= NB_FRAMES_MAX)
@@ -121,55 +107,52 @@ bool ArduinoGaop::Receive(AssocPeriphOdid& tblassoc)
 	{
 		Send(cmd, ODIDSPECIAL);
 		flags &= ~ArduinoGaopDBK;
-		frames_recues = 0;
-	} //pret a recevoir
-	
-	int i; //= prochain++;
-	//while (i != appel) { delayMicroseconds(50); }
+		frames_recues = 0; //pret a recevoir
+	} 	
+	int i; 
 	int nb_donnees;
-	if (Serial.available() <= 0)
+	if (Serial.available() < 6) //pas assez pour faire une trame
 	{
-		/*appel++;*/
 		return false;
 	}
 
+	octet buf[TAILLE_MAX_FRAME];
+
 	while((octet)Serial.available() < Serial.peek()); //tant que tous les octets ne sont pas arrives.
 	
-	nb_donnees = Serial.read(); //taille de la frame
-	octet checksum = 0;
-	checksum ^= nb_donnees;
-	nb_donnees = (nb_donnees - INFOCPL)/sizeof(short int);
-	odid = Serial.read()*0x100 + Serial.read();
-	checksum ^= (odid / 0x100 ) ^ (odid % 0x100);
-
-	for (i = 0; i < nb_donnees; i++)
-	{
-		cmd[i] = Serial.read() * 0x100 + Serial.read();
-		checksum ^= (cmd[i] / 0x100) ^ (cmd[i] % 0x100);
+	//recuperation de l'entete
+	while ((buf[0] = Serial.read()) != BEGIN_FRAME); //synchronisation entete
+	for (int i = 1; i < 4; i++)
+	{ //recuperation du reste de l'entete
+		buf[i] = Serial.read();
 	}
 	
-	if (odid != ODIDSPECIAL)
-	{
-		if (++frames_recues >= NB_FRAMES_MAX)
-			flags |= ArduinoGaopDBK;
-	} //si on recoit, c'est que l'autre est dans un etat bloque
+	//attendre que les octets arrivent
+	while (buf[2] + 2 < Serial.available()) delay(1);	
 	
-	if (checksum == Serial.read())
+	if (read_trame(trame, nb_donnees, cmd, odid))
 	{
-		//appel++; //on a fini. Donc, on appel le suivant
-		if (odid == ODIDSPECIAL)
+		if (odid != ODIDSPECIAL)
 		{
-			flags &= ~ArduinoGaopBLK;
-			frames_envoyees = 0;
-		} //a recut une frame de debloquage
-		else if (tblassoc.getbyodid(odid) != NULL)
-			tblassoc.getbyodid(odid)->Receive(cmd);
+			if (++frames_recues >= NB_FRAMES_MAX)
+				flags |= ArduinoGaopDBK;
+		} //si on recoit, c'est que l'autre est dans un etat bloque
 		
-		return true;
+		if (checksum == Serial.read())
+		{
+			if (odid == ODIDSPECIAL)
+			{
+				flags &= ~ArduinoGaopBLK;
+				frames_envoyees = 0;
+			} //a recut une frame de debloquage
+			else if (tblassoc.getbyodid(odid) != NULL)
+				tblassoc.getbyodid(odid)->Receive(cmd);
+			
+			return true;
+		}
 	}
 	else
 	{
-		//appel++; //on a fini. Donc, on appel le suivant
 		return false;
 	}
 }

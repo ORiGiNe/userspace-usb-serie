@@ -20,7 +20,7 @@ class PCGaop : public AbstractGaop
 
         void initialise(AssocPeriphOdid*);
 
-        bool send(Commande &c, unsigned short int odid);
+        bool send(Commande &c, octet odid);
 
         bool receive(AssocPeriphOdid&);
 

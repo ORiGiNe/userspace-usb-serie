@@ -57,32 +57,62 @@ class AbstractGaop
 		 *	@param odid : ODID auquel la commande est envoyee
 		 *	@return : False en cas d'echec d'envoi
 		 */
-		virtual bool send(Commande &c, unsigned short int odid) = 0;
+		virtual bool send(Commande &c, octet odid) = 0;
 		
 		/*!
 		 * 	\brief : Réception de commande
 		 *	@return : False en cas d'echec de réception
 		 * Cette méthode tourne en boucle, elle permet de recevoir les données.
-		 * A la réception des données, celui-ci envoi au bon device (l'odid est dans la commande) via sa méthode Receive (TODO:changer ce nom)
+		 * A la réception des données, celui-ci envoi au bon device (l'odid est dans la commande) via sa méthode receive (TODO:changer ce nom)
 		 */
 		virtual bool receive(AssocPeriphOdid&);
 
 	protected:
 		/*!
-			* Construction du checksum
-			*/
-
-		/*!
-		 * Vérification du checksum
+		 * Création du checksum
+		 * \brief : cree le checksum d'une trame
+		 * @desc : somme XOR sur toute la trame
+		 * @param trame : trame sur laquelle faire le calcul
+		 * @param taille : taille total de la trame
+		 * @return : renvoie le resultat du xor (sur 1 octet)
 		 */
+		 octet create_checksum( octet *trame, int taille); 
 
 		/*!
 		 * Construction de la trame
+		 * trame =>
+		 *	D = 1o : constante de debut
+		 *	seq = 1o : n° sequence => relation d'ordre
+		 *	t = 1o : taille data
+		 *	odid = 1o : odid du periph
+		 *	data = t*1o
+		 *	CS = 1o : checksum == checkxor
+		 *	F = 1o : constante de fin
+		 *  
+		 *  \brief prend les donnees data et les encapsules dans trames. 
+		 *  Calcul aussi le checksum, et le met au bon endroit
+		 *  @param data : donnees a envoyes
+		 *  @param trame : trame a construire. doit etre suffisament grande pour
+		 *  acceuilir les encapsulations et les donnees.
+		 *  @param odid : identifiant du peripherique emetteur
+		 *  @return : taille de la trame
 		 */
+		 int create_trame(octet *trame, commande &data, octet  odid); 
+
 
 		/*!
 		 * Lecture de la trame
+		 * \desc Stocke dans data la trames lues
+		 * @param trame : Ce qui est effectivement recue
+		 * @param taille : taille de la trame
+		 * @param data : Si la trame est correcte, cette objet contiendra les
+		 * donnes recues. Dans le cas contraire, rien ne sera mis dans cet objet
+		 * et la fonction returnera la valeur fausse.
+		 * @param odid : contiendra l'identifiant du peripherique a qui les
+		 * donnees s'addressent.
+		 * @return : renvoie faux si la trames et incorrect, vrai sinon
 		 */
+		 bool read_trame(octet *trame, int taille, commande &data, octet &odid);
 		
 		octet prochain; //prochain numero disponible (% 256)
 		octet appel; //candidat appele
