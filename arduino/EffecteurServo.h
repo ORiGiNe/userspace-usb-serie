@@ -2,7 +2,7 @@
 #define EFFECTEURSERVO_H
 
 #include "DriverEffecteur.h"
-#include "Servo/Servo.h"
+#include <Servo.h>
 
 class EffecteurServo : public DriverEffecteur
 {

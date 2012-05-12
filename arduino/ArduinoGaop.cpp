@@ -51,7 +51,7 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 	}
 }
 
-bool ArduinoGaop::Send(Commande& cmd, unsigned short int odid)
+bool ArduinoGaop::send(Commande& cmd, unsigned short int odid)
 {
 	int ind_buf, i;
 
@@ -60,8 +60,8 @@ bool ArduinoGaop::Send(Commande& cmd, unsigned short int odid)
 		ind_buf = prochain++;
 		unsigned long timeout = micros();
 
-		// Tanr que ce n'est pas notre tour
-		while (ind_buf != appel || flags & (ArduinoGaopBLK | ArduinoGaopSPE)  )
+		// Tant que ce n'est pas notre tour
+		while (ind_buf != appel || flags & (GAOPBLK | GAOPSPE)  )
 		{
 			if (micros() - timeout >= TIMEOUTSEC*1000000+TIMEOUTUSEC)
 			{
@@ -74,13 +74,13 @@ bool ArduinoGaop::Send(Commande& cmd, unsigned short int odid)
 	}
 	else
 	{
-		flags |= ArduinoGaopSPE;
-		while (flags & ArduinoGaopSND)
+		flags |= GAOPSPE;
+		while (flags & GAOPSND)
 			delayMicroseconds(50);
 	}
 	
 	// Envoi
-	flags |= ArduinoGaopSND;
+	flags |= GAOPSND;
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 	ind_buf = 0;
 	octet checksum = 0; //XOR SUM
@@ -103,24 +103,24 @@ bool ArduinoGaop::Send(Commande& cmd, unsigned short int odid)
 	if (odid != ODIDSPECIAL)
 	{
 		if (++frames_envoyees >= NB_FRAMES_MAX)
-			flags |= ArduinoGaopBLK; //attente de disponiblilite
+			flags |= GAOPBLK; //attente de disponiblilite
 		appel++; //on a fini. Donc on appel le suivant
 	}
 	else
-		flags &= ~ArduinoGaopSPE;
+		flags &= ~GAOPSPE;
 	
-	flags &= ~ArduinoGaopSND;
+	flags &= ~GAOPSND;
 	return true;
 }
 
-bool ArduinoGaop::Receive(AssocPeriphOdid& tblassoc)
+bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
 	unsigned short int odid;
-	if (flags & ArduinoGaopDBK)
+	if (flags & GAOPDBK)
 	{
-		Send(cmd, ODIDSPECIAL);
-		flags &= ~ArduinoGaopDBK;
+		send(cmd, ODIDSPECIAL);
+		flags &= ~GAOPDBK;
 		frames_recues = 0;
 	} //pret a recevoir
 	
@@ -151,7 +151,7 @@ bool ArduinoGaop::Receive(AssocPeriphOdid& tblassoc)
 	if (odid != ODIDSPECIAL)
 	{
 		if (++frames_recues >= NB_FRAMES_MAX)
-			flags |= ArduinoGaopDBK;
+			flags |= GAOPDBK;
 	} //si on recoit, c'est que l'autre est dans un etat bloque
 	
 	if (checksum == Serial.read())
@@ -159,11 +159,11 @@ bool ArduinoGaop::Receive(AssocPeriphOdid& tblassoc)
 		//appel++; //on a fini. Donc, on appel le suivant
 		if (odid == ODIDSPECIAL)
 		{
-			flags &= ~ArduinoGaopBLK;
+			flags &= GAOPBLK;
 			frames_envoyees = 0;
 		} //a recut une frame de debloquage
-		else if (tblassoc.getbyodid(odid) != NULL)
-			tblassoc.getbyodid(odid)->Receive(cmd);
+		else if (tblassoc.getByODID(odid) != NULL)
+			tblassoc.getByODID(odid)->receive(cmd);
 		
 		return true;
 	}

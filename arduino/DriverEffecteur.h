@@ -1,6 +1,8 @@
 #ifndef DRIVEREFFECTEUR_H
 #define DRIVEREFFECTEUR_H
 
+#include <WProgram.h>
+
 class DriverEffecteur
 {
 	public:

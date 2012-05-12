@@ -53,5 +53,3 @@ int AssocPeriphOdid::getNbDevices()
 {
 	return taille;
 }
-
-

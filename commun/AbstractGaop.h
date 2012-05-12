@@ -64,7 +64,7 @@ class AbstractGaop
 		 * 	\brief : Réception de commande
 		 *	@return : False en cas d'echec de réception
 		 * Cette méthode tourne en boucle, elle permet de recevoir les données.
-		 * A la réception des données, celui-ci envoi au bon device (l'odid est dans la commande) via sa méthode Receive (TODO:changer ce nom)
+		 * A la réception des données, celui-ci envoi au bon device (l'odid est dans la commande) via sa méthode receive
 		 */
 		virtual bool receive(AssocPeriphOdid&) = 0;
 

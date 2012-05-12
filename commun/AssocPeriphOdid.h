@@ -7,7 +7,7 @@ class AssocPeriphOdid //associe un odid a un peripherique
 {
 	public:
 		AssocPeriphOdid();
-		virtual ~AssocPeriphOdid();
+		~AssocPeriphOdid();
 
 		void add(Peripherique*);
 		void rm(int odid); //desactive le peripherique odid

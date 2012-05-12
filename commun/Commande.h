@@ -8,7 +8,7 @@ class Commande
 {
 	public:
 		Commande();
-		virtual ~Commande();
+		~Commande();
 		
 		short int& operator[](unsigned int i);
 		//taille de la ieme commande (0 si non dispo)

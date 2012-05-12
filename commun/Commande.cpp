@@ -4,8 +4,8 @@
 
 Commande::Commande()
 {
-	this->tbl = NULL;
-	this->taille = 0;
+	tbl = NULL;
+	taille = 0;
 }
 
 Commande::~Commande()

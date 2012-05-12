@@ -1,5 +1,5 @@
 #include "EffecteurServo.h"
-#include "Servo/Servo.h"
+#include <Servo.h>
 
 EffecteurServo::EffecteurServo(int pin[], int nbr)
 {
