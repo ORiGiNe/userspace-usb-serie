@@ -6,8 +6,9 @@
  */
 
 #include "Config.h"
-#include "AssocPeriphOdid.h"
 #include "Commande.h"
+
+class AssocPeriphOdid;
 
 /*!
  *	\class AbstractGaop
@@ -49,7 +50,7 @@ class AbstractGaop
 		 * <other> :  other data
 		 */
 
-		virtual void initialise(AssocPeriphOdid*);
+		virtual void initialise(AssocPeriphOdid*) = 0;
 
 		/*!
 		 *	\brief Envoi de donnée
@@ -65,7 +66,7 @@ class AbstractGaop
 		 * Cette méthode tourne en boucle, elle permet de recevoir les données.
 		 * A la réception des données, celui-ci envoi au bon device (l'odid est dans la commande) via sa méthode Receive (TODO:changer ce nom)
 		 */
-		virtual bool receive(AssocPeriphOdid&);
+		virtual bool receive(AssocPeriphOdid&) = 0;
 
 	protected:
 		/*!
