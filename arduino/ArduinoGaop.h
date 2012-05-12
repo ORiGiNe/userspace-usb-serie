@@ -16,7 +16,7 @@ class ArduinoGaop : public AbstractGaop
 		~ArduinoGaop();
 
 		void initialise(AssocPeriphOdid*);
-		bool send(Commande &c, octet odid);
+		bool send(Commande &cmd, octet odid);
 		bool receive(AssocPeriphOdid&);
 };
 

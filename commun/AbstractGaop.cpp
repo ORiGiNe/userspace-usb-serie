@@ -9,7 +9,7 @@ AbstractGaop::AbstractGaop()
 	this->frames_envoyees = 0;
 }
 
-octet create_checksum( octet *trame, int taille)
+octet AbstractGaop::create_checksum( octet *trame, int taille)
 {
 	octet checksum = 0;
 	for (int i = 0; i < taille; i++)
@@ -23,7 +23,7 @@ octet create_checksum( octet *trame, int taille)
 	return checksum;
 }
 
-int create_trame(octet *trame, commande &data, octet odid)
+int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
 {
 	static octet seq = 0;
 	int i = 0;
@@ -44,7 +44,7 @@ int create_trame(octet *trame, commande &data, octet odid)
 	return i+2;
 }
 
-bool read_trame(octet *trame, int taille, commande &data, octet &odid)
+bool AbstractGaop::read_trame(octet *trame, int taille, Commande &data, octet &odid)
 {
 	//d'abord, on verfie que tout est correcte
 	
@@ -61,7 +61,7 @@ bool read_trame(octet *trame, int taille, commande &data, octet &odid)
 	
 	//maintenant, on extrait
 	odid = trame[3];
-	for (int i = 0; i < taille[2]; i+=2)
+	for (int i = 0; i < trame[2]; i+=2)
 	{
 		data[i] = trame[i+4]*0x100 + trame[i+5];
 	}

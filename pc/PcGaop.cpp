@@ -192,7 +192,7 @@ bool PCGaop::send(Commande &cmd, octet odid)
 	
 	flags &= ~GAOPSND; //fin de l'emmission
 	
-	return (octets_envoye == taille_trame);
+	return (octets_envoyes == taille_trame);
 }
 
 bool PCGaop::receive(AssocPeriphOdid& tblassoc)
@@ -219,7 +219,7 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		}
 		else if (nb_donnees < 4)
 		{ //recuperation de l'entete
-			i = read(device, buf+1, 4 - nb_donnees)
+			i = read(device, buf+1, 4 - nb_donnees);
 		}
 		else //lit le reste = data + fin
 			i = read(device, buf+nb_donnees, (buf[2]+2)*(sizeof(octet)));
@@ -233,7 +233,7 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 	} while (nb_donnees != buf[0] && i >= 0);
 
 
-	if (read_trame(trame, nb_donnees, cmd, odid))
+	if ( read_trame(buf, nb_donnees, cmd, odid) )
 	{ //trame OK
 		if (odid == ODIDSPECIAL)
 		{
@@ -243,7 +243,7 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		else if (tblassoc.getByODID(odid) != NULL)
 		{
 			if (++frames_recues >= NB_FRAMES_MAX) flags |= GAOPDBK;
-			tblassoc.getByODID(odid)->Receive(cmd);
+			tblassoc.getByODID(odid)->receive(cmd);
 		}
 		
 		return true;

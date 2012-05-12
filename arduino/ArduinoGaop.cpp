@@ -51,7 +51,7 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 	}
 }
 
-bool ArduinoGaop::send(Commande& cmd, unsigned short int odid)
+bool ArduinoGaop::send(Commande& cmd, octet odid)
 {
 	int ind_buf, i;
 
@@ -84,7 +84,7 @@ bool ArduinoGaop::send(Commande& cmd, unsigned short int odid)
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 	
 	// Envoi
-	create_trame(buf, cmd, odid);
+	int taille_trame = create_trame(buf, cmd, odid);
 	Serial.write(buf, taille_trame*sizeof(octet));	
 
 	if (odid != ODIDSPECIAL)
@@ -103,7 +103,7 @@ bool ArduinoGaop::send(Commande& cmd, unsigned short int odid)
 bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
-	unsigned short int odid;
+	octet odid;
 	if (flags & GAOPDBK)
 	{
 		send(cmd, ODIDSPECIAL);
@@ -133,26 +133,17 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	//attendre que les octets arrivent
 	while (buf[2] + 2 < Serial.available()) delay(1);	
 	
-	if (read_trame(trame, nb_donnees, cmd, odid))
+	if (read_trame(buf, nb_donnees, cmd, odid))
 	{
 		if (odid != ODIDSPECIAL)
 		{
 			if (++frames_recues >= NB_FRAMES_MAX)
-				flags |= ArduinoGaopDBK;
-		} //si on recoit, c'est que l'autre est dans un etat bloque
-		
-		if (checksum == Serial.read())
-		{
-			if (odid == ODIDSPECIAL)
-			{
-				flags &= ~ArduinoGaopBLK;
-				frames_envoyees = 0;
-			} //a recut une frame de debloquage
-			else if (tblassoc.getbyodid(odid) != NULL)
-				tblassoc.getbyodid(odid)->Receive(cmd);
+				flags |= GAOPDBK;
+		} //a recut une frame de debloquage
+		else if (tblassoc.getByODID(odid) != NULL)
+			tblassoc.getByODID(odid)->receive(cmd);
 			
-			return true;
-		}
+		return true;
 	}
 	else
 	{
