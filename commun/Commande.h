@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include "Config.h"
 
-typedef unsigned char octet;
 class Commande
 {
 	public:

@@ -9,15 +9,32 @@ Peripherique::Peripherique(int odid)
 	this->g = NULL;
 }
 
-int Peripherique::getOdid() { return odid; }
+int Peripherique::getOdid()
+{
+	return odid;
+}
 
-void Peripherique::associe(AbstractGaop* g) { this->g = g; } //dit au peripherique d'utiliser l'objet gaop g
 
-bool Peripherique::test() { return true; } //test le fonctionnenment du peripherique, et renvoie faux si il ne marche pas
+void Peripherique::associe(AbstractGaop* g)
+{
+	this->g = g;
+} 
 
+// TODO evolution future
+//test le fonctionnenment du peripherique, et renvoie faux si il ne marche pas
+bool Peripherique::test()
+{
+	return true;
+} 
+
+/**
+	Effectue l'operation a l'aide de la methode Send de GAOP
+*/
 bool Peripherique::operation()
 {
-	if (g == NULL) return false;
+	if (g == NULL)
+		return false;
+	
 	bool ret = g->Send(cmd, odid);
 	return ret;
 }
@@ -26,13 +43,14 @@ bool Peripherique::operation()
 
 AssocPeriphOdid::AssocPeriphOdid()
 {
-	t = NULL;
-	taille = 0;
+	this->t = NULL;
+	this->taille = 0;
 }
 
 AssocPeriphOdid::~AssocPeriphOdid()
 {
-	if (t) free(t);
+	if (t)
+		free(t);
 }
 
 void AssocPeriphOdid::add(Peripherique *p)
@@ -44,15 +62,18 @@ void AssocPeriphOdid::add(Peripherique *p)
 
 Peripherique* AssocPeriphOdid::operator[](int n)
 {
-	if (n >= 0 &&  n < taille) return t[n];
-	else return NULL;
+	if (n >= 0 &&  n < taille)
+		return t[n];
+	else
+		return NULL;
 }
 
 Peripherique* AssocPeriphOdid::getbyodid(int odid)
 {
 	for (int i = 0; i < taille; i++)
 	{
-		if (t[i]->getOdid() == odid) return t[i];
+		if (t[i]->getOdid() == odid)
+			return t[i];
 	}
 	return NULL;
 }
@@ -61,7 +82,11 @@ void AssocPeriphOdid::rm(int odid)
 {
 	for (int i = 0; i < taille; i++)
 	{
-		if (t[i]->getOdid() == odid) {t[i] = NULL; break;}
+		if (t[i]->getOdid() == odid)
+		{
+			t[i] = NULL; 
+			break;
+		}
 	}
 }
 

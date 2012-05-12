@@ -2,6 +2,7 @@
 #define OrIgInE_Device
 #include "AbstractGaop.h"
 #include "Commande.h"
+//TODO:doxygen
 /* Cette classe est une classe generique de peripherique tout peripherique
  * Le code de ce bidule sera different cote arduino et cote pc
  */
@@ -23,12 +24,17 @@ class Peripherique
 		
 		/* N'ont pas besoin d'etre wrapper sous urbi */
     	virtual void Receive(Commande&) = 0; //peripherique recoit des donnees
+
+		/**
+			* @param g
+			Gaop a associer au peripherique
+		*/
 		void associe(AbstractGaop* g); //dit au peripherique d'uitliser l'objet gaop g
 	protected:
 		int odid; //Numero unique identifiant le peripherique
 		Commande cmd;
 	private:
-		AbstractGaop* g; //gaop
+		AbstractGaop* g; 
 
 };
 

@@ -5,18 +5,9 @@
  * Le code se veut commun aux slaves et aux devices. Un adaptateur de type 
  * sera eventuellement mis place cote de l'arduino/fpga. 
  */
-/*  La trame est cree au fur est a mesure de l'envoie.
+/*  La trame est cree au fur est a mesure de l'envoi.
  *  Il y a une trame par commande.
  *  Exemple : envoye(a_quoi: moteur, arg1, arg2, ...)
- *  detail du protocol GAOP, GAOP is an origine protocol :
- *  taille de la frame					//8 bits
- *  odid du peripherique				//16 bits
- *  octet 1.1							//8 bits =>1.1 et 1.2 definissient un ushort
- *  octet 1.2							//8 bits
- *  octet 2.1							//8 bits
- *  octet 2.2							//8 bits
- *  ...
- *  checksum (ou checkxor plutot)		//8 bits
  */
 /* on a la bonne frame ssi l'octet 0 == DEBUT et le dernier octet lu == FIN */
 
@@ -38,23 +29,19 @@
 #else
 	#include <WProgram.h> //to have HIGH, LOW, digitalWrite, digitalRead, Serial.*, ...
 #endif
-
-/* Definition des flags pour la gestions des threads "mutex" */
-#define GAOPBLK 0b00000001 /*0x01 emissions bloquees*/
-#define GAOPDBK 0b00000010 /*0x02 emissions de l'autre machine (distante bloquees) */
-#define GAOPSND 0b00000100 /*0x04 emission en cours */
-#define GAOPSPE 0b00001000 /*0x08 trame speciale en cours pour debloquer (odid == 0xFF) */
-
-/* Une commande est vu comme une chaine de carartere. */
-/* Chaque peripheriques < devices > connait un gaop (passer via la fonction initialise) */
+/*!
+ *	\class Gaop
+ *	\brief GAOP is An ORiGiNe protocole
+ *	Un GAOP est associé à un device (arduino) exclusivement
+ */
 class Gaop : public AbstractGaop
 {
 	public:
-		#if !IAmNotOnThePandaBoard
-                Gaop(const char *device); //"/dev/ttyACM0"
-		#else
-                Gaop();
-        #endif
+			#if !IAmNotOnThePandaBoard
+				Gaop(const char *device); 
+			#else
+				Gaop();
+			#endif
         ~Gaop();
 		
 		/* 
@@ -89,12 +76,7 @@ class Gaop : public AbstractGaop
 		#endif
 		/* Le drivers est thread safe. on met en place un systeme de priorite du
 		 * du style premier arrive = premier servi. */
-		octet prochain; //prochain numero disponible (% 256)
-		octet appel; //candidat appele
-		octet flags; //GAOPSPE, GAOPBLK, GAOPDBK, GAOPSND
-		octet frames_envoyees;
-		octet frames_recues;
-
+		
 };
 
 #endif /*GAOPPROTOCOL */

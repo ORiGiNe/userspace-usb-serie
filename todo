@@ -1,7 +1,13 @@
-exemple avec un effecteur (servo moteur)
-implémenter les drivers des effecteurs (servos, asserv)
+Evolutions prévues:
+- faire 2 branches : une spécifique pour les UObjects & une pour une implementation seule (avec scripts d'exemples)
+- metaprogrammer le code a l'aide d'un fichier de config (voir spec pcslavegestiondevice.pdf)
+- utilisation de leds pour vérifier le bon fonctionnement des devices
 
 REIMPLEMENTATION:
+
+todo apres fonctionnement:
+renommage massif
+
 specs en plus:
 trame =>
 * D = 1o : constante de debut
@@ -12,7 +18,7 @@ trame =>
 * data = t*1o
 * F = 1o : constante de fin
 
-ack : nécessaire ? pas convaincu (Skelz)
+ack
 
 implementation:
 typedef struct trame Trame;
@@ -30,6 +36,17 @@ struct trame {
 	byte size;
 	byte seq;
 };
+
+on stocke la fonction nous permettant d'ecrire et lire pour refactor si posssible
+fonction de construction de trame
+instanciation automatique des devices ? NON
+Commande => GTS
+
+relu:
+config.h
+assocperiph
+periph
+capteur/effecteur
 
 howto:
 creer nos propres write & read x 2 : arduino & panda

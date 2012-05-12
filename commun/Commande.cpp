@@ -2,13 +2,14 @@
 
 Commande::Commande()
 {
-	tbl = NULL;
-	taille = 0;
+	this->tbl = NULL;
+	this->taille = 0;
 }
 
 Commande::~Commande()
 {
-	if (tbl) free(tbl);
+	if (tbl)
+		free(tbl);
 }
 
 short int& Commande::operator[](unsigned int i)
@@ -25,4 +26,3 @@ int Commande::getTaille() const
 {
 	return taille;
 }
-
