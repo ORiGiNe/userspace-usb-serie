@@ -4,7 +4,7 @@
 /*!
  *	\file Config.h
  *	\brief Header de configuration global (pc et arduino)
- *	\author L. Delmaire & Rémy
+ *	\author L. Delmaire & R. Malmartel
  */
 
 /*!
@@ -60,19 +60,16 @@ struct listedFile {
 };
 
 /*!
- *	\def TIMEOUTSEC
- *	\brief Delai de timeout en seconde
- *	Ce délai doit etre suffisament long pour que les capteurs ai le temps de répondre
- */
-#define TIMEOUTSEC 1
-/**
- *	\def TIMEOUTUSEC
- *	\brief Delai de timeout en µ-seconde
- *	Ce délai doit etre suffisament long pour que les capteurs ai le temps de répondre
- */
-//FIXME:wtf != ?
-#define TIMEOUTUSEC 25000
-//XXX
+ *	\def BEGIN_FRAME
+ *	\brief Octet de début de frame
+*/
+#define BEGIN_FRAME 0xFF
+
+/*!
+ *	\def END_FRAME
+ *	\brief Octet de début de frame
+*/
+#define END_FRAME 0xFF
 
 /*!
  *	\def INFOCPL
@@ -145,5 +142,19 @@ struct listedFile {
  * L'odid est code sur 8 bits.
  */
 #define ODIDSPECIAL 0xFF
+
+/*!
+ *	\def TIMEOUTSEC
+ *	\brief Delai de timeout en seconde
+ *	Ce délai doit etre suffisament long pour que les capteurs ai le temps de répondre
+ */
+#define TIMEOUTSEC 1
+/**
+ *	\def TIMEOUTUSEC
+ *	\brief Delai de timeout en µ-seconde
+ *	Ce délai doit etre suffisament long pour que les capteurs ai le temps de répondre
+ */
+//FIXME:wtf != ?
+#define TIMEOUTUSEC 25000
 
 #endif /*FICHIERDECONFIGURATION*/

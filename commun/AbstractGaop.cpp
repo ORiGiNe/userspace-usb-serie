@@ -2,9 +2,9 @@
 
 AbstractGaop::AbstractGaop()
 {
-	prochain = 0;
-	appel = 0;
-	flags = 0;
-	frames_recues = 0;
-	frames_envoyees = 0;
+	this->prochain = 0;
+	this->appel = 0;
+	this->flags = 0;
+	this->frames_recues = 0;
+	this->frames_envoyees = 0;
 }

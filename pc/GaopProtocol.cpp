@@ -1,26 +1,27 @@
-#include "GaopProtocol.h"
+#include "PCGaop.h"
 
-/**
-	\brief{Implementation du GAOP coté PC}
-	\author{Skelz0r, Rémy}
-*/
-
-/**
-*	Constructeur du protocole GAOP
+/*!
+*	Constructeur du protocole GAOP coté PC
 *	@param peripherique : Chemin absolu du device special
-* Ouverture du fichier	
+* - Ouverture du device
+* - Set des paramètres liés à la communication série
+* - Création de la structure du thread qui bouclera en réception
 */
 Gaop::Gaop(const char *peripherique) : AbstractGaop() 
 {
 	pthreadarg = new void*[2];
 
-	device = open(peripherique, O_RDWR | O_NOCTTY | O_SYNC ); // TODO:ouverture peut-être plus tricky => fonction aux
+	// TODO: Toucher aux diverses options pour faire fonctionner sur arm & x86
+	device = open(peripherique, O_RDWR | O_NOCTTY | O_SYNC ); 
+
+	// Mauvais device : arrêt
 	if (device < 0) 
 	{
 		std::cerr << strerror(errno) << std::endl;
-		throw strerror(errno); //on n'essaye pas de poursuivre
+		throw strerror(errno);
 	}
 	
+	// Définition des attributs du terminal
 	struct timespec now = {2, 0}; //wait 1 sec
 	nanosleep(&now, NULL);
 	struct termios options;
@@ -33,7 +34,7 @@ Gaop::Gaop(const char *peripherique) : AbstractGaop()
 Gaop::~Gaop()
 {
 	if (fils)
-		pthread_kill(fils, SIGUSR1); //maintenant c'est fini
+		pthread_kill(fils, SIGUSR1); 
 	
 	if (device >= 0)
 		close(device);
@@ -41,6 +42,11 @@ Gaop::~Gaop()
 	delete[] pthreadarg;
 }
 
+/*!
+ * Thread qui appellera en boucle la fonction Receive du GAOP
+ * avec son tableau d'ODID.
+ * Ce thread est tué par le destructeur du GAOP
+ */
 void* run_gaop(void* arg)
 {
 	struct timespec t = {0, 10000}; //10 microsecondes
@@ -51,26 +57,14 @@ void* run_gaop(void* arg)
 		((Gaop*)(argv[0]))->
 			Receive( *((AssocPeriphOdid*)(argv[1])) );
 		nanosleep(&t, NULL);
-	} //jusqu'a ce que je recoive un signal stop !
+	} 
 	
 	return NULL;
 }
 
 void Gaop::initialise(AssocPeriphOdid *tblassoc)
 {
-	/* Protocole de communication : 
-	 * PC:
-	 * '>' : Je suis demare. Tu es pret
-	 * '?' : Tu as combien de devices ?
-	 * 'i' : donne moi l'odid du device i
-	 * 't' : test son fonctionnement
-	 * ARDUINO:
-	 * 'y' : oui
-	 * 'n' : non
-	 * <other> :  other data
-	 */
-
-	/* DEBUG: afficher les devices enregistrées et les trames attendues IMPOSSIBRU */
+		/* DEBUG: afficher les devices enregistrées et les trames attendues IMPOSSIBRU */
 	/*#ifdef DEBUG
 		for (int i = 0 ; i < tblassoc->taille ; i++)
 		{

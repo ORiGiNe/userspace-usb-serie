@@ -1,4 +1,4 @@
-#include "GaopProtocol.h"
+#include "ArduinoGaop.h"
 
 Gaop::Gaop() : AbstractGaop()
 {

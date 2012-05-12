@@ -10,6 +10,7 @@ void Effecteur::Receive(Commande& c)
 	driver->set(c[0]);
 }
 
+// FIXME Intérêt de cette méthode ?
 bool Effecteur::set(int val)
 {
 	return driver->set(val);

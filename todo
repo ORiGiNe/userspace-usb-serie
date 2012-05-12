@@ -13,9 +13,9 @@ trame =>
 * D = 1o : constante de debut
 * seq = 1o : n° sequence => relation d'ordre
 * t = 1o : taille data
-* CS = 1o : checksum == checkxor
 * odid = 1o : odid du periph
 * data = t*1o
+* CS = 1o : checksum == checkxor
 * F = 1o : constante de fin
 
 ack
