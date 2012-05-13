@@ -1,7 +1,7 @@
-#ifndef LEDOrIgInE
-#define LEDOrIgInE
-#include "DriverEffecteur.h" 
-#include <WProgram.h>
+#ifndef LED_H
+#define LED_H
+
+#include "DriverEffecteur.h"
 
 class Led : public DriverEffecteur
 {
