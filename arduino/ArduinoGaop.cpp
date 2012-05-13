@@ -113,7 +113,7 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	Commande cmd;
 	octet odid = 0;
 	
-	// On n'effectue aucune opération, on peut donc recevoir.
+	// Si l'arduino est bloqué, on l'a débloque en envoyant une trame spéciale de déblocage
 	if (flags & GAOPDBK)
 	{
 		send(cmd, ODIDSPECIAL);
@@ -171,7 +171,7 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 		{
 			if (++frames_recues >= NB_FRAMES_MAX)
 				flags |= GAOPDBK;
-		} //a recu une trame de debloquage
+		} 
 		else
 		{
 			flags &= ~GAOPBLK;

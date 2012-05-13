@@ -232,42 +232,64 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 
 	do	
 	{
+		// Début d'une trame
 		if (nb_donnees == 0)
 		{
 			// On boucle tant que l'on n'a pas un début de trame
-			i = read(device, buf, 1);
+			i = read(device, buf, 1*sizeof(octet));
 
 			if (buf[0] != BEGIN_TRAME && i>= 0)
 				continue;
 		}
-		else if (nb_donnees < 4)
-		{ //recuperation de l'entete
-			i = read(device, buf+1, 4 - nb_donnees);
+		// Récupération de l'entête
+		else if (nb_donnees < INFOCPL_DEBUT)
+		{ 
+			i = read(device, buf+nb_donnees, (INFOCPL_DEBUT - nb_donnees)*(sizeof(octet)));
 		}
 		else //lit le reste = data + fin
-			i = read(device, buf+nb_donnees, (buf[2]+2)*(sizeof(octet)));
+			i = read(device, buf+nb_donnees, (buf[2]+INFOCPL_FIN)*(sizeof(octet)));
 			
 		nb_donnees += i;
+		/*
+			FIXME: Fail de lecture répétées
+		*/
+		struct timespec towait;
+		towait.tv_sec = 0;
+		towait.tv_nsec = 50000; //50 microsecondes
+		nanosleep(&towait, NULL);
+
+#ifdef DEBUG
+				cout << "DEBUG PCGaop::send : Nombre de données lues via read : " << nb_donnees << endl;
+		cout << "Derniere valeur de i : " << i << endl;
+		if (nb_donnees >= 2 )
+			cout << "Nombre de données attendues : " << (buf[2] + INFOCPL) <<endl;
+#endif
 		
 		if (nb_donnees == 0 || i < 0 || nb_donnees > TAILLE_MAX_FRAME)
 		{
+#ifdef DEBUG
+			cout << "DEBUG PCGaop::send : fail de read" << endl;
+#endif
 			return false;
 		}
-	} while (nb_donnees != buf[0] && i >= 0);
+	} while (nb_donnees != (buf[2]+INFOCPL) && i >= 0);
 
 	// On essaye de lire cette trame
 	if ( read_trame(buf, cmd, odid) )
 	{ 
 		#if DEBUG
-			for (int j=0 ; j < buf[2] ; j++)
-				cout << buf[i] << endl;
+			cout << "DEBUG PCGaop::send : Succès de lecture de la trame" <<endl;
 		#endif
 
 		if (odid == ODIDSPECIAL)
 		{
+		#if DEBUG
+			cout << "DEBUG PCGaop::send : ODID spécial" <<endl;
+		#endif
+
 			flags &= ~GAOPBLK;
 			frames_envoyees = 0;
-		} //frame pour dire que l'on peut envoye
+		} 
 		else if (tblassoc.getByODID(odid) != NULL)
 		{
 			if (++frames_recues >= NB_FRAMES_MAX) flags |= GAOPDBK;
