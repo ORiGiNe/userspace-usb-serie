@@ -2,14 +2,14 @@
 #define DEBUG_H
 
 #ifdef ORIGINE_ARDUINO
-#define debug(args)
+#  define debug(args)
 #else
-#include <iostream>
-#define debug(args) \
-	if (ORIGINE_DEBUG) \
-	{ \
-		std::cout << args; \
-	}
+#  ifdef ORIGINE_DEBUG
+#    include <iostream>
+#    define debug(args) std::cout << args;
+#  else
+#    define debug(args)
+#  endif
 #endif
 
 #endif // DEBUG_H
