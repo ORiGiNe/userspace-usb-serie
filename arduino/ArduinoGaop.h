@@ -7,7 +7,8 @@
 /*!
  *	\class Gaop
  *	\brief GAOP is An ORiGiNe protocole
- *	GAOP coté arduino
+ *	GAOP coté arduino.
+ *	Il n'y a pas de thread (impossibru), ainsi le code est linéaire.
  */
 class ArduinoGaop : public AbstractGaop
 {

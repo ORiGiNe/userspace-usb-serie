@@ -1,6 +1,11 @@
 #include "PCGaop.h"
 #include "AssocPeriphOdid.h"
 
+#if DEBUG
+using namespace std;
+#include <iostream>
+#endif
+
 #include <sys/stat.h>	/*open*/
 #include <fcntl.h>		/*open*/
 #include <signal.h>		/*kill*/
@@ -75,27 +80,21 @@ void* run_gaop(void* arg)
 
 void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 {
-	/* DEBUG: afficher les devices enregistrées et les trames attendues IMPOSSIBRU */
-	/*#ifdef DEBUG
-		for (int i = 0 ; i < tblassoc->taille ; i++)
-		{
-	*/
 	/* demade au slave (aduino) des informations sur ces devices (capteurs / effecteurs) */
 	octet r[1] =  {0}; // FIXME Remplacer par un pointeur vers un octet, au moins, on sait ce qu'on fait comme ça
 	int x = 0; // x correspond au nombre de read sans rien à la base, mais plus à rien maintenant
 	octet odid;
 
 	//attente d'une connexion
-	while (r[0] == 0 && x < 100)
-	{
-		write(device, ">", 1);	//Je suis demare. Tu es pret ?
-		while(read(device, r, 1) == 0);	//Oui
-		x++;
-	} // FIXME x ne peut pas etre superieur à 1, à cause du while | Skelz : agreed, on jarte
-	//	if (x > 100) throw "connection timed out";
+	write(device, ">", 1);	//Je suis demare. Tu es pret ?
+	while(read(device, r, 1) == 0);	//Oui
+	
 	write(device, "?", 1);	//Tu as combien de peripheriques ? // FIXME, voir wiki pour voir si c'est le vrai pb
 	while (read(device, r, 1) == 0);		//J'en ai x
 	x = r[0];
+#ifdef DEBUG
+	cout << "DEBUG Gaop::initialise : Nombre de devices : " << x << endl;
+#endif
 	for (int i = 0; i < x; i++)
 	{
 		//Donne moi l'ODID du device i si il marche, 0 sinon
@@ -106,13 +105,26 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 
 		if (tblassoc->getByODID(odid) != NULL) //je regarde si je le connais
 		{
+#if DEBUG
+			cout << "DEBUG Gaop::initialise : odid :" << (int)(tblassoc->getByODID(odid)->getOdid());
+#endif
 			write(device, "t", 1); // test son fonctionnement (et desactive le si il ne marche pas) XXX:magie du saint-esprit ?
 			while( read(device, r, 1) == 0);
 			if (r[0] != 'y') //si ca marche pas
+			{
+#if DEBUG
+			cout << " supprimé" <<endl;
+#endif
 				tblassoc->rm(odid); //suppression par odid
+			}
 			else
+			{
+#if DEBUG
+			cout << " activé" <<endl;
+#endif
 				//ca marche bien. je dis au peripherique qu'il peut m'utiliser
 				tblassoc->getByODID(odid)->associe(this);
+			}
 		}
 		else
 			write(device, "x", 1); //je ne le connais pas. desactive le
@@ -129,12 +141,15 @@ bool PCGaop::send(Commande &cmd, octet odid)
 	/*Si odid == ODIDSPECIAL, on envoie une trame special de debloquage. Cette trame ne
 	 * doit pas faire la queue et doit passer en mode prioritaire. Elle suit
 	 * donc une autre procedure pour prendre un "ticket" */
+
 	int numero; //notre numero dans la file d'attente
 	struct timespec apres, towait;
+	
 	if (odid != ODIDSPECIAL)
 	{
 		numero = prochain++;
 		clock_gettime(CLOCK_REALTIME, &apres);
+
 		while (numero != appel || flags & (GAOPBLK | GAOPSPE)) //tant que ce n'est pas notre tour ou qu'il y a trop de monde
 		{
 			clock_gettime(CLOCK_REALTIME, &towait);
@@ -170,15 +185,20 @@ bool PCGaop::send(Commande &cmd, octet odid)
 			nanosleep(&towait, NULL); //qqn emmet => attente
 		
 	}
+
 	// Emission et construction
 	flags |= GAOPSND; //dire qu'il y a qqn qui emet
-	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
+	octet buf[TAILLE_MAX_FRAME];
 
 	int taille_trame = create_trame(buf, cmd, odid);
 	
 	int octets_envoyes = write(device, buf, taille_trame*sizeof(octet));
 	//tcdrain(device); //attendre que c'est bien envoye
 	
+	#if DEBUG && !IAmNotOnThePandaBoard
+		cout << "Nombre octets envoyés : " << octets_envoyes << endl;
+	#endif
+
 	//l'apres devient l'avant
 	if (odid != ODIDSPECIAL)
 	{
@@ -199,23 +219,26 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 {
 	Commande cmd;
 	octet odid;
-	//int ind_buf = 0;
 	octet buf[TAILLE_MAX_FRAME];
-	int i, nb_donnees;
+	int i, nb_donnees = 0;
 	
+	// On indique que l'on est prêt à recevoir si c'est débloqué
 	if (flags & GAOPDBK)
 	{
 		send(cmd, ODIDSPECIAL);
 		flags &= ~GAOPDBK;
 		frames_recues = 0; //pret a recevoir
 	} 
-	
-	do	//attendre que les octets arrivent
+
+	do	
 	{
 		if (nb_donnees == 0)
 		{
+			// On boucle tant que l'on n'a pas un début de trame
 			i = read(device, buf, 1);
-			if (buf[0] != BEGIN_FRAME && i>= 0) continue; //syncronisation sur une debut
+
+			if (buf[0] != BEGIN_TRAME && i>= 0)
+				continue;
 		}
 		else if (nb_donnees < 4)
 		{ //recuperation de l'entete
@@ -232,9 +255,14 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		}
 	} while (nb_donnees != buf[0] && i >= 0);
 
+	// On essaye de lire cette trame
+	if ( read_trame(buf, cmd, odid) )
+	{ 
+		#if DEBUG
+			for (int j=0 ; j < buf[2] ; j++)
+				cout << buf[i] << endl;
+		#endif
 
-	if ( read_trame(buf, nb_donnees, cmd, odid) )
-	{ //trame OK
 		if (odid == ODIDSPECIAL)
 		{
 			flags &= ~GAOPBLK;

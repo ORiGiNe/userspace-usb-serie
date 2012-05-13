@@ -2,7 +2,7 @@
 
 #include <time.h>
 
-Capteur::Capteur(int odid) : Peripherique(odid)
+Capteur::Capteur(octet odid) : Peripherique(odid)
 {
 	reponse = false;
 }

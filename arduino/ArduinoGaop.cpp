@@ -1,6 +1,14 @@
 #include "ArduinoGaop.h"
+#include "Config.h"
 #include <WProgram.h>
 
+#define DEBUG_ARD() {digitalWrite(13,HIGH); \
+	delay(500); \
+	digitalWrite(13,LOW); \
+	delay(1000); \
+}
+
+#define PRINT_ARD(oki) {     Serial.write(oki); Serial.println("oki"); }
 ArduinoGaop::ArduinoGaop() : AbstractGaop()
 {
 
@@ -103,50 +111,77 @@ bool ArduinoGaop::send(Commande& cmd, octet odid)
 bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
-	octet odid;
+	octet odid = 0;
+	
+	// On n'effectue aucune opération, on peut donc recevoir.
 	if (flags & GAOPDBK)
 	{
 		send(cmd, ODIDSPECIAL);
 		flags &= ~GAOPDBK;
 		frames_recues = 0;
-	} //pret a recevoir
+	}
 	
-	int i; //= prochain++;
 	//while (i != appel) { delayMicroseconds(50); }
 	int nb_donnees;
-	if (Serial.available() < 6) //pas assez pour faire une trame
-	{
-		return false;
-	}
 
+	// On attend d'avoir des données disponibles
+	if (Serial.available() <= 0) 
+		return false;
+
+	// On va récupérer la trame dans un buffer avec la taille max de frame
 	octet buf[TAILLE_MAX_FRAME];
 
-	while((octet)Serial.available() < Serial.peek()); //tant que tous les octets ne sont pas arrives.
-	
-	//recuperation de l'entete
-	while ((buf[0] = Serial.read()) != BEGIN_FRAME); //synchronisation entete
-	for (int i = 1; i < 4; i++)
-	{ //recuperation du reste de l'entete
-		buf[i] = Serial.read();
+	buf[0] = BEGIN_TRAME;
+	// On attend le début d'une trame
+	do
+	{
+		/* 
+			 FIXME: On attend seulement la taille minimale d'une frame pour la lire : la méthode available n'a pas tout le temps
+			 le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la taille directement. Cela va être génant plus loin
+		 */
+		while (Serial.available() <= INFOCPL+1)
+			delay(1);
+	} while (Serial.read() != buf[0]);	
+
+	int j;
+
+	// On récupère le début de cette trame (surtout la taille)
+	for (j = 1; j < INFOCPL_DEBUT-1; j++)
+	{
+		/*while (Serial.available() <= 0)
+			delay(1);*/
+
+		buf[j] = Serial.read();
 	}
 	
-	//attendre que les octets arrivent
-	while (buf[2] + 2 < Serial.available()) delay(1);	
+	// On connait la taille, on peut maintenant tout copier
+	while (j < buf[2]+INFOCPL)
+	{
+		/*while (Serial.available() <= 0)
+			delay(1);*/
+
+		buf[j] = Serial.read();
+		j++;
+	}
 	
-	if (read_trame(buf, nb_donnees, cmd, odid))
+	// On essaye de lire cette trame
+	if (read_trame(buf,cmd,odid)) 
 	{
 		if (odid != ODIDSPECIAL)
 		{
 			if (++frames_recues >= NB_FRAMES_MAX)
 				flags |= GAOPDBK;
-		} //a recut une frame de debloquage
-		else if (tblassoc.getByODID(odid) != NULL)
+		} //a recu une trame de debloquage
+		else
+		{
+			flags &= ~GAOPBLK;
+			frames_envoyees = 0;
+		}
+		if (tblassoc.getByODID(odid) != NULL)
 			tblassoc.getByODID(odid)->receive(cmd);
 			
 		return true;
 	}
 	else
-	{
 		return false;
-	}
 }

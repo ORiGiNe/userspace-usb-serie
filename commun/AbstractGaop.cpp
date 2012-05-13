@@ -1,25 +1,35 @@
 #include "AbstractGaop.h"
 
+#if DEBUG && !IAmNotOnThePandaBoard
+using namespace std;
+#include <iostream>
+
+void debug_affiche_trame(octet *trame, int taille)
+{
+	for(int i = 0 ; i < taille+INFOCPL ; i++)
+		 cout << (int)trame[i] << "-";
+	cout << endl;
+}
+#endif
+
 AbstractGaop::AbstractGaop()
 {
-	this->prochain = 0;
-	this->appel = 0;
-	this->flags = 0;
-	this->frames_recues = 0;
-	this->frames_envoyees = 0;
+	prochain = 0;
+	appel = 0;
+	flags = 0;
+	frames_recues = 0;
+	frames_envoyees = 0;
 }
 
 octet AbstractGaop::create_checksum( octet *trame, int taille)
 {
+	// On crée le checksum sur les taille-2 octets
 	octet checksum = 0;
-	for (int i = 0; i < taille; i++)
+	for (int i = 0; i < taille-2; i++)
 	{
 		checksum ^= trame[i];
 	}
 
-	//on a inclut le checksum dans le checksum, or c'est une valeur non definie
-	//Donc on le retire
-	checksum ^= trame[taille - 2]; //juste avant l'octet de fin
 	return checksum;
 }
 
@@ -28,10 +38,10 @@ int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
 	static octet seq = 0;
 	int i = 0;
 
-	trame[i++] = BEGIN_FRAME;
+	trame[i++] = BEGIN_TRAME;
 	trame[i++] = seq++;
-	trame[i++] = data.getTaille();
-    trame[i++] = odid;
+	trame[i++] = 2*data.getTaille(); //FIXME
+  trame[i++] = odid;
 	
 	for (int j = 0; j < data.getTaille(); j++)
 	{
@@ -39,34 +49,49 @@ int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
 		trame[i++] = data[j] % 0x100;
 	}
 
-	trame[i+1] = END_FRAME;
-	trame[i] = create_checksum(trame, data.getTaille() + 6 ); //6 = taille des donnees d'encapsulation
+	trame[i+1] = END_TRAME;
+	trame[i] = create_checksum(trame, 2*data.getTaille() + INFOCPL ); // FIXME
+	
+	#if DEBUG && !IAmNotOnThePandaBoard
+		cout << "DEBUG AbstractGaop::create_trame : Trame crée : (taille : " << i+2 << ")" << endl;
+		debug_affiche_trame(trame,trame[2]);
+	#endif
+
 	return i+2;
 }
 
-bool AbstractGaop::read_trame(octet *trame, int taille, Commande &data, octet &odid)
+bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
 {
-	//d'abord, on verfie que tout est correcte
-	
-	//tailles correctes
-	if (taille < 6) return false; //6 = donnee encapsulation
-	if (trame[2] + 6 != taille || taille % 2 != 0) return false; //mauvaise taille des donnees 
+	// Vérification minimale des données
+	// Octet fin
+	if (trame[0] != BEGIN_TRAME)
+		return false;
 
-	//octet debut / fin
-	if (trame[0] != BEGIN_FRAME) return false;
-	if (trame[taille-1] != END_FRAME) return false;
+	// On extrait la taille de la commande pour pouvoir travailler un minimum
+	int taille_cmd = trame[2];
 	
-	//checksum
-	if (create_checksum(trame, taille) != trame[taille-2]) return false;
+	if (trame[taille_cmd+INFOCPL-1] != END_TRAME)
+		return false;
+
+	if (taille_cmd > TAILLE_MAX_FRAME - INFOCPL)
+		return false;
+
+	// Checksum
+	if (create_checksum(trame, taille_cmd+INFOCPL) != trame[taille_cmd+INFOCPL-2])
+		return false;
 	
-	//maintenant, on extrait
+	// On peut maintenant extraire les informations
 	odid = trame[3];
-	for (int i = 0; i < trame[2]; i+=2)
+	for (int i = 0; i < taille_cmd/2; i++)
 	{
-		data[i] = trame[i+4]*0x100 + trame[i+5];
+		cmd[i] = trame[2*i+INFOCPL_DEBUT]*0x100 + trame[2*i+INFOCPL_DEBUT+1];
 	}
+
+	#if DEBUG && !IAmNotOnThePandaBoard
+		cout << "DEBUG AbstractGaop::read_trame : Trame lue : " << endl;
+		debug_affiche_trame(trame, taille_cmd);
+	#endif
 
 	return true;
 }
-
 

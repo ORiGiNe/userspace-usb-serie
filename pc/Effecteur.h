@@ -6,7 +6,7 @@
 class Effecteur : public Peripherique
 {
 	public:
-		Effecteur(int odid);
+		Effecteur(octet odid);
 		bool set(int valeur); //renvoie faux si echec de l'envoie de la valeur.
 		void receive(Commande&); //nothing
 };

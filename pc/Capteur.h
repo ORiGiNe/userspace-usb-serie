@@ -9,7 +9,7 @@ on ne recupere qu'un octet (cf Receive), cette methode Receive est appelée par 
 class Capteur : public Peripherique
 {
 	public:
-		Capteur(int odid);
+		Capteur(octet odid);
 		int get();  //renvoie -32768 si timeout expirer
 		void receive(Commande&); //traitement de la réponse au get
 	private:

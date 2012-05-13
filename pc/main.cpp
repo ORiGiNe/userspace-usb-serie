@@ -1,5 +1,4 @@
 #include <iostream>
-#include "gaopfactory.h"
 #include "PCGaop.h"
 #include "AssocPeriphOdid.h"
 #include "Effecteur.h"

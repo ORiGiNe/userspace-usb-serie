@@ -1,6 +1,6 @@
 #include "Effecteur.h"
 
-Effecteur::Effecteur(int oidi) : Peripherique(oidi)
+Effecteur::Effecteur(octet odid) : Peripherique(odid)
 {
 
 }

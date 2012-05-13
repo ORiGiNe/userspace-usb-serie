@@ -27,27 +27,44 @@
  */
 typedef unsigned char octet;
 /*!
- *	\def BEGIN_FRAME
- *	\brief Octet de début de frame
+ *	\def BEGIN_TRAME
+ *	\brief Octet de début de trame
 */
-#define BEGIN_FRAME 0xFF
+#define BEGIN_TRAME 0xFF
 
 /*!
- *	\def END_FRAME
- *	\brief Octet de début de frame
+ *	\def END_TRAME
+ *	\brief Octet de début de trame
 */
-#define END_FRAME 0xFF
+#define END_TRAME 0xFF
+
+/*!
+ *	\def INFOCPL_DEBUT
+ *	\brief Entete d'une trame
+ * Il s'agit de
+ * debut 1o
+ * taille	1o
+ * odid		1o
+ * séquence 1o
+*/
+#define INFOCPL_DEBUT 4 
+
+/*!
+ *	\def INFOCPL_DEBUT
+ *	\brief Entete d'une trame
+ * Il s'agit de
+ * checksum 1o
+ * debut 1o
+*/
+#define INFOCPL_FIN 2 
 
 /*!
  *	\def INFOCPL
  *	\brief Taille en octet des informations complémentaires
  *	Il s'agit de :
- * taille	1o
- * odid		1o
- * séquence 1o
- * checksum	1o
+ *  * debut et fin 2o
  */
-#define INFOCPL 4
+#define INFOCPL INFOCPL_DEBUT + INFOCPL_FIN
 
 /*!
  *	\def COMMAND_SIZE
@@ -60,7 +77,7 @@ typedef unsigned char octet;
  *	\def NBR_COMMAND_FRAME
  *	\brief Nombre de commandes par frame
 */
-#define NBR_COMMAND_FRAME 6
+#define NBR_COMMAND_FRAME_MAX 6
 
 /*!
 	* \def TAILLE_MAX_FRAME
@@ -68,7 +85,7 @@ typedef unsigned char octet;
 	* Cette valeur dépend de la constante INFOCPL, et du nombre de commandes
 	*	par frames.
 */
-#define TAILLE_MAX_FRAME (COMMAND_SIZE*NBR_COMMAND_FRAME)+INFOCPL
+#define TAILLE_MAX_FRAME (COMMAND_SIZE*NBR_COMMAND_FRAME_MAX)+INFOCPL
 
 /*!
 *	\def NB_FRAMES_MAX
@@ -98,7 +115,6 @@ struct trame {
 		octet seq;
 };
 
-//TODO:a move + std::list
 /*!
  *	\struct listedLine
  *	\brief Définition d'une liste chainée pour manipulation aisée des trames

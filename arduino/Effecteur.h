@@ -7,7 +7,7 @@
 class Effecteur : public AbstractEffecteur
 {
 	public:
-		Effecteur(int odid,  DriverEffecteur*);
+		Effecteur(octet odid,  DriverEffecteur*);
 		bool set(int valeur);
 		void receive(Commande&);
 };

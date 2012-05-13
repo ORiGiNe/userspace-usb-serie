@@ -5,13 +5,13 @@
 void __cxa_pure_virtual() { };
 #endif
 
-Peripherique::Peripherique(int odid) 
+Peripherique::Peripherique(octet odid) 
 { 
 	this->odid = odid;
 	this->g = NULL;
 }
 
-int Peripherique::getOdid()
+octet Peripherique::getOdid()
 {
 	return odid;
 }

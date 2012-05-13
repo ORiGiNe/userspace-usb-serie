@@ -10,10 +10,10 @@ class AssocPeriphOdid //associe un odid a un peripherique
 		~AssocPeriphOdid();
 
 		void add(Peripherique*);
-		void rm(int odid); //desactive le peripherique odid
+		void rm(octet odid); //desactive le peripherique odid
 		Peripherique* operator[](int n); //nieme element (pour tout parcourrir) (constant)
 		int getNbDevices(); //renvoie le nombre de devices
-		Peripherique* getByODID(int  odid); //recherche par identifiant (lineaire)
+		Peripherique* getByODID(octet odid); //recherche par identifiant (lineaire)
 
 	private:
 		Peripherique **t;

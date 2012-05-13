@@ -98,7 +98,7 @@ class AbstractGaop
 		 *  @param odid : identifiant du peripherique emetteur
 		 *  @return : taille de la trame
 		 */
-		 int create_trame(octet *trame, Commande &data, octet  odid); 
+		 int create_trame(octet *trame, Commande &data, octet odid); 
 
 
 		/*!
@@ -113,7 +113,7 @@ class AbstractGaop
 		 * donnees s'addressent.
 		 * @return : renvoie faux si la trames et incorrect, vrai sinon
 		 */
-		 bool read_trame(octet *trame, int taille, Commande &data, octet &odid);
+		 bool read_trame(octet *trame, Commande &data, octet &odid);
 		
 		octet prochain; //prochain numero disponible (% 256)
 		octet appel; //candidat appele

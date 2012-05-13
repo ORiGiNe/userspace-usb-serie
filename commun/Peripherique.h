@@ -15,9 +15,9 @@ extern "C" void __cxa_pure_virtual();
 class Peripherique
 {
 	public:
-		Peripherique(int odid); //constructeur par default temporaire -> URBI
+		Peripherique(octet odid); //constructeur par default temporaire -> URBI
 		
-		int getOdid();
+		octet getOdid();
 		
 		virtual bool test(); //test le fonctionnement. Renvoie faux si ne marche pas
 		bool operation(); //fait l'operation distante
@@ -31,7 +31,7 @@ class Peripherique
 		*/
 		void associe(AbstractGaop* g); 
 	protected:
-		int odid; //Numero unique identifiant le peripherique
+		octet odid; //Numero unique identifiant le peripherique
 		Commande cmd;
 	private:
 		AbstractGaop* g;

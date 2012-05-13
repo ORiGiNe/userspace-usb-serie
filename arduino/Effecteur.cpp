@@ -1,6 +1,6 @@
 #include "Effecteur.h"
 
-Effecteur::Effecteur(int odid, DriverEffecteur *driver) : AbstractEffecteur(odid)
+Effecteur::Effecteur(octet odid, DriverEffecteur *driver) : AbstractEffecteur(odid)
 {
 	this->driver = driver;
 }
