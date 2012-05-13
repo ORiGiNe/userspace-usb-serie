@@ -3,7 +3,7 @@
 Led::Led(int pin)
 {
 	this->pin = pin;
-	pinMode(pin, OUTPUT); 
+	pinMode(pin, OUTPUT);
 }
 
 bool Led::set(int val)
@@ -14,4 +14,3 @@ bool Led::set(int val)
 		digitalWrite(pin, HIGH);
 	return true;
 }
-

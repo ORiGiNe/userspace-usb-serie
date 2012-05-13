@@ -1,5 +1,5 @@
 #include <iostream>
-#include "GaopProtocol.h"
+#include "gaopfactory.h"
 #include "Effecteur.h"
 #include "Capteur.h"
 #include <ctime>
@@ -10,14 +10,14 @@ using namespace std;
 int main()
 {
 	AssocPeriphOdid tblassoc;
-	Gaop g("/dev/ttyACM0");
+	AbstractGaop *g = GaopFactory.CreateGaop("/dev/ttyACM0");
 	Capteur uson(1);        //ultrason a l'odid 1
-	tblassoc.add(&uson);	
-	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
+	tblassoc.add(&uson);
+	g->initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 
 
 	int val_neg = 0, inter;
-	struct timespec avant, apres; 
+	struct timespec avant, apres;
 	clock_gettime(CLOCK_REALTIME, &avant);
 
 	for (int i = 0; i < NB_VALEUR; i++)
@@ -26,7 +26,7 @@ int main()
 		if (inter < 0) val_neg++;
 		//cout << inter << endl;
 	}
-		
+
 	clock_gettime(CLOCK_REALTIME, &apres);
 	cout << "NB_VALEUR : " << NB_VALEUR << endl;
 	if (apres.tv_nsec - avant.tv_nsec < 0) //retenue
@@ -38,6 +38,7 @@ int main()
 	}
 	cout << "valeurs negatives : " << inter << endl;
 
+	delete g;
 
 	return 0;
 }

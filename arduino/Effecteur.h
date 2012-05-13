@@ -1,5 +1,5 @@
-#ifndef GAOPEFFECTEUR
-#define GAOPEFFECTEUR
+#ifndef GAOPEFFECTEUR_H
+#define GAOPEFFECTEUR_H
 
 #include "AbstractEffecteur.h"
 #include "Peripherique.h"
@@ -7,9 +7,9 @@
 class Effecteur : public AbstractEffecteur
 {
 	public:
-		Effecteur(int odid,  DriverEffecteur*);
+		Effecteur(octet odid,  DriverEffecteur*);
 		bool set(int valeur);
-		void Receive(Commande&);
+		void receive(Commande&);
 };
 
 #endif /* GAOPEFFECTEUR */

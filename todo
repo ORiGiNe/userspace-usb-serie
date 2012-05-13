@@ -1,6 +1,63 @@
-exemple avec un effecteur (servo moteur)
-niv arduino : associer odid avec addresse 
-vérifier le programme sur la panda
-coder le driver I2C
-implémenter les drivers des effecteurs (servos, asserv)
+Evolutions prévues:
+- faire 2 branches : une spécifique pour les UObjects & une pour une implementation seule (avec scripts d'exemples)
+- metaprogrammer le code a l'aide d'un fichier de config (voir spec pcslavegestiondevice.pdf)
+- utilisation de leds pour vérifier le bon fonctionnement des devices
 
+REIMPLEMENTATION:
+
+todo apres fonctionnement:
+renommage massif
+
+specs en plus:
+trame =>
+* D = 1o : constante de debut
+* seq = 1o : n° sequence => relation d'ordre
+* t = 1o : taille data
+* odid = 1o : odid du periph
+* data = t*1o
+* CS = 1o : checksum == checkxor
+* F = 1o : constante de fin
+
+ack
+
+implementation:
+typedef struct trame Trame;
+typedef struct listedFile ListedFile;
+
+// Cote pc : peut avoir a accumuler enormement de valeurs d'un capteur
+struct listedFile {
+	Trame trame;
+	ListedFile* next;
+};
+
+struct trame {
+	byte[MAX_TRAME_SIZE];
+	byte odid;
+	byte size;
+	byte seq;
+};
+
+on stocke la fonction nous permettant d'ecrire et lire pour refactor si posssible
+fonction de construction de trame
+instanciation automatique des devices ? NON
+Commande => GTS
+
+relu:
+config.h
+assocperiph
+periph
+capteur/effecteur
+
+howto:
+creer nos propres write & read x 2 : arduino & panda
+macro de debug => juste dans les write & read
+prog d'analyse de frames => TRI-VIAL
+verif de chaque morceau & operation : sections critiques
+
+observation sur arm:
+valeur aléatoire des le debut : wtf ? open avec mauvais flags ?
+
+ressources :
+http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1222099519
+http://web.mac.com/miked13/Arduino/Serial_Write.html
+http://cs.smith.edu/dftwiki/index.php/CSC231_Arduino-serial.c

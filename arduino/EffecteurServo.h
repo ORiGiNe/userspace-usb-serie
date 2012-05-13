@@ -1,8 +1,8 @@
-#ifndef ServoOrIgInE
-#define ServoOrIgInE
-#include "DriverEffecteur.h" 
-#include <WProgram.h>
-#include "/usr/share/arduino/libraries/Servo/Servo.h"
+#ifndef EFFECTEURSERVO_H
+#define EFFECTEURSERVO_H
+
+#include "DriverEffecteur.h"
+#include <Servo.h>
 
 class EffecteurServo : public DriverEffecteur
 {
@@ -17,4 +17,4 @@ class EffecteurServo : public DriverEffecteur
 		int nbr;
 };
 
-#endif /*ServoOrIgInE*/
+#endif /*EFFECTEURSERVO_H*/

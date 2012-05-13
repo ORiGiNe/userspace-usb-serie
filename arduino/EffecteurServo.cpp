@@ -1,5 +1,5 @@
-#include "ClassServo.h"
-#include "/usr/share/arduino/libraries/Servo/Servo.h"
+#include "EffecteurServo.h"
+#include <Servo.h>
 
 EffecteurServo::EffecteurServo(int pin[], int nbr)
 {
@@ -19,7 +19,6 @@ bool EffecteurServo::setup()
 		this->myservo[i].attach(this->pin[i]); //attaches the servo on pin to the servo object (pin 14 = analog 0);
 	}
 }
-
 
 bool EffecteurServo::set(int val)
 {
@@ -43,4 +42,3 @@ bool EffecteurServo::set(int val)
           
         return true;
 }
-

@@ -5,8 +5,6 @@
 #define timeToCm(time) ((time) / 29 / 2)
 #define timeToMm(time) (((time)*10) / 29 / 2)
 
-
-
 TriggerEcho::TriggerEcho(int trigger, int echo)
 {
 	this->trigger = trigger;
@@ -22,11 +20,11 @@ TriggerEcho::TriggerEcho(int trigger, int echo)
 int TriggerEcho::get()
 {
 	digitalWrite(this->trigger,LOW);
-  delayMicroseconds(2);
-  digitalWrite(this->trigger,HIGH);
-  delayMicroseconds(10);
-  digitalWrite(this->trigger,LOW);
-  
-  // Récupération de la longueur + insertion dans le tab
-  return timeToCm(pulseIn(this->echo, HIGH));
+	delayMicroseconds(2);
+	digitalWrite(this->trigger,HIGH);
+	delayMicroseconds(10);
+	digitalWrite(this->trigger,LOW);
+
+	// Récupération de la longueur + insertion dans le tab
+	return timeToCm(pulseIn(this->echo, HIGH));
 }
