@@ -1,5 +1,5 @@
-#ifndef FICHIERDECONFIGURATION
-#define FICHIERDECONFIGURATION
+#ifndef CONFIG_H
+#define CONFIG_H
 
 /*!
  *	\file Config.h
@@ -175,4 +175,4 @@ struct listedLine {
 //FIXME:wtf != ?
 #define TIMEOUTUSEC 25000
 
-#endif /*FICHIERDECONFIGURATION*/
+#endif /* CONFIG_H */

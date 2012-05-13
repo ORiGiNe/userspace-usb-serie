@@ -1,10 +1,7 @@
 #include "AssocPeriphOdid.h"
 #include <stdlib.h>
+#include "debug.h"
 
-#if DEBUG && !IAmNotOnThePandaBoard
-using namespace std;
-#include <iostream>
-#endif
 
 AssocPeriphOdid::AssocPeriphOdid()
 {
@@ -24,9 +21,7 @@ void AssocPeriphOdid::add(Peripherique *p)
 	t = (Peripherique**)realloc(t, taille*sizeof(Peripherique*));
 	t[taille-1] = p;
 
-#ifdef DEBUG && !IAmNotOnThePandaBoard
-	cout << "DEBUG AssocPeriphOdid::add odid periph : " << (int)(p->getOdid()) <<endl;
-#endif
+	debug("DEBUG AssocPeriphOdid::add odid periph : " << (int)(p->getOdid()) <<endl);
 }
 
 Peripherique* AssocPeriphOdid::operator[](int n)

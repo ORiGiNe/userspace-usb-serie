@@ -6,12 +6,6 @@
 #include <pthread.h>	/*pthread_* */
 #include <string>
 
-#define debug(args) \
-	if (ORIGINE_DEBUG) \
-	{ \
-		cout << args; \
-	}
-
 /*!
  *	\class Gaop
  *	\brief GAOP is An ORiGiNe protocole

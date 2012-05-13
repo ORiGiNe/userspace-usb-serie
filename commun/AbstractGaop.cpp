@@ -1,17 +1,5 @@
 #include "AbstractGaop.h"
 
-#if DEBUG && !IAmNotOnThePandaBoard
-using namespace std;
-#include <iostream>
-
-void debug_affiche_trame(octet *trame, int taille)
-{
-	for(int i = 0 ; i < taille+INFOCPL ; i++)
-		cout << (int)trame[i] << "-";
-	cout << endl;
-}
-#endif
-
 AbstractGaop::AbstractGaop()
 {
 	prochain = 0;
