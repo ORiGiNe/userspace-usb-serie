@@ -1,11 +1,6 @@
 #include "PCGaop.h"
 #include "AssocPeriphOdid.h"
 
-#if DEBUG
-using namespace std;
-#include <iostream>
-#endif
-
 #include <sys/stat.h>	/*open*/
 #include <fcntl.h>		/*open*/
 #include <signal.h>		/*kill*/
@@ -15,6 +10,9 @@ using namespace std;
 #include <iostream>		/*cerr, cout, endl*/
 #include <cstring>		/*strerr*/
 #include <cerrno>		/*errno*/
+#include <sstream>
+
+using namespace std;
 
 /*!
 *	Constructeur du protocole GAOP coté PC
@@ -92,9 +90,9 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 	write(device, "?", 1);	//Tu as combien de peripheriques ? // FIXME, voir wiki pour voir si c'est le vrai pb
 	while (read(device, r, 1) == 0);		//J'en ai x
 	x = r[0];
-#ifdef DEBUG
-	cout << "DEBUG Gaop::initialise : Nombre de devices : " << x << endl;
-#endif
+
+	debug("DEBUG Gaop::initialise : Nombre de devices : " << x);
+
 	for (int i = 0; i < x; i++)
 	{
 		//Donne moi l'ODID du device i si il marche, 0 sinon
@@ -105,23 +103,19 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 
 		if (tblassoc->getByODID(odid) != NULL) //je regarde si je le connais
 		{
-#if DEBUG
-			cout << "DEBUG Gaop::initialise : odid :" << (int)(tblassoc->getByODID(odid)->getOdid());
-#endif
+			debug("DEBUG Gaop::initialise : odid :" << (int)(tblassoc->getByODID(odid)->getOdid()));
+
 			write(device, "t", 1); // test son fonctionnement (et desactive le si il ne marche pas) XXX:magie du saint-esprit ?
 			while( read(device, r, 1) == 0);
 			if (r[0] != 'y') //si ca marche pas
 			{
-#if DEBUG
-			cout << " supprimé" <<endl;
-#endif
+				debug(" supprimé");
+
 				tblassoc->rm(odid); //suppression par odid
 			}
 			else
 			{
-#if DEBUG
-			cout << " activé" <<endl;
-#endif
+				debug( " activé");
 				//ca marche bien. je dis au peripherique qu'il peut m'utiliser
 				tblassoc->getByODID(odid)->associe(this);
 			}
@@ -191,13 +185,15 @@ bool PCGaop::send(Commande &cmd, octet odid)
 	octet buf[TAILLE_MAX_FRAME];
 
 	int taille_trame = create_trame(buf, cmd, odid);
+
+
+	debug("DEBUG AbstractGaop::create_trame : Trame crée : (taille : " << i+2 << ")");
+	debug(trame_to_string(trame,trame[2]) << endl);
 	
 	int octets_envoyes = write(device, buf, taille_trame*sizeof(octet));
 	//tcdrain(device); //attendre que c'est bien envoye
 	
-	#if DEBUG && !IAmNotOnThePandaBoard
-		cout << "Nombre octets envoyés : " << octets_envoyes << endl;
-	#endif
+	debug("Nombre octets envoyés : " << octets_envoyes << endl);
 
 	//l'apres devient l'avant
 	if (odid != ODIDSPECIAL)
@@ -228,9 +224,9 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		send(cmd, ODIDSPECIAL);
 		flags &= ~GAOPDBK;
 		frames_recues = 0; //pret a recevoir
-	} 
+	}
 
-	do	
+	do
 	{
 		// Début d'une trame
 		if (nb_donnees == 0)
@@ -243,12 +239,12 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		}
 		// Récupération de l'entête
 		else if (nb_donnees < INFOCPL_DEBUT)
-		{ 
+		{
 			i = read(device, buf+nb_donnees, (INFOCPL_DEBUT - nb_donnees)*(sizeof(octet)));
 		}
 		else //lit le reste = data + fin
 			i = read(device, buf+nb_donnees, (buf[2]+INFOCPL_FIN)*(sizeof(octet)));
-			
+
 		nb_donnees += i;
 		/*
 			FIXME: Fail de lecture répétées
@@ -258,38 +254,33 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		towait.tv_nsec = 50000; //50 microsecondes
 		nanosleep(&towait, NULL);
 
-#ifdef DEBUG
-				cout << "DEBUG PCGaop::send : Nombre de données lues via read : " << nb_donnees << endl;
-		cout << "Derniere valeur de i : " << i << endl;
+		debug("DEBUG PCGaop::send : Nombre de données lues via read : " << nb_donnees);
+		debug("Derniere valeur de i : " << i);
 		if (nb_donnees >= 2 )
-			cout << "Nombre de données attendues : " << (buf[2] + INFOCPL) <<endl;
-#endif
+			debug("Nombre de données attendues : " << (buf[2] + INFOCPL));
 		
 		if (nb_donnees == 0 || i < 0 || nb_donnees > TAILLE_MAX_FRAME)
 		{
-#ifdef DEBUG
-			cout << "DEBUG PCGaop::send : fail de read" << endl;
-#endif
+			debug("DEBUG PCGaop::send : fail de read");
 			return false;
 		}
 	} while (nb_donnees != (buf[2]+INFOCPL) && i >= 0);
 
 	// On essaye de lire cette trame
 	if ( read_trame(buf, cmd, odid) )
-	{ 
-		#if DEBUG
-			cout << "DEBUG PCGaop::send : Succès de lecture de la trame" <<endl;
-		#endif
+	{
+		debug("DEBUG AbstractGaop::read_trame : Trame lue : ");
+		debug(trame_to_string(trame, taille_cmd) << endl);
+
+		debug("DEBUG PCGaop::send : Succès de lecture de la trame");
 
 		if (odid == ODIDSPECIAL)
 		{
-		#if DEBUG
-			cout << "DEBUG PCGaop::send : ODID spécial" <<endl;
-		#endif
+			debug("DEBUG PCGaop::send : ODID spécial");
 
 			flags &= ~GAOPBLK;
 			frames_envoyees = 0;
-		} 
+		}
 		else if (tblassoc.getByODID(odid) != NULL)
 		{
 			if (++frames_recues >= NB_FRAMES_MAX) flags |= GAOPDBK;
@@ -300,7 +291,15 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 	}
 	else
 	{
-		std::cerr << "Erreur de transmition ! " << std::endl;
+		cerr << "Erreur de transmition ! " << std::endl;
 		return false;
 	}
+}
+
+void PCGaop::trame_to_string(octet *trame, int taille)
+{
+	ostringstream oss;
+	for(int i = 0 ; i < taille+INFOCPL ; i++)
+		oss << (int)trame[i] << "-";
+	return oss.str();
 }

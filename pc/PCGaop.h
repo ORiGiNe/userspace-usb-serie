@@ -4,6 +4,13 @@
 #include "AbstractGaop.h"
 
 #include <pthread.h>	/*pthread_* */
+#include <string>
+
+#define debug(args) \
+	if (ORIGINE_DEBUG) \
+	{ \
+		cout << args; \
+	}
 
 /*!
  *	\class Gaop
@@ -12,21 +19,25 @@
  */
 class PCGaop : public AbstractGaop
 {
-    public:
-        PCGaop(const char *device);
+	public:
+		PCGaop(const char *device);
 
-    ~PCGaop();
+		~PCGaop();
 
-        void initialise(AssocPeriphOdid*);
+		void initialise(AssocPeriphOdid*);
 
-        bool send(Commande &c, octet odid);
+		bool send(Commande &c, octet odid);
 
-        bool receive(AssocPeriphOdid&);
+		bool receive(AssocPeriphOdid&);
 
-    private:
-        int device; //file descriptor (open function)
-        pthread_t fils; //pour le fork de Receive();
-        void **pthreadarg;
+	protected:
+
+		void trame_to_string(octet *trame, int taille);
+
+	private:
+		int device; //file descriptor (open function)
+		pthread_t fils; //pour le fork de Receive();
+		void **pthreadarg;
 };
 
 #endif /*GAOPPROTOCOL */

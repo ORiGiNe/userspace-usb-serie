@@ -8,14 +8,14 @@
  */
 
 /*!
- *	\def	IAmNotOnThePandaBoard
+ *	\def	ARDUINO
  *	\brief	Indique si le code tourne sur arduino ou sur pc : include differents
  * 	et hacks trickys pour faire tourner du cpp sous l'arduino.
  *	A la compilation sur le pc, on passe la valeur de cette macro à 0 (-D inside).
  */
-#ifndef IAmNotOnThePandaBoard
-#define IAmNotOnThePandaBoard 1
-#endif /* IAmNotOnThePandaBoard */
+#ifndef ARDUINO
+#define ARDUINO 1
+#endif /* ARDUINO */
 
 /*! 
  *	\brief Définition des structures de bases utilisées dans le GAOP
