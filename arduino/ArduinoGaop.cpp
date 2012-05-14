@@ -112,6 +112,9 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
 	octet odid = 0;
+	int nb_donnees;
+	int j;
+	Commande cmd_pour_ack;
 	
 	// Si l'arduino est bloqué, on l'a débloque en envoyant une trame spéciale de déblocage
 	if (flags & GAOPDBK)
@@ -122,7 +125,6 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	}
 	
 	//while (i != appel) { delayMicroseconds(50); }
-	int nb_donnees;
 
 	// On attend d'avoir des données disponibles
 	if (Serial.available() <= 0) 
@@ -143,7 +145,6 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 			delay(1);
 	} while (Serial.read() != buf[0]);	
 
-	int j;
 
 	// On récupère le début de cette trame (surtout la taille)
 	for (j = 1; j < INFOCPL_DEBUT-1; j++)
@@ -167,6 +168,11 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	// On essaye de lire cette trame
 	if (read_trame(buf,cmd,odid)) 
 	{
+		//envoie d'un ack
+		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKOK);
+		Serial.write(buf, nb_donnees*sizeof(octet));	
+
+		//traitement	
 		if (odid != ODIDSPECIAL)
 		{
 			if (++frames_recues >= NB_FRAMES_MAX)
@@ -183,5 +189,10 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 		return true;
 	}
 	else
+	{
+		//non-reception
+		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKNOK);
+		Serial.write(buf, nb_donnees*sizeof(octet));	
 		return false;
+	}
 }
