@@ -1,5 +1,5 @@
-#ifndef JACK
-#define JACK
+#ifndef JACK_H
+#define JACK_H
 
 #include "DriverCapteur.h"
 

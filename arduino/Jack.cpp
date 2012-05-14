@@ -5,8 +5,6 @@
 #define timeToCm(time) ((time) / 29 / 2)
 #define timeToMm(time) (((time)*10) / 29 / 2)
 
-
-
 Jack::Jack(int pin)
 {
 	this->pin = pin;
@@ -17,5 +15,5 @@ Jack::Jack(int pin)
 
 int Jack::get()
 {
-  return digitalRead(pin) == HIGH;
+	return digitalRead(pin) == HIGH;
 }

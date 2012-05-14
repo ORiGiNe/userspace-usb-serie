@@ -1,18 +1,19 @@
 #include "Effecteur.h"
 
-Effecteur::Effecteur(int oidi) : Peripherique(oidi)
+Effecteur::Effecteur(octet odid) : Peripherique(odid)
 {
 
 }
 
-void Effecteur::Receive(Commande& c)
+void Effecteur::receive(Commande& c)
 {
 
 }
 
 bool Effecteur::set(int o)
 {
-		cmd[0] = o % 0x00010000;
-		return operation();
+	// Pour urbi, qui ne gère pas les short int, mais seulement les ints
+	cmd[0] = o % 0x00010000;
+	return operation();
 }
 
