@@ -169,7 +169,9 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	if (read_trame(buf,cmd,odid)) 
 	{
 		//envoie d'un ack
+		j = buf[1]; //recupere le numero de sequence
 		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKOK);
+		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
 		Serial.write(buf, nb_donnees*sizeof(octet));	
 
 		//traitement	
@@ -191,7 +193,9 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	else
 	{
 		//non-reception
+		j = buf[1]; //recupere le numero de sequence
 		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKNOK);
+		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
 		Serial.write(buf, nb_donnees*sizeof(octet));	
 		return false;
 	}
