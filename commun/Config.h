@@ -162,6 +162,18 @@ struct listedLine {
 #define ODIDSPECIAL 0xFF
 
 /*!
+ *	\def ODIDACKOK
+ * ODID d'ack en cas de succès de réception de la trame
+ */
+#define ODIDACKOK 0xFE
+
+/*!
+ *	\def ODIDACKNOK
+ * ODID d'ack en cas d'échec de réception de la trame
+ */
+#define ODIDACKNOK 0xFD
+
+/*!
  *	\def TIMEOUTSEC
  *	\brief Delai de timeout en seconde
  *	Ce délai doit etre suffisament long pour que les capteurs ai le temps de répondre
