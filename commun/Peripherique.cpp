@@ -1,10 +1,6 @@
 #include "Peripherique.h"
 #include <stdlib.h>
 
-#if IAmNotOnThePandaBoard
-void __cxa_pure_virtual() { };
-#endif
-
 Peripherique::Peripherique(octet odid) 
 { 
 	this->odid = odid;

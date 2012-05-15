@@ -8,7 +8,6 @@
 	delay(1000); \
 }
 
-#define PRINT_ARD(oki) {     Serial.write(oki); Serial.println("oki"); }
 ArduinoGaop::ArduinoGaop() : AbstractGaop()
 {
 
