@@ -61,49 +61,21 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 
 bool ArduinoGaop::send(Commande& cmd, octet odid)
 {
-	int ind_buf, i;
-
-	if (odid != ODIDSPECIAL)
-	{
-		ind_buf = prochain++;
-		unsigned long timeout = micros();
-
-		// Tant que ce n'est pas notre tour
-		while (ind_buf != appel || flags & (GAOPBLK | GAOPSPE)  )
-		{
-			if (micros() - timeout >= TIMEOUTSEC*1000000+TIMEOUTUSEC)
-			{
-				appel ++;
-				return false;
-			}
-			
-			delayMicroseconds(50);
-		}
-	}
-	else
+	int i;
+/*
+	if (odid == ODIDSPECIAL)
 	{
 		flags |= GAOPSPE;
 		while (flags & GAOPSND)
 			delayMicroseconds(50);
 	}
-	
+	*/
 	// Envoi
-	flags |= GAOPSND;
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 	
-	// Envoi
 	int taille_trame = create_trame(buf, cmd, odid);
 	Serial.write(buf, taille_trame*sizeof(octet));	
 
-	if (odid != ODIDSPECIAL)
-	{
-		if (++frames_envoyees >= NB_FRAMES_MAX)
-			flags |= GAOPBLK; //attente de disponiblilite
-		appel++; //on a fini. Donc on appel le suivant
-	}
-	else
-		flags &= ~GAOPSPE;
-	
 	flags &= ~GAOPSND;
 	return true;
 }
@@ -118,11 +90,7 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	
 	// Si l'arduino est bloqué, on l'a débloque en envoyant une trame spéciale de déblocage
 	if (flags & GAOPDBK)
-	{
 		send(cmd, ODIDSPECIAL);
-		flags &= ~GAOPDBK;
-		frames_recues = 0;
-	}
 	
 	//while (i != appel) { delayMicroseconds(50); }
 
@@ -168,6 +136,7 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	// On essaye de lire cette trame
 	if (read_trame(buf,cmd,odid)) 
 	{
+		/*
 		// La donnée est bonne : on envoi un ack
 		j = buf[1]; //recupere le numero de sequence
 		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKOK);
@@ -175,18 +144,8 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
 
 		Serial.write(buf, nb_donnees*sizeof(octet));	
-
-		//traitement	
-		if (odid != ODIDSPECIAL)
-		{
-			if (++frames_recues >= NB_FRAMES_MAX)
-				flags |= GAOPDBK;
-		} 
-		else
-		{
-			flags &= ~GAOPBLK;
-			frames_envoyees = 0;
-		}
+*/
+		// Execution de la commande	
 		if (tblassoc.getByODID(odid) != NULL)
 			tblassoc.getByODID(odid)->receive(cmd);
 			
@@ -194,11 +153,12 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	}
 	else
 	{
-		//non-reception
+		/*
+		// Envoi du non ack
 		j = buf[1]; //recupere le numero de sequence
 		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKNOK);
 		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
-		Serial.write(buf, nb_donnees*sizeof(octet));	
+		Serial.write(buf, nb_donnees*sizeof(octet));	*/
 		return false;
 	}
 }

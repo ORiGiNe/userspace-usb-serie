@@ -47,12 +47,12 @@ PCGaop::PCGaop(const char *peripherique) : AbstractGaop()
 	tcsetattr(device, TCSANOW, &options);
 
 	// Initialisation de la structure trame, juste le ack
-	trame_envoyees = new Trame[NBR_TRAME_HIST];
+	/*trame_envoyees = new Trame[NBR_TRAME_HIST];
 	for ( i = 0 ; i < NBR_TRAME_HIST ; i++ )
 	{
 		trame_envoyees[i] = new trame;
 		trame_envoyees[i]->ack = false;
-	}
+	}*/
 }
 
 PCGaop::~PCGaop()
@@ -156,6 +156,9 @@ bool PCGaop::send(Commande &cmd, octet odid)
 	if (odid != ODIDSPECIAL)
 	{
 		numero = prochain++;
+#ifdef DEBUG
+		cout << "DEBUG PC::Gaop : Attente => n : " << numero << " prochain : " << prochain <<endl;
+#endif
 		clock_gettime(CLOCK_REALTIME, &apres);
 
 		while (numero != appel || flags & (GAOPBLK | GAOPSPE)) //tant que ce n'est pas notre tour ou qu'il y a trop de monde
@@ -319,7 +322,7 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 			flags &= ~GAOPBLK;
 			frames_envoyees = 0;
 		}
-		// Gestion de l'ack
+/*		// Gestion de l'ack
 		else if ( odid == ODIDACKNOK || odid == ODIDACKOK )
 		{
 			// ack ok
@@ -343,7 +346,7 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 				send(cmd_ack,odid);
 			}
 
-		}
+		}*/
 		else if (tblassoc.getByODID(odid) != NULL)
 		{
 #ifdef DEBUG
