@@ -111,10 +111,10 @@ bool ArduinoGaop::send(Commande& cmd, octet odid)
 bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
+	Commande cmd_pour_ack;
 	octet odid = 0;
 	int nb_donnees;
 	int j;
-	Commande cmd_pour_ack;
 	
 	// Si l'arduino est bloqué, on l'a débloque en envoyant une trame spéciale de déblocage
 	if (flags & GAOPDBK)
@@ -168,10 +168,12 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	// On essaye de lire cette trame
 	if (read_trame(buf,cmd,odid)) 
 	{
-		//envoie d'un ack
+		// La donnée est bonne : on envoi un ack
 		j = buf[1]; //recupere le numero de sequence
 		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKOK);
+		// FIXME sale d'écrire comme ça
 		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
+
 		Serial.write(buf, nb_donnees*sizeof(octet));	
 
 		//traitement	

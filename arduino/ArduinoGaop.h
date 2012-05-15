@@ -21,4 +21,4 @@ class ArduinoGaop : public AbstractGaop
 		bool receive(AssocPeriphOdid&);
 };
 
-#endif /*GAOPPROTOCOL */
+#endif /* GAOPPROTOCOL */

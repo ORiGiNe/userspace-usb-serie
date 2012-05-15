@@ -1,6 +1,8 @@
 #ifndef FICHIERDECONFIGURATION
 #define FICHIERDECONFIGURATION
 
+#include "Commande.h"
+
 /*!
  *	\file Config.h
  *	\brief Header de configuration global (pc et arduino)
@@ -84,7 +86,15 @@ typedef unsigned char octet;
 	*	\brief Taille maximum autorisée pour une frame
 	* Cette valeur dépend de la constante INFOCPL, et du nombre de commandes
 	*	par frames.
-*/
+ *	Une trame se compose de la manière suivante (dans cet ordre) :
+ * D = 1o : constante de debut
+ * seq = 1o : n° sequence => relation d'ordre
+ * t = 1o : taille data
+ * odid = 1o : odid du periph
+ * data = t*1o
+ * CS = 1o : checksum == checkxor
+ * F = 1o : constante de fin
+ **/
 #define TAILLE_MAX_FRAME (COMMAND_SIZE*NBR_COMMAND_FRAME_MAX)+INFOCPL
 
 /*!
@@ -97,23 +107,25 @@ typedef unsigned char octet;
 
 /*!
  *	\struct trame
- * 	\brief Format de trame
- *	Une trame se compose de la manière suivante :
- * D = 1o : constante de debut
- * seq = 1o : n° sequence => relation d'ordre
- * t = 1o : taille data
- * CS = 1o : checksum == checkxor
- * odid = 1o : odid du periph
- * data = t*1o
- * F = 1o : constante de fin
- **/
-typedef struct trame Trame;
+ * 	\brief Données des trames pour l'historique
+ *	On garde en historique les informations d'une trame pour la renvoyer
+ *	en cas d'ack négatif.
+ *	Le bool ack permet de dire que l'on a reçu l'ack, et donc on peut écraser cette donnée 
+ */
+
+typedef struct trame * Trame;
 struct trame {
-		octet cmd[TAILLE_MAX_FRAME];
+		Commande cmd;
 		octet odid;
-		octet size;
-		octet seq;
+		octet taille;
+		bool ack;
 };
+
+/*!
+ *	\def NBR_TRAME_HIST
+ *	Défini le nombre de trame que l'on garde : il s'agit en fait d'un octet
+ */
+#define NBR_TRAME_HIST 256
 
 /*!
  *	\struct listedLine

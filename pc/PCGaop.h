@@ -2,6 +2,7 @@
 #define GAOPPROTOCOL
 
 #include "AbstractGaop.h"
+#include "Config.h"
 
 #include <pthread.h>	/*pthread_* */
 
@@ -24,9 +25,30 @@ class PCGaop : public AbstractGaop
         bool receive(AssocPeriphOdid&);
 
     private:
-        int device; //file descriptor (open function)
-        pthread_t fils; //pour le fork de Receive();
+				/*!
+				 *	File descriptor du slave
+				 */
+        int device;
+				/*!
+				 *	Le thread
+				 */
+        pthread_t fils;
         void **pthreadarg;
+				/*!
+				 * Historique des trames pour les renvoyées en cas de problèmes de communication
+				 */
+				Trame * trame_envoyees;
+
+				/*!
+				 * 	Sauvegarde de la trame pour historique
+				 *	@param buf : Buffer contenant la trame ayant le format attendu
+				 */
+				bool save_trame(octet* buf);
+
+				/*!
+				 *	Construction d'une trame à partir de la structure gérant l'historique
+				 */
+				octet* build_trame_from_ack(Commande& cmd, octet seq);
 };
 
 #endif /*GAOPPROTOCOL */
