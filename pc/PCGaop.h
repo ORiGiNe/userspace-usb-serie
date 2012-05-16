@@ -46,9 +46,18 @@ class PCGaop : public AbstractGaop
 				bool save_trame(octet* buf);
 
 				/*!
-				 *	Construction d'une trame à partir de la structure gérant l'historique
+				 *	Construction d'une trame à l'aide de la structure gérant l'historique et d'un numéro de séquence
 				 */
-				octet* build_trame_from_ack(Commande& cmd, octet seq);
+				octet* build_trame_from_seq(Commande& cmd, octet seq);
+
+				/*!
+				 *	Récupération du numéro de séquence de la dernière commande envoyée sans ack
+				 */
+				int get_last_cmd_without_ack();
+
+				
+				octet trames_envoyees;
+				bool periph_busy;
 };
 
 #endif /*GAOPPROTOCOL */

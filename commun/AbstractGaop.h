@@ -115,11 +115,7 @@ class AbstractGaop
 		 */
 		 bool read_trame(octet *trame, Commande &data, octet &odid);
 		
-		octet prochain; //prochain numero disponible (% 256)
-		octet appel; //candidat appele
 		octet flags; //GAOPSPE, GAOPBLK, GAOPDBK, GAOPSND
-		octet frames_envoyees;
-		octet frames_recues;
 };
 
 #endif /*ABSTRACTGAOP */

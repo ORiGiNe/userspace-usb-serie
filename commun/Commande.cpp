@@ -28,3 +28,8 @@ int Commande::getTaille() const
 {
 	return taille;
 }
+
+void Commande::setTaille(int taille)
+{
+	this->taille = taille;
+}

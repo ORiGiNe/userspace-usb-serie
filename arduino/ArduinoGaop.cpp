@@ -24,21 +24,21 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 	Serial.begin(115200); //valeur maximal pour communication pc/arduino (http://arduino.cc/en/Serial/Begin)
 	while (Serial.available() <= 0) //tant que personne ne nous demmande quoi que ce soit
 		delay(250); // wait
-	
+
 	Serial.read(); //T'es la ?
 	Serial.write("y"); //Ok, je suis demare
 	while (Serial.read() != '?'); //enlever tout les signaux "es tu demaree ?"
 	//Serial.read(); //combien de device ?
 	Serial.write(tblassoc->getNbDevices()); //j'en ai x
-	
+
 	for (int i = 0; i < tblassoc->getNbDevices(); i++)
 	{
 		while (Serial.read() != 'i'); //Quel est l'ODID du device numero i
-		
+
 		Serial.write( ((*tblassoc)[i])->getOdid());
-		
+
 		while (Serial.available() <= 0);
-		
+
 		if (Serial.read() == 'x') //inconnu => on le desactive
 		{
 			tblassoc->rm((*tblassoc)[i]->getOdid());
@@ -62,21 +62,21 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 bool ArduinoGaop::send(Commande& cmd, octet odid)
 {
 	int i;
-/*
-	if (odid == ODIDSPECIAL)
-	{
-		flags |= GAOPSPE;
-		while (flags & GAOPSND)
-			delayMicroseconds(50);
-	}
-	*/
+	/*
+		 if (odid == ODIDSPECIAL)
+		 {
+		 flags |= GAOPSPE;
+		 while (flags & GAOPSND)
+		 delayMicroseconds(50);
+		 }
+	 */
 	// Envoi
 	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
-	
+
 	int taille_trame = create_trame(buf, cmd, odid);
 	Serial.write(buf, taille_trame*sizeof(octet));	
 
-	flags &= ~GAOPSND;
+//	flags &= ~GAOPSND;
 	return true;
 }
 
@@ -87,12 +87,6 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	octet odid = 0;
 	int nb_donnees;
 	int j;
-	
-	// Si l'arduino est bloqué, on l'a débloque en envoyant une trame spéciale de déblocage
-	if (flags & GAOPDBK)
-		send(cmd, ODIDSPECIAL);
-	
-	//while (i != appel) { delayMicroseconds(50); }
 
 	// On attend d'avoir des données disponibles
 	if (Serial.available() <= 0) 
@@ -102,17 +96,17 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	octet buf[TAILLE_MAX_FRAME];
 
 	buf[0] = BEGIN_TRAME;
+	
 	// On attend le début d'une trame
 	do
 	{
 		/* 
-			 FIXME: On attend seulement la taille minimale d'une frame pour la lire : la méthode available n'a pas tout le temps
-			 le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la taille directement. Cela va être génant plus loin
+FIXME: On attend seulement la taille minimale d'une frame pour la lire : la méthode available n'a pas tout le temps
+le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la taille directement. Cela va être génant plus loin
 		 */
 		while (Serial.available() <= INFOCPL+1)
 			delay(1);
-	} while (Serial.read() != buf[0]);	
-
+	} while (Serial.read() != BEGIN_TRAME);	
 
 	// On récupère le début de cette trame (surtout la taille)
 	for (j = 1; j < INFOCPL_DEBUT-1; j++)
@@ -122,9 +116,9 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 
 		buf[j] = Serial.read();
 	}
-	
+
 	// On connait la taille, on peut maintenant tout copier
-	while (j < buf[2]+INFOCPL)
+	while (j < buf[IND_TAILLE]+INFOCPL)
 	{
 		/*while (Serial.available() <= 0)
 			delay(1);*/
@@ -132,7 +126,7 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 		buf[j] = Serial.read();
 		j++;
 	}
-	
+
 	// On essaye de lire cette trame
 	if (read_trame(buf,cmd,odid)) 
 	{
@@ -142,23 +136,31 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKOK);
 		// FIXME sale d'écrire comme ça
 		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
-
-		Serial.write(buf, nb_donnees*sizeof(octet));	
-*/
+		 */
+		//cmd_pour_ack.setTaille(0);
+		buf[0] = BEGIN_TRAME;
+		buf[1] = 1;
+		buf[2] = 0;
+		buf[3] = ODIDACKOK;
+		buf[4] = create_checksum(buf,INFOCPL);
+		buf[5] = END_TRAME;
+		Serial.write(buf,6);
+		
 		// Execution de la commande	
 		if (tblassoc.getByODID(odid) != NULL)
 			tblassoc.getByODID(odid)->receive(cmd);
-			
+		else if (odid==ODIDSPECIAL)
+			send(cmd_pour_ack,ODIDSPECIAL);
+
 		return true;
 	}
 	else
 	{
-		/*
 		// Envoi du non ack
 		j = buf[1]; //recupere le numero de sequence
 		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKNOK);
 		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
-		Serial.write(buf, nb_donnees*sizeof(octet));	*/
+		Serial.write(buf, nb_donnees*sizeof(octet));	
 		return false;
 	}
 }

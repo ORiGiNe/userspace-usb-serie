@@ -60,6 +60,10 @@ typedef unsigned char octet;
 */
 #define INFOCPL_FIN 2 
 
+#define IND_SEQ 1
+#define IND_TAILLE 2
+#define IND_ODID 3
+
 /*!
  *	\def INFOCPL
  *	\brief Taille en octet des informations complémentaires
@@ -79,7 +83,7 @@ typedef unsigned char octet;
  *	\def NBR_COMMAND_FRAME
  *	\brief Nombre de commandes par frame
 */
-#define NBR_COMMAND_FRAME_MAX 6
+#define NBR_COMMAND_FRAME_MAX 7
 
 /*!
 	* \def TAILLE_MAX_FRAME
@@ -103,7 +107,7 @@ typedef unsigned char octet;
 *	Défini le nombre de frames envoyées avant un blocage des émissions, évitant ainsi une surcharge de buffer.
 * A titre d'exemplen l'arduino UNO possède un buffer de taille 128 octets
 */
-#define NB_FRAMES_MAX 10
+#define NB_FRAMES_MAX 5
 
 /*!
  *	\struct trame
@@ -126,19 +130,6 @@ struct trame {
  *	Défini le nombre de trame que l'on garde : il s'agit en fait d'un octet
  */
 #define NBR_TRAME_HIST 256
-
-/*!
- *	\struct listedLine
- *	\brief Définition d'une liste chainée pour manipulation aisée des trames
- */
-/*
-typedef struct listedLine ListedLine;
-struct listedLine {
-		Trame trame;
-		ListedLine* next;
-		octet number;
-};
-*/
 
 //TODO:MOVE ME ON Gaop.h
 /*!
@@ -196,7 +187,6 @@ struct listedLine {
  *	\brief Delai de timeout en µ-seconde
  *	Ce délai doit etre suffisament long pour que les capteurs ai le temps de répondre
  */
-//FIXME:wtf != ?
 #define TIMEOUTUSEC 25000
 
 #endif /*FICHIERDECONFIGURATION*/

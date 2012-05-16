@@ -13,6 +13,7 @@ class Commande
 		short int& operator[](unsigned int i);
 		//taille de la ieme commande (0 si non dispo)
 		int getTaille() const;
+		void setTaille(int taille);
 		
 	private:
 		short int *tbl;

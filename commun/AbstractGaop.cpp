@@ -14,11 +14,7 @@ void debug_affiche_trame(octet *trame, int taille)
 
 AbstractGaop::AbstractGaop()
 {
-	prochain = 0;
-	appel = 0;
 	flags = 0;
-	frames_recues = 0;
-	frames_envoyees = 0;
 }
 
 octet AbstractGaop::create_checksum( octet *trame, int taille)
@@ -36,7 +32,11 @@ octet AbstractGaop::create_checksum( octet *trame, int taille)
 int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
 {
 	static octet seq = 0;
-	int i = 0;
+	int i = 0,j;
+
+	// Vidage du buffer
+	/*for (j=0; j < TAILLE_MAX_FRAME ; j++);
+		trame[j] = 0;*/
 
 	trame[i++] = BEGIN_TRAME;
 	trame[i++] = seq++;
@@ -64,11 +64,11 @@ bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
 {
 	// Vérification minimale des données
 	// Octet fin
-	if (trame[0] != BEGIN_TRAME)
-		return false;
+	/*if (trame[0] != BEGIN_TRAME)
+		return false;*/
 
 	// On extrait la taille de la commande pour pouvoir travailler un minimum
-	int taille_cmd = trame[2];
+	int taille_cmd = trame[IND_TAILLE];
 	
 	if (trame[taille_cmd+INFOCPL-1] != END_TRAME)
 		return false;
@@ -81,7 +81,7 @@ bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
 		return false;
 	
 	// On peut maintenant extraire les informations
-	odid = trame[3];
+	odid = trame[IND_ODID];
 	for (int i = 0; i < taille_cmd/2; i++)
 	{
 		cmd[i] = trame[2*i+INFOCPL_DEBUT]*0x100 + trame[2*i+INFOCPL_DEBUT+1];
@@ -94,4 +94,3 @@ bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
 
 	return true;
 }
-
