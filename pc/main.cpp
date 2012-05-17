@@ -3,6 +3,7 @@
 #include "AssocPeriphOdid.h"
 #include "Effecteur.h"
 #include "Capteur.h"
+#include "Asserv.h"
 using namespace std;
 #include <unistd.h>
 #include <ctime>
