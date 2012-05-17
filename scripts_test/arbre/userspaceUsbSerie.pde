@@ -28,9 +28,9 @@ Capteur uson1(1, &uuson1);
 Capteur uson2(2, &uuson2);
 Capteur uson3(3, &uuson3);
 Capteur uson4(4, &uuson4);
-Capteur uson5(4, &uuson5);
-Capteur uson6(4, &uuson6);
-Capteur uson7(4, &uuson7);
+Capteur uson5(5, &uuson5);
+Capteur uson6(6, &uuson6);
+Capteur uson7(7, &uuson7);
 
 void setup()
 {
