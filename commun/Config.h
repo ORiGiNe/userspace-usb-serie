@@ -189,4 +189,10 @@ struct trame {
  */
 #define TIMEOUTUSEC 25000
 
+/*!
+ *	\def MAX_NBR_TOURS
+ *	Défini un nombre max de tours en cas de fail d'odid spécial
+ */
+#define MAX_NBR_TOURS 200 
+
 #endif /*FICHIERDECONFIGURATION*/

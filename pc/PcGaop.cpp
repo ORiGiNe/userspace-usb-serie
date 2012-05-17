@@ -150,6 +150,7 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 bool PCGaop::send(Commande &cmd, octet odid)
 {
 	struct timespec towait;
+	int tour = 0;
 
 	// Tant que le périphérique est bloqué, on attend	
 	while (periph_busy && odid != ODIDSPECIAL)
@@ -162,6 +163,12 @@ bool PCGaop::send(Commande &cmd, octet odid)
 		towait.tv_sec = 0;
 		towait.tv_nsec = 500000; //500 microsecondes
 		nanosleep(&towait, NULL);
+		tour++;
+
+		// Si on dépasse un certain nombre de tours, c'est qu'il y a eu un problème avec la trame de déblocage
+		// on considère que c'est great
+		if (tour > MAX_NBR_TOURS)
+		 periph_busy = false;	
 	}
 
 	// Si il s'agit d'une trame de déblocage, on bloque en attendant la réponse du périphérique
