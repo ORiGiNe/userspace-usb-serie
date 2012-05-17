@@ -1,0 +1,6 @@
+Device		Pin		odid
+
+jack		7		1
+interCouleur	9		2
+servo1		2,3		3
+servo2		4,5		4
