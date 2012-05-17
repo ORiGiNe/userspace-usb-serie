@@ -17,22 +17,24 @@ AssocPeriphOdid tblassoc;
 Jack jjack(7);
 Capteur jack(1, &jjack);
 
-Jack iinterCouleur(9);
+Jack iinterCouleur(8);
 Capteur interCouleur(2, &iinterCouleur);
 
-int pin1[2] = {2,3};
-int pin2[2] = {4,5};
+int pin1[2] = {5,6};
+int pin2[2] = {9,10};
 
-EffecteurServo sservo1(pin1,1);
+EffecteurServo sservo1(pin1,2);
 Effecteur servo1(3, &sservo1);
 
-EffecteurServo sservo2(pin2,1);
+EffecteurServo sservo2(pin2,2);
 Effecteur servo2(4, &sservo2);
 
 void setup()
 {
-	tblassoc.add(&jack);
+	
+        tblassoc.add(&jack);
 	tblassoc.add(&interCouleur);
+        
 
 	sservo1.setup();
 	sservo2.setup();
