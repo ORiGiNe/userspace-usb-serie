@@ -195,4 +195,14 @@ struct trame {
  */
 #define MAX_NBR_TOURS 200 
 
+/*!
+ * Définition de la constante à transmettre à l'asserv pour récupérer la dernière commande
+ */
+#define getLastAsserv 64
+
+/*!
+ * Définition de la constante à transmettre à l'asserv pour setter une commande
+ */
+#define setNewAsserv 65
+
 #endif /*FICHIERDECONFIGURATION*/
