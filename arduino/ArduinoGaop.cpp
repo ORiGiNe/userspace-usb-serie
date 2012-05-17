@@ -61,29 +61,19 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 
 bool ArduinoGaop::send(Commande& cmd, octet odid)
 {
-	int i;
-	/*
-		 if (odid == ODIDSPECIAL)
-		 {
-		 flags |= GAOPSPE;
-		 while (flags & GAOPSND)
-		 delayMicroseconds(50);
-		 }
-	 */
 	// Envoi
-	octet buf[TAILLE_MAX_FRAME]; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
+	octet buf[TAILLE_MAX_FRAME] = {0}; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
 
 	int taille_trame = create_trame(buf, cmd, odid);
-	Serial.write(buf, taille_trame*sizeof(octet));	
+	Serial.write(buf, taille_trame);
 
-//	flags &= ~GAOPSND;
 	return true;
 }
 
 bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 {    
 	Commande cmd;
-	Commande cmd_pour_ack;
+	Commande nil;
 	octet odid = 0;
 	int nb_donnees;
 	int j;
@@ -93,7 +83,7 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 		return false;
 
 	// On va récupérer la trame dans un buffer avec la taille max de frame
-	octet buf[TAILLE_MAX_FRAME];
+	octet buf[TAILLE_MAX_FRAME] = {0};
 
 	buf[0] = BEGIN_TRAME;
 	
@@ -104,7 +94,7 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 FIXME: On attend seulement la taille minimale d'une frame pour la lire : la méthode available n'a pas tout le temps
 le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la taille directement. Cela va être génant plus loin
 		 */
-		while (Serial.available() <= INFOCPL+1)
+		while (Serial.available() <= INFOCPL_DEBUT+1)
 			delay(1);
 	} while (Serial.read() != BEGIN_TRAME);	
 
@@ -130,27 +120,30 @@ le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la tail
 	// On essaye de lire cette trame
 	if (read_trame(buf,cmd,odid)) 
 	{
-		/*
 		// La donnée est bonne : on envoi un ack
 		j = buf[1]; //recupere le numero de sequence
-		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKOK);
+		nb_donnees = create_trame(buf, nil, ODIDACKOK);
 		// FIXME sale d'écrire comme ça
 		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
-		 */
-		//cmd_pour_ack.setTaille(0);
-		buf[0] = BEGIN_TRAME;
-		buf[1] = 1;
-		buf[2] = 0;
-		buf[3] = ODIDACKOK;
-		buf[4] = create_checksum(buf,INFOCPL);
-		buf[5] = END_TRAME;
-		Serial.write(buf,6);
+		Serial.write(buf, nb_donnees);
+		
+		if (odid==ODIDSPECIAL)
+		{
+			send(nil,ODIDSPECIAL);
+			/*octet buf2[TAILLE_MAX_FRAME] = {0};
+			buf2[0] = BEGIN_TRAME;
+			buf2[1] = 0;
+			buf2[2] = 0;
+			buf2[3] = ODIDSPECIAL;
+			buf2[4] = create_checksum(buf,6);
+			buf2[5] = END_TRAME;	
+			while(1)
+				Serial.write(buf2,6);*/
+		}
 		
 		// Execution de la commande	
 		if (tblassoc.getByODID(odid) != NULL)
 			tblassoc.getByODID(odid)->receive(cmd);
-		else if (odid==ODIDSPECIAL)
-			send(cmd_pour_ack,ODIDSPECIAL);
 
 		return true;
 	}
@@ -158,7 +151,7 @@ le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la tail
 	{
 		// Envoi du non ack
 		j = buf[1]; //recupere le numero de sequence
-		nb_donnees = create_trame(buf, cmd_pour_ack, ODIDACKNOK);
+		nb_donnees = create_trame(buf, nil, ODIDACKNOK);
 		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
 		Serial.write(buf, nb_donnees*sizeof(octet));	
 		return false;

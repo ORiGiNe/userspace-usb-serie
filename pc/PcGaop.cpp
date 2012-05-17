@@ -76,7 +76,7 @@ PCGaop::~PCGaop()
  */
 void* run_gaop(void* arg)
 {
-	struct timespec t = {0, 10000}; //10 microsecondes
+	struct timespec t = {0, 100000}; //100 microsecondes
 	void **argv = (void**)arg;
 	
 	while (true)
@@ -152,11 +152,13 @@ bool PCGaop::send(Commande &cmd, octet odid)
 	struct timespec towait;
 
 	// Tant que le périphérique est bloqué, on attend	
-	while (periph_busy)
+	while (periph_busy && odid != ODIDSPECIAL)
 	{
+		/*
 #ifdef DEBUG
 		cout << "DEBUG PCGaop::send : Periph bloqué" << endl;
 #endif
+*/
 		towait.tv_sec = 0;
 		towait.tv_nsec = 500000; //500 microsecondes
 		nanosleep(&towait, NULL);
@@ -165,18 +167,17 @@ bool PCGaop::send(Commande &cmd, octet odid)
 	// Si il s'agit d'une trame de déblocage, on bloque en attendant la réponse du périphérique
 	if (odid == ODIDSPECIAL)
 	{
-		periph_busy = true;
 #ifdef DEBUG
 		cout << "DEBUG PCGaop::send : ODID Spécial" << endl;
 #endif
 	}
 
 	while ((flags & GAOPSND))
-		nanosleep(&towait, NULL); //qqn emmet => attente
+		nanosleep(&towait, NULL); //qqn emet => attente
 
 	// Emission et construction
 	flags |= GAOPSND; 
-	octet buf[TAILLE_MAX_FRAME];
+	octet buf[TAILLE_MAX_FRAME] = {0};
 
 	int taille_trame = create_trame(buf, cmd, odid);
 
@@ -186,17 +187,22 @@ bool PCGaop::send(Commande &cmd, octet odid)
 	int octets_envoyes = write(device, buf, taille_trame*sizeof(octet));
 	//tcdrain(device); //attendre que c'est bien envoye
 	
-	#if DEBUG && !IAmNotOnThePandaBoard
-		cout << "DEBUG PCGaop::send : Nombre octets envoyés : " << octets_envoyes << endl;
+	#if DEBUG 
+		cout << "DEBUG PCGaop::send : Nombre octets ( " << sizeof(octet) << " ) envoyés : " << octets_envoyes << endl;
 	#endif
+
+	flags &= ~GAOPSND; //fin de l'emission
 
 	if (odid != ODIDSPECIAL)
 	{
 		if (++trames_envoyees > NB_FRAMES_MAX)
-			periph_busy = true; 
+		{
+			Commande nil;
+
+			periph_busy = true;
+			send(nil,ODIDSPECIAL);
+		}
 	}
-	
-	flags &= ~GAOPSND; //fin de l'emission
 	
 	return (octets_envoyes == taille_trame);
 }
@@ -205,31 +211,23 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 {
 	Commande cmd;
 	octet odid;
-	octet buf[TAILLE_MAX_FRAME];
-	int i, nb_donnees = 0;
+	octet buf[TAILLE_MAX_FRAME] = {0};
+	int i = 0, nb_donnees = 0;
+	struct timespec towait;
 	
 #ifdef DEBUG
+		int k;
 	cout << "DEBUG PCGaop::receive : init" << endl;
 #endif
 
-	// Si on envoi, on fait rien
+	// Si on envoi, on ne fait rien
 	if (flags & GAOPSND)
 		return false;
 
 	// Récupération des données
 	do	
 	{
-		/*
-			 Traitement erreurs
-		*/
-		// Taille
-		if (nb_donnees >= IND_TAILLE+1)
-		{
-			if (buf[IND_TAILLE] > TAILLE_MAX_FRAME-INFOCPL)
-				break;
-		}
-		
-		// Détection d'une début d'une trame
+		// Détection d'un début d'une trame
 		if (nb_donnees == 0)
 		{
 			// On boucle tant que l'on n'a pas un début de trame
@@ -258,10 +256,19 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		}
 
 		/*
+			 Traitement erreurs
+		*/
+		// Taille
+		if (nb_donnees >= IND_TAILLE+1)
+		{
+			if (buf[IND_TAILLE] > TAILLE_MAX_FRAME-INFOCPL)
+				break;
+		}
+		
+		/*
 			FIXME: Fail de lecture répétées
 		*/
 		// Boucle principal
-		struct timespec towait;
 		towait.tv_sec = 0;
 		towait.tv_nsec = 50000; //50 microsecondes
 		nanosleep(&towait, NULL);
@@ -274,13 +281,12 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 			cout << "Nombre de données attendues : " << (buf[2] + INFOCPL) <<endl;
 
 		if (i < 0)
-			cout << strerror(errno) <<endl;
+			cout << "Erreur : " <<strerror(errno) <<endl;
 
 		cout << "Donnée actuelle : ";
 
-		int i;
-		for(i=0;i< nb_donnees;i++)
-			cout << (int)buf[i] << "-";
+		for(k=0;k< nb_donnees;k++)
+			cout << (int)buf[k] << "-";
 		cout << endl;
 #endif
 		
@@ -292,9 +298,6 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		if (buf[IND_TAILLE] > TAILLE_MAX_FRAME-INFOCPL)
 			break;
 		
-#ifdef DEBUG
-			cout << "DEBUG PCGaop::receive : fail de read" << endl;
-#endif
 	} while (nb_donnees < (int)(buf[2]+INFOCPL)); // TODO:cpt error
 	// Fin de la récupération des données
 
@@ -388,7 +391,7 @@ bool PCGaop::save_trame(octet* buf)
 
 octet* PCGaop::build_trame_from_seq(Commande& cmd, octet seq)
 {
-	int i;
+	//int i; unused variable
 	octet* buf;
 
 	//TODO

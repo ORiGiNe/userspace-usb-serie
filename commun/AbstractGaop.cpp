@@ -1,5 +1,5 @@
 #include "AbstractGaop.h"
-
+/*
 #if DEBUG && !IAmNotOnThePandaBoard
 using namespace std;
 #include <iostream>
@@ -11,7 +11,7 @@ void debug_affiche_trame(octet *trame, int taille)
 	cout << endl;
 }
 #endif
-
+*/
 AbstractGaop::AbstractGaop()
 {
 	flags = 0;
@@ -51,12 +51,12 @@ int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
 
 	trame[i+1] = END_TRAME;
 	trame[i] = create_checksum(trame, 2*data.getTaille() + INFOCPL ); // FIXME
-	
+	/*
 	#if DEBUG && !IAmNotOnThePandaBoard
 		cout << "DEBUG AbstractGaop::create_trame : Trame crée : (taille : " << i+2 << ")" << endl;
 		debug_affiche_trame(trame,trame[2]);
 	#endif
-
+*/
 	return i+2;
 }
 
@@ -86,11 +86,11 @@ bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
 	{
 		cmd[i] = trame[2*i+INFOCPL_DEBUT]*0x100 + trame[2*i+INFOCPL_DEBUT+1];
 	}
-
+/*
 	#if DEBUG && !IAmNotOnThePandaBoard
 		cout << "DEBUG AbstractGaop::read_trame : Trame lue : " << endl;
 		debug_affiche_trame(trame, taille_cmd);
 	#endif
-
+*/
 	return true;
 }
