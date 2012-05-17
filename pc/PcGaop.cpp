@@ -345,7 +345,7 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		else if (tblassoc.getByODID(odid) != NULL)
 		{
 #ifdef DEBUG
-			cout << "DEBUG PCGaop::receive : envoi a l'odid " << odid <<endl;
+			cout << "DEBUG PCGaop::receive : envoi a l'odid " << (int)odid <<endl;
 #endif
 			
 			tblassoc.getByODID(odid)->receive(cmd);

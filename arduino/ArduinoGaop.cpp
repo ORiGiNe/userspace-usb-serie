@@ -127,23 +127,16 @@ le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la tail
 		buf[1] = j; //on renvoie l'ack avec le meme numero de sequence 
 		Serial.write(buf, nb_donnees);
 		
-		if (odid==ODIDSPECIAL)
-		{
-			send(nil,ODIDSPECIAL);
-			/*octet buf2[TAILLE_MAX_FRAME] = {0};
-			buf2[0] = BEGIN_TRAME;
-			buf2[1] = 0;
-			buf2[2] = 0;
-			buf2[3] = ODIDSPECIAL;
-			buf2[4] = create_checksum(buf,6);
-			buf2[5] = END_TRAME;	
-			while(1)
-				Serial.write(buf2,6);*/
-		}
-		
 		// Execution de la commande	
 		if (tblassoc.getByODID(odid) != NULL)
 			tblassoc.getByODID(odid)->receive(cmd);
+		
+		if (odid==ODIDSPECIAL)
+		{
+			send(nil,ODIDSPECIAL);
+		}
+		
+		
 
 		return true;
 	}
