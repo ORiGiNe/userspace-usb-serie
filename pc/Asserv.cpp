@@ -44,7 +44,7 @@ bool Asserv::arreter()
 	return avancer(0,0,0);
 }
 
-Commande Asserv::get()
+int Asserv::get(Commande &c)
 {
 	reponse = false;
 	operation(); //envoie la requete
@@ -58,22 +58,23 @@ Commande Asserv::get()
 		if (apres.tv_nsec - avant.tv_nsec < 0) //retenue
 		{
 			if (apres.tv_sec - avant.tv_sec -1 >= TIMEOUTSEC && avant.tv_nsec - apres.tv_nsec > TIMEOUTUSEC*1000)
-				return NULL;
+				return -1;
 		} else
 		{
 			if (apres.tv_sec - avant.tv_sec >= TIMEOUTSEC && apres.tv_nsec - avant.tv_nsec > TIMEOUTUSEC*1000)
-				return NULL;
+				return -1;
 		}
 
 	}
-	return cmd;
+
+	c = cmd;
+	return 1;
 }
 
 int Asserv::getLastDistance()
 {
-	Commande trame = this->get();
-
-	if (trame == NULL)
+	Commande trame;
+	if (this->get(trame) == -1)
 		return -32768;
 
 	return trame[1];
@@ -81,9 +82,8 @@ int Asserv::getLastDistance()
 
 int Asserv::getLastRotation()
 {
-	Commande trame = this->get();
-
-	if (trame == NULL)
+	Commande trame;
+	if (this->get(trame) == -1)
 		return -32768;
 
 	return trame[3];

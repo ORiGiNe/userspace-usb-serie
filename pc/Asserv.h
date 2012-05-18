@@ -36,7 +36,7 @@ class Asserv : public Peripherique
 		/*!
 		 * Fonction permettant de gérer un timeout pour tous les getters
 		 */
-		Commande get();
+		int get(Commande&);
 
 		bool reponse;
 };
