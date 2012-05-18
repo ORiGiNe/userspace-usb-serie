@@ -22,16 +22,16 @@ int main()
 {
 	AssocPeriphOdid tblassoc;
 	//AbstractGaop *g = new GaopFactory("/dev/ttyACM0");  // Pour Arduino UNO
-	PCGaop g("/dev/ttyACM1");
+	PCGaop g("/dev/ttyACM0");
 
-	//  Effecteur led1(0);		//declaration de la led ayant l'odid 0
+	  Effecteur led1(1);		//declaration de la led ayant l'odid 0
 	//	Capteur uson(1);        //ultrason a l'odid 1
-		Effecteur servo1(3);	//un servo ayant l'odid 3 : Violet : 5-6
-		Effecteur servo2(4);	//un servo ayant l'odid 4 : Orange : 9-10
-	//  tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
+//		Effecteur servo1(3);	//un servo ayant l'odid 3 : Violet : 5-6
+//		Effecteur servo2(4);	//un servo ayant l'odid 4 : Orange : 9-10
+	  tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
 	//	tblassoc.add(&uson);
-		tblassoc.add(&servo1);
-		tblassoc.add(&servo2);
+	//	tblassoc.add(&servo1);
+	//	tblassoc.add(&servo2);
 	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 /*	int device = open("/dev/ttyACM1", O_RDWR | O_NOCTTY | O_NDELAY );
 	octet trame[TAILLE_MAX_FRAME] = {0};
@@ -87,7 +87,7 @@ int main()
 			usleep(100000);
 		}*/
 
-
+/*
 		servo2.set(10);
 		sleep(1);
 		servo1.set(180);
@@ -104,7 +104,7 @@ int main()
 
 
 		while (true);
-
+*/
 
 
 		/*sleep(3);
@@ -126,14 +126,14 @@ int main()
 
 	/* lire indéfiniement les valeurs de l'ultrason */
 	//	Boucle infini jour/nuit
-/*	while (true)
+	while (true)
 	{
 		led1.set(1);
 		usleep(100*1000);
 		led1.set(0);
 		usleep(100*1000);
 	}
-*/
+
 
 	/*//allume une led puis s'arrete
 		led1.set(1);

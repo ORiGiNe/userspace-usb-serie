@@ -23,7 +23,7 @@
  *	\brief Définition des structures de bases utilisées dans le GAOP
  */
 
-/**	 
+/*!	 
  *	\struct octet
  *	Définition d'un octet
  */
@@ -32,13 +32,13 @@ typedef unsigned char octet;
  *	\def BEGIN_TRAME
  *	\brief Octet de début de trame
 */
-#define BEGIN_TRAME 0xFF
+#define BEGIN_TRAME 0x55
 
 /*!
  *	\def END_TRAME
  *	\brief Octet de début de trame
 */
-#define END_TRAME 0xFF
+#define END_TRAME 0xAA
 
 /*!
  *	\def INFOCPL_DEBUT
@@ -156,6 +156,9 @@ struct trame {
  *	On envoi une trame ayant l'ODID 0xFF pour débloquer une potentielle erreur
  */
 #define GAOPSPE 0b00001000
+
+// TODO:Plus que 2 odids spécifiques : 1 spécial pour init & ping ; 1 pour ack ok ou non ok
+
 /*! 
  * \def ODIDSPECIAL
  * ODID spécial utilisé pour que le GAOP du pc et le GAOP de l'arduino communiquent entre eux
@@ -163,7 +166,6 @@ struct trame {
  * L'odid est code sur 8 bits.
  */
 #define ODIDSPECIAL 0xFF
-
 /*!
  *	\def ODIDACKOK
  * ODID d'ack en cas de succès de réception de la trame

@@ -19,12 +19,10 @@ AbstractGaop::AbstractGaop()
 
 octet AbstractGaop::create_checksum( octet *trame, int taille)
 {
-	// On crée le checksum sur les taille-2 octets
 	octet checksum = 0;
+
 	for (int i = 0; i < taille-2; i++)
-	{
 		checksum ^= trame[i];
-	}
 
 	return checksum;
 }
@@ -32,7 +30,7 @@ octet AbstractGaop::create_checksum( octet *trame, int taille)
 int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
 {
 	static octet seq = 0;
-	int i = 0,j;
+	int i = 0;
 
 	// Vidage du buffer
 	/*for (j=0; j < TAILLE_MAX_FRAME ; j++);
@@ -40,9 +38,10 @@ int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
 
 	trame[i++] = BEGIN_TRAME;
 	trame[i++] = seq++;
-	trame[i++] = 2*data.getTaille(); //FIXME
+	trame[i++] = COMMAND_SIZE*data.getTaille(); //FIXME
   trame[i++] = odid;
 	
+	// Spécifique à COMMAND_SIZE
 	for (int j = 0; j < data.getTaille(); j++)
 	{
 		trame[i++] = data[j] / 0x100; //car data[j] = 16 bits
@@ -62,12 +61,7 @@ int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
 
 bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
 {
-	// Vérification minimale des données
-	// Octet fin
-	/*if (trame[0] != BEGIN_TRAME)
-		return false;*/
-
-	// On extrait la taille de la commande pour pouvoir travailler un minimum
+	// On extrait la taille de la commande pour pouvoir travailler sur la taille de la trame
 	int taille_cmd = trame[IND_TAILLE];
 	
 	if (trame[taille_cmd+INFOCPL-1] != END_TRAME)
@@ -82,6 +76,8 @@ bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
 	
 	// On peut maintenant extraire les informations
 	odid = trame[IND_ODID];
+
+	// Spécifique à COMMANDE_SIZE
 	for (int i = 0; i < taille_cmd/2; i++)
 	{
 		cmd[i] = trame[2*i+INFOCPL_DEBUT]*0x100 + trame[2*i+INFOCPL_DEBUT+1];
