@@ -21,16 +21,20 @@ int main()
 {
 	AssocPeriphOdid tblassoc;
 	//AbstractGaop *g = new GaopFactory("/dev/ttyACM0");  // Pour Arduino UNO
-	PCGaop g("/dev/ttyACM1");
+	PCGaop g("/dev/ttyUSB1");
 
 	//  Effecteur led1(0);		//declaration de la led ayant l'odid 0
 	//	Capteur uson(1);        //ultrason a l'odid 1
-		Effecteur servo1(3);	//un servo ayant l'odid 3 : Violet : 5-6
-		Effecteur servo2(4);	//un servo ayant l'odid 4 : Orange : 9-10
+		Effecteur servo1(1);	// Servo 1 : Bras droit
+		Effecteur servo2(2);	// Servo 2 : Bras gauche
+		Effecteur servo3(3);	// Servo 3 : Pince droite
+		Effecteur servo4(4);	// Servo 4 : Pince gauche
 	//  tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
 	//	tblassoc.add(&uson);
 		tblassoc.add(&servo1);
 		tblassoc.add(&servo2);
+		tblassoc.add(&servo3);
+		tblassoc.add(&servo4);
 	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 /*	int device = open("/dev/ttyACM1", O_RDWR | O_NOCTTY | O_NDELAY );
 	octet trame[TAILLE_MAX_FRAME] = {0};
@@ -87,22 +91,39 @@ int main()
 		}*/
 
 
-		servo2.set(10);
+		// Position Fermée
+		servo2.set(20);
 		sleep(1);
 		servo1.set(180);
-		sleep(2);
+		sleep(1);
+		servo3.set(25);
+		sleep(1);
+		servo4.set(180);
+		sleep(4);
 
-
+		// Position Semi-Ouverte
 		servo1.set(90);
 		sleep(1);
 		servo2.set(110);
 		sleep(1);
+		servo4.set(90);
+		sleep(1);
+		servo3.set(110);
+		sleep(1);
+
+		// Position Ouverte
 		servo1.set(20);
 		sleep(1);
 		servo2.set(180);
+		sleep(1);
+		servo4.set(20);
+		sleep(1);
+		servo3.set(180);
+		sleep(1);
 
 
-		while (true);
+		sleep(3600);
+
 
 
 
