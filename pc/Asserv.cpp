@@ -23,7 +23,7 @@ bool Asserv::avancer(int distance, int vitesse, int acceleration)
 	cmd[5] = 0;
 	cmd[6] = 0;
 
-	return operation();
+	return getLastDistance();
 }
 
 bool Asserv::tourner(int angle, int vitesse, int acceleration)
@@ -36,7 +36,7 @@ bool Asserv::tourner(int angle, int vitesse, int acceleration)
 	cmd[5] = vitesse;
 	cmd[6] = acceleration;
 
-	return operation();
+	return getLastDistance();
 }
 
 bool Asserv::arreter()
