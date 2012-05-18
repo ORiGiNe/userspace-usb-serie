@@ -10,15 +10,15 @@ class Asserv : public Peripherique
 		/*!
 		 * Valeur à laquelle on veut avancer. Non-bloquante
 		 */
-		void avancer(int distance);
+		bool avancer(int distance, int vitesse, int acceleration);
 		/*!
 		 * Valeur à laquelle on veut tourner. Non-bloquante
 		 */
-		void tourner(int angle);
+		bool tourner(int angle, int vitesse, int acceleration);
 		/*!
 		 * Commande pour s'arreter net (comme les musettes). Non-bloquante
 		 */
-		void arret();
+		bool arreter();
 		/*!
 		 * Commande pour récupérer la dernière distance (ie dernier appel de distance ou arret)
 		 */
@@ -28,8 +28,17 @@ class Asserv : public Peripherique
 		 */
 		int getLastRotation();
 
-		// Fonction propre au framework
+		/*!
+		 * Récupération de la commande brute
+		 */
 		void receive(Commande&);
 	private:
+		/*!
+		 * Fonction permettant de gérer un timeout pour tous les getters
+		 */
+		int get(Commande&);
 
-}
+		bool reponse;
+};
+
+#endif
