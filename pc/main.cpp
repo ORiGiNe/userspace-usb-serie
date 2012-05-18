@@ -22,16 +22,16 @@ int main()
 {
 	AssocPeriphOdid tblassoc;
 	//AbstractGaop *g = new GaopFactory("/dev/ttyACM0");  // Pour Arduino UNO
-	PCGaop g("/dev/ttyACM0");
+	PCGaop g("/dev/ttyACM1");
 
-	Effecteur led1(0);		//declaration de la led ayant l'odid 0
+	//  Effecteur led1(0);		//declaration de la led ayant l'odid 0
 	//	Capteur uson(1);        //ultrason a l'odid 1
-	//	Effecteur servo1(2);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
-	//	Effecteur servo2(3);	//un servo ayant l'odid 2 (cap'tain obvious à la rescousse)
-	tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
+		Effecteur servo1(3);	//un servo ayant l'odid 3 : Violet : 5-6
+		Effecteur servo2(4);	//un servo ayant l'odid 4 : Orange : 9-10
+	//  tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
 	//	tblassoc.add(&uson);
-	//	tblassoc.add(&servo1);
-	//	tblassoc.add(&servo2);
+		tblassoc.add(&servo1);
+		tblassoc.add(&servo2);
 	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
 /*	int device = open("/dev/ttyACM1", O_RDWR | O_NOCTTY | O_NDELAY );
 	octet trame[TAILLE_MAX_FRAME] = {0};
@@ -80,34 +80,65 @@ int main()
 		cout << endl;
 	}
 */
-	/*	while (true)
-			{
-			cout << "Servo 2 - Aller : " << servo2.set(0) << endl;
-			cout << "Servo 1 - Aller : " << servo1.set(180) << endl;
-			sleep(3);
-			cout << "Servo 2 - Retour: " << servo2.set(180) << endl;
-			cout << "Servo 1 - Retour: " << servo1.set(0) << endl;
-			sleep(3);
-			}
+		/*for( int i = 90 ; i > 0 ; i -- )
+		{
+			cout << "Servo 1 - Init - : " << i << " : " << servo1.set(i) << endl;
+			cout << "Servo 2 - Init - : " << i << " : " << servo2.set(180-i) << endl;
+			usleep(100000);
+		}*/
 
 
-	 */
+		servo2.set(10);
+		sleep(1);
+		servo1.set(180);
+		sleep(2);
+
+
+		servo1.set(90);
+		sleep(1);
+		servo2.set(110);
+		sleep(1);
+		servo1.set(20);
+		sleep(1);
+		servo2.set(180);
+
+
+		while (true);
+
+
+
+		/*sleep(3);
+		//cout << "Servo 2 - Init : " << servo2.set(0) << endl;
+		sleep(5);
+		cout << "Servo 1 - Semi-ouverture : " << servo1.set(90) << endl;
+		//sleep(3);
+		//cout << "Servo 2 - Semi-ouverture : " << servo2.set(90) << endl;
+		sleep(5);
+		cout << "Servo 1 - Bloc : " << servo1.set(0) << endl;
+		//sleep(3);
+		//cout << "Servo 2 - Bloc : " << servo2.set(180) << endl;
+		sleep(5);
+		cout << "End" << endl;
+*/
+
+
 
 
 	/* lire indéfiniement les valeurs de l'ultrason */
 	//	Boucle infini jour/nuit
-	while (true)
+/*	while (true)
 	{
 		led1.set(1);
 		usleep(100*1000);
 		led1.set(0);
 		usleep(100*1000);
 	}
+*/
 
 	/*//allume une led puis s'arrete
 		led1.set(1);
 		sleep(3);
-	 */	
+	 */
 
 	/*// rapidite
 		time_t nb_sec = time(NULL);
