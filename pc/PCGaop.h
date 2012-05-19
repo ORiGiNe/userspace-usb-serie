@@ -5,6 +5,7 @@
 #include "Config.h"
 
 #include <pthread.h>	/* pthread_* */
+#include <sys/select.h> /* fd_set */
 
 /*!
  *	\class Gaop
@@ -78,6 +79,17 @@ class PCGaop : public AbstractGaop
 		 *	Récupération du numéro de séquence de la dernière commande envoyée sans ack
 		 */
 		int get_last_cmd_without_ack();
+
+		/*!
+		 *	Lit une trame dans le file descriptor, en minisant les appels systèmes.
+		 *	Cette méthode utilise la méthode AbstractGaop::read_trame
+		 *	\param cmd Commande à remplir
+		 *	\param trame Trame à remplir
+		 * 	\return Nombre d'octets lus
+		 */
+		int read_trame_from_fd(octet* trame, Commande& cmd, octet &odid);
+
+		fd_set fdr, fdw, fde;
 
 		octet trames_envoyees;
 		bool periph_busy;

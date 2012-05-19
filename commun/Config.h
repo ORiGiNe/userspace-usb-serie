@@ -23,6 +23,16 @@
  *	\brief Définition des structures de bases utilisées dans le GAOP
  */
 
+#define INIT_READY 42
+
+#define INIT_NB_DEVICES 78 // asserv inside
+
+#define INIT_GET_ODID 51
+
+#define INIT_ODID_OK 69
+
+#define INIT_ODID_NOK 175 // Coupe inside
+
 /*!	 
  *	\struct octet
  *	Définition d'un octet

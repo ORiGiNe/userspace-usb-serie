@@ -21,16 +21,28 @@ ArduinoGaop::~ArduinoGaop()
 
 void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 {
-	Serial.begin(115200); //valeur maximal pour communication pc/arduino (http://arduino.cc/en/Serial/Begin)
-	while (Serial.available() <= 0) //tant que personne ne nous demmande quoi que ce soit
-		delay(250); // wait
+	int i;
+	octet trame[TAILLE_MAX_FRAME] = {0};
+	octet odid = 0;
+	Commande init;
 
-	Serial.read(); //T'es la ?
-	Serial.write("y"); //Ok, je suis demare
-	while (Serial.read() != '?'); //enlever tout les signaux "es tu demaree ?"
-	//Serial.read(); //combien de device ?
-	Serial.write(tblassoc->getNbDevices()); //j'en ai x
+	// Open serial communication
+	Serial.begin(115200); 
 
+	// Begin transmission (ping)
+	i = read_trame_from_serial(trame);	
+	//TODO:ack
+	// Pong
+	Serial.write(trame, i);
+
+	// Number of devices
+	i = read_trame_from_serial(trame);
+	//TODO:ack
+	init[0] = tblassoc->getNbDevices();
+	i = create_trame(trame,init,ODIDSPECIAL);
+	Serial.write(trame, i);
+
+	// For each device, send it odid
 	for (int i = 0; i < tblassoc->getNbDevices(); i++)
 	{
 		while (Serial.read() != 'i'); //Quel est l'ODID du device numero i
@@ -149,4 +161,27 @@ le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la tail
 		Serial.write(buf, nb_donnees*sizeof(octet));	
 		return false;
 	}
+}
+
+// FIXME:implementer void serialEvent(Serial myPort) && gestion timeout
+int ArduinoGaop::read_trame_from_serial(octet* trame)
+{
+	int i;
+
+	// Wait in order to get size
+	while (Serial.available() < IND_TAILLE+1) 
+		delayMicroseconds(30);
+
+	// Fill the buffer's begin
+	for ( i = 0 ; i < IND_TAILLE ; i++ )
+		trame[i] = Serial.read();
+
+	// We can fill the rest
+	while (Serial.available() < (int)(trame[IND_TAILLE]+INFOCPL) )
+			delayMicroseconds(30);
+
+	for ( i = 0 ; i < trame[IND_TAILLE]+INFOCPL ; i++ )
+		trame[i] = Serial.read();
+
+	return (int)(trame[IND_TAILLE]+INFOCPL);
 }

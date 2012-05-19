@@ -90,3 +90,12 @@ bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
 */
 	return true;
 }
+
+void AbstractGaop::reset_trame(octet *trame)
+{
+	int i, size = trame[IND_TAILLE];
+
+	for ( i = 0 ; i < size ; i++ )
+		trame[i] = 0;
+}
+

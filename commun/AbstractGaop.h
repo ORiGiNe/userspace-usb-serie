@@ -115,6 +115,11 @@ class AbstractGaop
 								 */
 								bool read_trame(octet *trame, Commande &data, octet &odid);
 
+								/*!
+								 Vide une trame en mettant tous les bytes à 0
+								 */
+								void reset_trame(octet *trame);
+
 								octet flags; //GAOPSPE, GAOPBLK, GAOPDBK, GAOPSND
 };
 
