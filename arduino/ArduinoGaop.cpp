@@ -168,10 +168,15 @@ int ArduinoGaop::read_trame_from_serial(octet* trame)
 {
 	int i;
 
+	//syncronize whith the begin
+	while (Serial.peek() != BEGIN_TRAME)
+		Serial.read();
+	
 	// Wait in order to get size
 	while (Serial.available() < IND_TAILLE+1) 
 		delayMicroseconds(30);
 
+	
 	// Fill the buffer's begin
 	for ( i = 0 ; i < IND_TAILLE ; i++ )
 		trame[i] = Serial.read();
@@ -180,7 +185,7 @@ int ArduinoGaop::read_trame_from_serial(octet* trame)
 	while (Serial.available() < (int)(trame[IND_TAILLE]+INFOCPL) )
 			delayMicroseconds(30);
 
-	for ( i = 0 ; i < trame[IND_TAILLE]+INFOCPL ; i++ )
+	for ( ; i < trame[IND_TAILLE]+INFOCPL ; i++ )
 		trame[i] = Serial.read();
 
 	return (int)(trame[IND_TAILLE]+INFOCPL);

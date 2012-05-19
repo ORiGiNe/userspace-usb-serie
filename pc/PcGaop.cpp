@@ -26,7 +26,7 @@ PCGaop::PCGaop(const char *slave) : AbstractGaop()
 	int i;
 	pthreadarg = new void*[2];
 
-	this->slave = open(slave, O_RDWR | O_NOCTTY );
+	this->slave = open(slave, O_RDWR | O_NOCTTY);
 
 	// Mauvais fichier spécial : arrêt
 	if (this->slave < 0)
@@ -47,26 +47,26 @@ PCGaop::PCGaop(const char *slave) : AbstractGaop()
 	// Options extract from ssty on special device while the analog reader of the Arduino IDE is running
 	options.c_cflag &= ~PARENB;
 	options.c_cflag &= ~PARODD;
-  options.c_cflag |= CS8;
+	options.c_cflag |= CS8;
 	options.c_cflag &= ~HUPCL;
 	options.c_cflag &= ~CSTOPB;
 	options.c_cflag |= CREAD | CLOCAL;
 	options.c_cflag &= ~CRTSCTS;
 	options.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | ISTRIP
-                               | INLCR | IGNCR | ICRNL | IXON | IXOFF
-			       | IUCLC | IXANY | IMAXBEL | IUTF8);
+			| INLCR | IGNCR | ICRNL | IXON | IXOFF
+			| IUCLC | IXANY | IMAXBEL | IUTF8);
 	options.c_iflag |= INPCK;
-        options.c_oflag &= ~(OPOST | OLCUC | OCRNL | ONLCR | ONOCR
-	    | ONLRET | OFILL | OFDEL);
+	options.c_oflag &= ~(OPOST | OLCUC | OCRNL | ONLCR | ONOCR
+			| ONLRET | OFILL | OFDEL);
 	options.c_lflag &= ~(ECHO | ECHONL | ECHOE | ECHOK | ICANON
-	    | ISIG | IEXTEN | NOFLSH | XCASE | TOSTOP
-	    | ECHOPRT | ECHOCTL | ECHOKE);
+			| ISIG | IEXTEN | NOFLSH | XCASE | TOSTOP
+			| ECHOPRT | ECHOCTL | ECHOKE);
 	options.c_oflag |= ( NL0 | CR0 | TAB0 | BS0 | VT0 | FF0 );
 
 
 	tcsetattr(this->slave, TCSANOW, &options);
 
-//	tcflush(this->slave, TCIOFLUSH);
+	//	tcflush(this->slave, TCIOFLUSH);
 
 	// Initialisation de la structure trame, juste le ack
 	trame_envoyees = new Trame[NBR_TRAME_HIST];
@@ -135,9 +135,9 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 #ifdef DEBUG
 	int h;
 	cout << "Trame ( " << j << " ) :";
-	for (h=0 ; h < 8 ; h++)
+	for (h=0 ; h < 8 ; h++) //we are waiting for 8 datas
 		cout << (int)trame[h] << "-";
- cout	<< endl;
+	cout	<< endl;
 #endif
 
 	i = read_trame_from_fd(trame, init, odid);
@@ -210,7 +210,7 @@ bool PCGaop::send(Commande &cmd, octet odid)
 #ifdef DEBUG
 cout << "DEBUG PCGaop::send : Periph bloqué" << endl;
 #endif
-		 */
+*/
 		towait.tv_sec = 0;
 		towait.tv_nsec = 500000; //500 microsecondes
 		nanosleep(&towait, NULL);
@@ -314,8 +314,8 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 		}
 
 		/*
-			 Traitement erreurs
-		 */
+		   Traitement erreurs
+		   */
 		// Taille
 		if (nb_donnees >= IND_TAILLE+1)
 		{
@@ -325,7 +325,7 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 
 		/*
 FIXME: Fail de lecture répétées
-		 */
+*/
 		// Boucle principal
 		towait.tv_sec = 0;
 		towait.tv_nsec = 50000; //50 microsecondes
@@ -466,9 +466,9 @@ int PCGaop::read_trame_from_fd(octet* trame,Commande &cmd, octet &odid)
 		FD_ZERO(&fdr);
 		FD_ZERO(&fdw);
 		FD_ZERO(&fde);
-		
+
 		FD_SET(slave, &fdr);
-		
+
 		ret = select(nfds, &fdr, &fdw, &fde, NULL);
 
 		// Read disponible
@@ -482,10 +482,10 @@ int PCGaop::read_trame_from_fd(octet* trame,Commande &cmd, octet &odid)
 			cout << "DEBUG PCGaop::read_trame_from_fd : Nombre de données lues via read : " << trame_len << endl;
 			cout << "Derniere valeur de read_len : " << read_len << endl;
 
-			cout << "Donnée actuelle : ";
+			cout << "Données actuelles : ";
 
 			int k;
-			for(k=0;k< trame_len;k++)
+			for(k=0; k < /*trame_len*/ TAILLE_MAX_FRAME; k++)
 				cout << (int)trame[k] << "-";
 			cout << endl;
 #endif
@@ -501,7 +501,7 @@ int PCGaop::read_trame_from_fd(octet* trame,Commande &cmd, octet &odid)
 
 				trame_len--;
 			}
-			
+
 		}
 
 		if (trame_len > IND_TAILLE && trame_len >= trame[IND_TAILLE]+INFOCPL && read_trame(trame,cmd,odid))

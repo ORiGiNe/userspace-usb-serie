@@ -23,6 +23,7 @@ int main()
 	AssocPeriphOdid tblassoc;
 	//AbstractGaop *g = new GaopFactory("/dev/ttyACM0");  // Pour Arduino UNO
 	PCGaop g("/dev/ttyACM0");
+	//PCGaop g("/dev/ttyUSB0");
 
 	  Effecteur led1(1);		//declaration de la led ayant l'odid 0
 	//	Capteur uson(1);        //ultrason a l'odid 1
