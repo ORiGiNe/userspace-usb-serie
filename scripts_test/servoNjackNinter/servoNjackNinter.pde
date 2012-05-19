@@ -14,20 +14,30 @@
 ArduinoGaop brain;
 AssocPeriphOdid tblassoc;
 
-Jack jjack(7);
-Capteur jack(1, &jjack);
 
-Jack iinterCouleur(8);
-Capteur interCouleur(2, &iinterCouleur);
+int pin1[1] = {5};
+int pin2[1] = {6};
+int pin3[1] = {9};
+int pin4[1] = {10};
 
-int pin1[2] = {5,6};
-int pin2[2] = {9,10};
+EffecteurServo sservo1(pin1,1);
+Effecteur servo1(11, &sservo1);
 
-EffecteurServo sservo1(pin1,2);
-Effecteur servo1(3, &sservo1);
+EffecteurServo sservo2(pin2,1);
+Effecteur servo2(12, &sservo2); 
 
-EffecteurServo sservo2(pin2,2);
-Effecteur servo2(4, &sservo2);
+EffecteurServo sservo3(pin3,1);
+Effecteur servo3(13, &sservo3);
+
+EffecteurServo sservo4(pin4,1);
+Effecteur servo4(14, &sservo4);
+
+Jack jjack(2);
+Capteur jack(21, &jjack);
+
+Jack iinterCouleur(3);
+Capteur interCouleur(22, &iinterCouleur);
+
 
 void setup()
 {
@@ -38,8 +48,12 @@ void setup()
 
 	sservo1.setup();
 	sservo2.setup();
+	sservo3.setup();
+	sservo4.setup();
 	tblassoc.add(&servo1);	
         tblassoc.add(&servo2);
+	tblassoc.add(&servo3);	
+        tblassoc.add(&servo4);
 
 	brain.initialise(&tblassoc); //Serial.begin(115200);
 }

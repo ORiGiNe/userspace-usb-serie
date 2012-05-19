@@ -89,20 +89,43 @@ int main()
 
 /*
 		servo2.set(10);
+=======
+
+		// Position Fermée
+		servo2.set(20);
+>>>>>>> 576c8cbcf3d6ae6dea34aea7bf0aa603ba5144f7
 		sleep(1);
 		servo1.set(180);
-		sleep(2);
+		sleep(1);
+		servo3.set(25);
+		sleep(1);
+		servo4.set(180);
+		sleep(4);
 
-
+		// Position Semi-Ouverte
 		servo1.set(90);
 		sleep(1);
 		servo2.set(110);
 		sleep(1);
+		servo4.set(90);
+		sleep(1);
+		servo3.set(110);
+		sleep(1);
+
+		// Position Ouverte
 		servo1.set(20);
 		sleep(1);
 		servo2.set(180);
+		sleep(1);
+		servo4.set(20);
+		sleep(1);
+		servo3.set(180);
+		sleep(1);
 
 
+		sleep(3600);
+
+<<<<<<< HEAD
 		while (true);
 */
 
