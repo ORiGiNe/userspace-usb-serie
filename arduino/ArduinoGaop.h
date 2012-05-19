@@ -22,11 +22,19 @@ class ArduinoGaop : public AbstractGaop
 
 		/*!
 		 * Lit une trame directement depuis l'instance Serial
-		 * Cette méthode utilise AbstractGaop::read_trame
+		 * Cette méthode utilise AbstractGaop::read_trame et envoie un ack
 		 * \param trame La trame à remplir
 		 * \return Nombre de bytes lus
 		 */
 		int read_trame_from_serial(octet* trame);
+
+		/*!
+		 * Envoie une trame d'acknoledge
+		 * \param ok : acknoledge ok si true, nook si false
+		 * \param seq : sequence number
+		 * \return : nb d'octets envoyees
+		 */
+		int send_ack(bool ok, int seq); 
 };
 
 #endif /* GAOPPROTOCOL */

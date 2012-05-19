@@ -31,9 +31,6 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 
 	// Begin transmission (ping)
 	i = read_trame_from_serial(trame);	
-	//TODO:ack
-	// Pong
-	Serial.write(trame, i);
 
 	// Number of devices
 	i = read_trame_from_serial(trame);
@@ -188,5 +185,25 @@ int ArduinoGaop::read_trame_from_serial(octet* trame)
 	for ( ; i < trame[IND_TAILLE]+INFOCPL ; i++ )
 		trame[i] = Serial.read();
 
+	send_ack( trame[IND_TAILLE]+INFOCPL &&               //size ok
+			  trame[i-1] == END_TRAME &&                 //end in the good place
+			  create_checksum(trame, i) == trame[i-2],      //checksum ok
+			  trame[IND_SEQ]                             //with the good sequence number
+			);
 	return (int)(trame[IND_TAILLE]+INFOCPL);
 }
+
+int ArduinoGaop::send_ack(bool ok, int seq)
+{
+	octet buf[INFOCPL];
+	int i = 0;
+	buf[i++] = BEGIN_TRAME;
+	buf[i++] = seq;
+	buf[i++] = 0; //size of data
+	buf[i++] = (ok ? ODIDACKOK : ODIDACKNOK);
+	buf[i++] = create_checksum(buf, INFOCPL);
+	buf[i++] = END_TRAME;
+	return INFOCPL;
+}
+
+
