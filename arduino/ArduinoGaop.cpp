@@ -203,7 +203,8 @@ int ArduinoGaop::send_ack(bool ok, int seq)
 	buf[i++] = (ok ? ODIDACKOK : ODIDACKNOK);
 	buf[i++] = create_checksum(buf, INFOCPL);
 	buf[i++] = END_TRAME;
-	return INFOCPL;
+	Serial.write(buf, i);
+	return i;
 }
 
 

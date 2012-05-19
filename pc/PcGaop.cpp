@@ -156,6 +156,9 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 	nb_devices = init[0];
 
 #ifdef DEBUG
+	cout << "trame :";
+	for (h = 0; h < TAILLE_MAX_FRAME; h++) 
+		cout << init[h] << '-';
 	cout << "DEBUG Gaop::initialise : Nombre de devices : " << nb_devices << endl;
 #endif
 
