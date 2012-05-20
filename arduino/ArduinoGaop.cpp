@@ -15,7 +15,7 @@ ArduinoGaop::~ArduinoGaop()
 
 void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 {
-	int i;
+	int i, j;
 	octet trame[TAILLE_MAX_FRAME] = {0};
 	octet odid = 0;
 	Commande init;
@@ -36,14 +36,14 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 	Serial.write(trame, i);
 
 	// For each device, send it odid
-	for (int i = 0; i < tblassoc->getNbDevices(); i++)
+	for (j = 0 ; j < tblassoc->getNbDevices(); j++)
 	{
 		// Wait master commande
 		i = read_trame_from_serial(trame);
 		// FIXME:vérif
 
 		// Send ODID
-		init[0] = (int)(((*tblassoc)[i])->getOdid()); // FIXME: 206 au lieu de 1 : wtf ?
+		init[0] = ((*tblassoc)[j])->getOdid();
 		i = create_trame(trame, init, ODIDSPECIAL);
 		Serial.write(trame, i);
 
@@ -53,11 +53,11 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 
 		if (init[0] == INIT_ODID_NOK ) 
 		{
-			tblassoc->rm((*tblassoc)[i]->getOdid());
+			tblassoc->rm((*tblassoc)[j]->getOdid());
 		}
 		else 
 		{
-				(*tblassoc)[i]->associe(this);
+				(*tblassoc)[j]->associe(this);
 		}
 	}
 }
