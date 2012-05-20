@@ -38,6 +38,25 @@
  *	Définition d'un octet
  */
 typedef unsigned char octet;
+
+/*!
+ *	\struct trame
+ * 	\brief Données des trames pour l'historique
+ *	On garde en historique les informations d'une trame pour la renvoyer
+ *	en cas d'ack négatif.
+ *	Le bool ack permet de dire que l'on a reçu l'ack, et donc on peut écraser cette donnée 
+ */
+
+typedef struct trame * Trame;
+struct trame {
+		Commande cmd;
+		octet odid;
+		octet taille;
+		bool ack;
+};
+
+
+
 /*!
  *	\def BEGIN_TRAME
  *	\brief Octet de début de trame
@@ -118,23 +137,6 @@ typedef unsigned char octet;
 * A titre d'exemplen l'arduino UNO possède un buffer de taille 128 octets
 */
 #define NB_FRAMES_MAX 5
-
-/*!
- *	\struct trame
- * 	\brief Données des trames pour l'historique
- *	On garde en historique les informations d'une trame pour la renvoyer
- *	en cas d'ack négatif.
- *	Le bool ack permet de dire que l'on a reçu l'ack, et donc on peut écraser cette donnée 
- */
-
-typedef struct trame * Trame;
-struct trame {
-		Commande cmd;
-		octet odid;
-		octet taille;
-		bool ack;
-};
-
 /*!
  *	\def NBR_TRAME_HIST
  *	Défini le nombre de trame que l'on garde : il s'agit en fait d'un octet

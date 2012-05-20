@@ -1,10 +1,8 @@
-#make only the pc-way !
 CPP = g++
 EXT = cpp
 BIN = test
 
-CFLAGS = -Wall -g -Wextra -DIAmNotOnThePandaBoard=0 -DDEBUG=1 
-#CFLAGS = -O3 -DIAmNotOnThePandaBoard=0
+CFLAGS = -Wall -Wextra -DIAmNotOnThePandaBoard=0 $(DEBUG)
 
 LDFLAGS = -lrt -pthread
 OBJ = obj
@@ -21,6 +19,9 @@ SRC2 = $(wildcard $(PC)/*.$(EXT))
 OBJPC = $(SRC2:$(PC)/%.$(EXT)=$(OBJ)/%.o)
 
 all: $(BIN)
+
+debug:
+	$(MAKE) $(MAKEFILE) DEBUG="-g -DORiGiNe_DEBUG"
 	 
 $(BIN): $(OBJCOMMUN) $(OBJPC)
 		$(CPP) -o $(BINDIR)/$@ $^ $(LDFLAGS) $(CFLAGS)
@@ -36,8 +37,6 @@ clean:
 
 mrproper: clean
 		rm -vf $(BINDIR)/$(BIN)
-
-#install ide
 
 .sketchbook:
 	@if ! test -d $(SKETCHBOOK); \

@@ -1,14 +1,8 @@
 #include "ArduinoGaop.h"
 #include "Config.h"
 #include <WProgram.h>
+#include "origine_debug.h"
 
-#define DEBUG_ARD() {digitalWrite(13,HIGH); \
-	delay(500); \
-	digitalWrite(13,LOW); \
-	delay(1000); \
-}
-
-#define PRINT_ARD(oki) {     Serial.write(oki); Serial.println("oki"); }
 ArduinoGaop::ArduinoGaop() : AbstractGaop()
 {
 
@@ -30,11 +24,13 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 	Serial.begin(115200); 
 
 	// Begin transmission (ping)
-	i = read_trame_from_serial(trame);	
+	i = read_trame_from_serial(trame);
+	i = create_trame(trame, get_commande_from_trame(trame), get_odid_from_trame(trame));
+	Serial.write(trame,i);	
 
 	// Number of devices
 	i = read_trame_from_serial(trame);
-	//TODO:ack
+
 	init[0] = tblassoc->getNbDevices();
 	i = create_trame(trame,init,ODIDSPECIAL);
 	Serial.write(trame, i);
@@ -42,36 +38,35 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 	// For each device, send it odid
 	for (int i = 0; i < tblassoc->getNbDevices(); i++)
 	{
-		while (Serial.read() != 'i'); //Quel est l'ODID du device numero i
+		// Wait master commande
+		i = read_trame_from_serial(trame);
+		// FIXME:vérif
 
-		Serial.write( ((*tblassoc)[i])->getOdid());
+		// Send ODID
+		init[0] = (int)(((*tblassoc)[i])->getOdid()); // FIXME: 206 au lieu de 1 : wtf ?
+		i = create_trame(trame, init, ODIDSPECIAL);
+		Serial.write(trame, i);
 
-		while (Serial.available() <= 0);
+		// If ODID exists in the master, associate it 
+		i = read_trame_from_serial(trame);
+		init = get_commande_from_trame(trame);
 
-		if (Serial.read() == 'x') //inconnu => on le desactive
+		if (init[0] == INIT_ODID_NOK ) 
 		{
 			tblassoc->rm((*tblassoc)[i]->getOdid());
 		}
-		else //test le
+		else 
 		{
-			if ((*tblassoc)[i]->test())
-			{
-				Serial.write('y');
 				(*tblassoc)[i]->associe(this);
-			}
-			else
-			{
-				Serial.write('n');
-				tblassoc->rm((*tblassoc)[i]->getOdid()); //ca marche pas => desactiver
-			}
 		}
 	}
 }
 
+//XXX:bool nécessaire ?
 bool ArduinoGaop::send(Commande& cmd, octet odid)
 {
 	// Envoi
-	octet buf[TAILLE_MAX_FRAME] = {0}; //on a besoin de qqch de rapide, pas de qqch d'elegant -> pas d'allocation dynamique.
+	octet buf[TAILLE_MAX_FRAME] = {0}; 
 
 	int taille_trame = create_trame(buf, cmd, odid);
 	Serial.write(buf, taille_trame);
@@ -127,7 +122,7 @@ le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la tail
 	}
 
 	// On essaye de lire cette trame
-	if (read_trame(buf,cmd,odid)) 
+	if (verify_trame(buf)) 
 	{
 		// La donnée est bonne : on envoi un ack
 		j = buf[1]; //recupere le numero de sequence
@@ -164,32 +159,35 @@ le comportement attendu : voir avec des flush/peeks & cie, ou alors lire la tail
 int ArduinoGaop::read_trame_from_serial(octet* trame)
 {
 	int i;
+	octet o = 0;
 
-	//syncronize whith the begin
-	while (Serial.peek() != BEGIN_TRAME)
-		Serial.read();
+	// Syncronize with the begin
+	while (o != BEGIN_TRAME)
+	{
+		while (Serial.available() == 0)
+			delayMicroseconds(30);
+
+		o = Serial.read();
+	}
 	
 	// Wait in order to get size
-	while (Serial.available() < IND_TAILLE+1) 
+	while (Serial.available() < IND_TAILLE) 
 		delayMicroseconds(30);
-
 	
 	// Fill the buffer's begin
-	for ( i = 0 ; i < IND_TAILLE ; i++ )
+	trame[0] = o;
+	for ( i = 1 ; i < IND_TAILLE+1 ; i++ )
 		trame[i] = Serial.read();
 
 	// We can fill the rest
-	while (Serial.available() < (int)(trame[IND_TAILLE]+INFOCPL) )
+	while (Serial.available() < (trame[IND_TAILLE]+INFOCPL-(IND_TAILLE+1)) )
 			delayMicroseconds(30);
 
 	for ( ; i < trame[IND_TAILLE]+INFOCPL ; i++ )
 		trame[i] = Serial.read();
 
-	send_ack( trame[IND_TAILLE]+INFOCPL &&               //size ok
-			  trame[i-1] == END_TRAME &&                 //end in the good place
-			  create_checksum(trame, i) == trame[i-2],      //checksum ok
-			  trame[IND_SEQ]                             //with the good sequence number
-			);
+	send_ack(verify_trame(trame),trame[IND_SEQ]);
+
 	return (int)(trame[IND_TAILLE]+INFOCPL);
 }
 
@@ -197,13 +195,16 @@ int ArduinoGaop::send_ack(bool ok, int seq)
 {
 	octet buf[INFOCPL];
 	int i = 0;
+
 	buf[i++] = BEGIN_TRAME;
 	buf[i++] = seq;
-	buf[i++] = 0; //size of data
+	buf[i++] = 0;
 	buf[i++] = (ok ? ODIDACKOK : ODIDACKNOK);
 	buf[i++] = create_checksum(buf, INFOCPL);
 	buf[i++] = END_TRAME;
+	
 	Serial.write(buf, i);
+	
 	return i;
 }
 

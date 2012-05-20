@@ -58,14 +58,15 @@ class PCGaop : public AbstractGaop
 		 */
 		pthread_t fils;
 		void **pthreadarg; // XXX: vraiment nécessaire ?
+
 		/*!
 		 * Historique des trames pour les renvoyées en cas de problèmes de communication.
 		 */
-		Trame * trame_envoyees;
+		Trame * trames_history;
 
 		/*!
 		 * 	Sauvegarde de la trame pour l'historique
-		 *	@param buf Buffer contenant la trame ayant le format attendu
+		 *	\param buf Buffer contenant la trame ayant le format attendu
 		 */
 		void save_trame_before_send(octet* buf);
 
@@ -82,14 +83,25 @@ class PCGaop : public AbstractGaop
 
 		/*!
 		 *	Lit une trame dans le file descriptor, en minisant les appels systèmes.
+		 *	On utilise l'attribut next_trame pour stocker les trames suivantes déjà
+		 *	lues dans les précédents appels à cette fonction.
 		 *	Cette méthode utilise la méthode AbstractGaop::read_trame
 		 *	\param cmd Commande à remplir
 		 *	\param trame Trame à remplir
 		 * 	\return Nombre d'octets lus
 		 */
-		int read_trame_from_fd(octet* trame, Commande& cmd, octet &odid);
+		int read_trame_from_fd(octet* trame);
 
-		fd_set fdr, fdw, fde;
+		/*!
+		 *	Attend l'ack de la séquence demandée, et renvoi la trame en cas d'erreur
+		 *	\param seq Numéro de séquence de l'ack attendue
+		 */
+		void wait_ack(octet seq);
+
+		fd_set fdr;
+
+		octet* next_trame;
+		int size_next_trame;
 
 		octet trames_envoyees;
 		bool periph_busy;

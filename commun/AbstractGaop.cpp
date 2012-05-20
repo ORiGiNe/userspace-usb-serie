@@ -1,17 +1,5 @@
 #include "AbstractGaop.h"
-/*
-#if DEBUG && !IAmNotOnThePandaBoard
-using namespace std;
-#include <iostream>
 
-void debug_affiche_trame(octet *trame, int taille)
-{
-	for(int i = 0 ; i < taille+INFOCPL ; i++)
-		 cout << (int)trame[i] << "-";
-	cout << endl;
-}
-#endif
-*/
 AbstractGaop::AbstractGaop()
 {
 	flags = 0;
@@ -27,20 +15,16 @@ octet AbstractGaop::create_checksum( octet *trame, int taille)
 	return checksum;
 }
 
-int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
+int AbstractGaop::create_trame(octet *trame, Commande data, octet odid)
 {
 	static octet seq = 0;
 	int i = 0;
 
-	// Vidage du buffer
-	/*for (j=0; j < TAILLE_MAX_FRAME ; j++);
-		trame[j] = 0;*/
-
 	trame[i++] = BEGIN_TRAME;
 	trame[i++] = seq++;
 	trame[i++] = COMMAND_SIZE*data.getTaille(); //FIXME
-  trame[i++] = odid;
-	
+	trame[i++] = odid;
+
 	// Spécifique à COMMAND_SIZE
 	for (int j = 0; j < data.getTaille(); j++)
 	{
@@ -50,20 +34,14 @@ int AbstractGaop::create_trame(octet *trame, Commande &data, octet odid)
 
 	trame[i+1] = END_TRAME;
 	trame[i] = create_checksum(trame, 2*data.getTaille() + INFOCPL ); // FIXME
-	/*
-	#if DEBUG && !IAmNotOnThePandaBoard
-		cout << "DEBUG AbstractGaop::create_trame : Trame crée : (taille : " << i+2 << ")" << endl;
-		debug_affiche_trame(trame,trame[2]);
-	#endif
-*/
+
 	return i+2;
 }
 
-bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
+bool AbstractGaop::verify_trame(octet *trame)
 {
-	// On extrait la taille de la commande pour pouvoir travailler sur la taille de la trame
 	int taille_cmd = trame[IND_TAILLE];
-	
+
 	if (trame[taille_cmd+INFOCPL-1] != END_TRAME)
 		return false;
 
@@ -73,29 +51,43 @@ bool AbstractGaop::read_trame(octet *trame, Commande &cmd, octet &odid)
 	// Checksum
 	if (create_checksum(trame, taille_cmd+INFOCPL) != trame[taille_cmd+INFOCPL-2])
 		return false;
-	
-	// On peut maintenant extraire les informations
-	odid = trame[IND_ODID];
+
+	return true;
+}	
+
+void AbstractGaop::get_data_from_trame(octet *trame, Commande &cmd, octet &odid)
+{
+	odid = get_odid_from_trame(trame);
+	cmd = get_commande_from_trame(trame);	
+}
+
+/*void AbstractGaop::reset_trame(octet *trame)
+	{
+	int i, size = trame[IND_TAILLE];
+
+	for ( i = 0 ; i < size ; i++ )
+	trame[i] = 0;
+	}
+ */
+octet AbstractGaop::get_odid_from_trame(octet *trame)
+{
+	return trame[IND_ODID];
+}
+
+Commande AbstractGaop::get_commande_from_trame(octet *trame)
+{
+	Commande cmd;
+	int taille_cmd = trame[IND_TAILLE];
+
+	// If no data
+	if (taille_cmd == 0)
+		return cmd;
 
 	// Spécifique à COMMANDE_SIZE
 	for (int i = 0; i < taille_cmd/2; i++)
 	{
 		cmd[i] = trame[2*i+INFOCPL_DEBUT]*0x100 + trame[2*i+INFOCPL_DEBUT+1];
 	}
-/*
-	#if DEBUG && !IAmNotOnThePandaBoard
-		cout << "DEBUG AbstractGaop::read_trame : Trame lue : " << endl;
-		debug_affiche_trame(trame, taille_cmd);
-	#endif
-*/
-	return true;
+
+	return cmd;
 }
-
-void AbstractGaop::reset_trame(octet *trame)
-{
-	int i, size = trame[IND_TAILLE];
-
-	for ( i = 0 ; i < size ; i++ )
-		trame[i] = 0;
-}
-

@@ -29,8 +29,8 @@ class ArduinoGaop : public AbstractGaop
 		int read_trame_from_serial(octet* trame);
 
 		/*!
-		 * Envoie une trame d'acknoledge
-		 * \param ok : acknoledge ok si true, nook si false
+		 * Construit et envoie une trame d'acknoledge
+		 * \param ok : acknoledge ok si true, false sinon
 		 * \param seq : sequence number
 		 * \return : nb d'octets envoyees
 		 */

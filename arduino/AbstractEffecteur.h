@@ -7,7 +7,7 @@
 class AbstractEffecteur : public Peripherique
 {
 	public:
-		AbstractEffecteur(int odid) : Peripherique(odid) { };
+		AbstractEffecteur(octet odid) : Peripherique(odid) { };
 		virtual bool set(int valuetoset) = 0;
 		virtual void receive(Commande&) = 0;
 	protected:

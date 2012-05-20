@@ -99,26 +99,44 @@ class AbstractGaop
 		 *  @param odid : identifiant du peripherique emetteur
 		 *  @return : taille de la trame
 		 */
-		int create_trame(octet *trame, Commande &data, octet odid); 
+		int create_trame(octet *trame, Commande data, octet odid); 
 
 		/*!
-		 * Lecture de la trame
-		 * \desc Stocke dans data la trames lues
-		 * @param trame : Ce qui est effectivement recue
-		 * @param taille : taille de la trame
-		 * @param data : Si la trame est correcte, cette objet contiendra les
-		 * donnes recues. Dans le cas contraire, rien ne sera mis dans cet objet
-		 * et la fonction returnera la valeur fausse.
-		 * @param odid : contiendra l'identifiant du peripherique a qui les
-		 * donnees s'addressent.
-		 * @return : renvoie faux si la trames et incorrect, vrai sinon
+		 *	Récupère la commande de la trame
+		 *	@pre La trame doit être valide
+		 *	@param trame La trame dans laquelle on récupère la commande
+		 *	@return La commande
 		 */
-		bool read_trame(octet *trame, Commande &data, octet &odid);
+		Commande get_commande_from_trame(octet* trame);
 
 		/*!
-		  Vide une trame en mettant tous les bytes à 0
-		  */
-		void reset_trame(octet *trame);
+		 *	Récupère l'odid de la trame
+		 *	@pre La trame doit être valide
+		 *	@param La trame dans laquelle on récupère l'odid
+		 *	@return L'odid
+		 */
+		octet get_odid_from_trame(octet* trame);
+
+		/*!
+		 * Extrait les informations de la trame
+		 * @pre La trame doit être valide
+		 * @param trame Trame lue 
+		 * @param data Les informations ou commandes destinées au device précisé par l'ODID, ou
+		 * dans le cas d'un ODID spécial, destiné aux traitements du protocole.
+		 * @param odid L'ODID auquel la commande est destinée.
+		 */
+		void get_data_from_trame(octet *trame, Commande &data, octet &odid);
+
+		/*!
+		 *	Vide une trame en mettant tous les bytes à 0
+		 */
+		//void reset_trame(octet *trame);
+
+		/*!
+		 *	Vérifie une trame
+		 *	\return true si la trame est bonne, false sinon
+		 */
+		bool verify_trame(octet *trame);
 
 		octet flags; //GAOPSPE, GAOPBLK, GAOPDBK, GAOPSND
 };

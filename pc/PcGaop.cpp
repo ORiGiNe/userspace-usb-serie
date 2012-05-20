@@ -1,13 +1,8 @@
 #include "PCGaop.h"
 #include "AssocPeriphOdid.h"
-
-#if DEBUG
-using namespace std;
-#include <iostream>
-#endif
+#include <origine_debug.h> /* ORIGINE_DEBUG_* */
 
 #include <sys/select.h> /* fd_set */
-//#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>	/*open*/
@@ -28,14 +23,14 @@ PCGaop::PCGaop(const char *slave) : AbstractGaop()
 
 	this->slave = open(slave, O_RDWR | O_NOCTTY);
 
-	// Mauvais fichier spécial : arrêt
+	// Wrong special file : stop
 	if (this->slave < 0)
 	{
-		std::cerr << "Erreur à l'ouverture du fichier spécial : " << strerror(errno) << std::endl;
+		std::cerr << "Error : " << strerror(errno) << std::endl;
 		throw strerror(errno);
 	}
 
-	// Définition des attributs du terminal
+	// Set terminal attributes
 	struct termios options;
 
 	tcgetattr(this->slave, &options);
@@ -45,6 +40,7 @@ PCGaop::PCGaop(const char *slave) : AbstractGaop()
 	cfsetispeed(&options, B115200);
 
 	// Options extract from ssty on special device while the analog reader of the Arduino IDE is running
+	//TODO:ranger
 	options.c_cflag &= ~PARENB;
 	options.c_cflag &= ~PARODD;
 	options.c_cflag |= CS8;
@@ -63,22 +59,21 @@ PCGaop::PCGaop(const char *slave) : AbstractGaop()
 			| ECHOPRT | ECHOCTL | ECHOKE);
 	options.c_oflag |= ( NL0 | CR0 | TAB0 | BS0 | VT0 | FF0 );
 
-
 	tcsetattr(this->slave, TCSANOW, &options);
 
-	//	tcflush(this->slave, TCIOFLUSH);
-
-	// Initialisation de la structure trame, juste le ack
-	trame_envoyees = new Trame[NBR_TRAME_HIST];
+	// Trames history initialisation => ack false
+	trames_history = new Trame[NBR_TRAME_HIST];
 
 	for ( i = 0 ; i < NBR_TRAME_HIST ; i++ )
 	{
-		trame_envoyees[i] = new trame;
-		trame_envoyees[i]->ack = false;
+		trames_history[i] = new trame;
+		trames_history[i]->ack = false;
 	}
 
 	trames_envoyees = 0;
 	periph_busy = false;
+	next_trame = new octet[TAILLE_MAX_FRAME]();
+	size_next_trame = 0;
 
 	struct timespec now = {2, 0}; 
 	nanosleep(&now, NULL);
@@ -120,58 +115,60 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 {
 	octet trame[TAILLE_MAX_FRAME] =  {0};
 	octet odid = 0;
-	int i, size = 0;
+	int i,j, size = 0;
 	Commande init;
-
-	// FIXME : OUT
-	int nb_devices = 0;
-	int r[1] = {0};
 
 	// Wait a connection (ie ping)
 	init[0] = INIT_READY;
 	size = create_trame(trame, init, ODIDSPECIAL);
 
-	int j = write(slave,trame,size);
-#ifdef DEBUG
-	int h;
-	cout << "Trame ( " << j << " ) :";
-	for (h=0 ; h < 8 ; h++) //we are waiting for 8 datas
-		cout << (int)trame[h] << "-";
-	cout	<< endl;
-#endif
+	i = write(slave,trame,size);
 
-	i = read_trame_from_fd(trame, init, odid);
-#ifdef DEBUG
-	cout << "PCGaop::initialise : première trame => " << i << endl;
-#endif
-	//TODO:error
+	ORIGINE_DEBUG_STDOUT("Trame 1 envoyée | Nombre données envoyées: %d\n", i);
+	ORIGINE_DEBUG_STDOUT_ITER(trame,i);
+	
+	wait_ack(trame[IND_SEQ]);
+
+	i = read_trame_from_fd(trame);
+	
+	ORIGINE_DEBUG_STDOUT("Trame 1 reçue, nombre de données : %d\n\n\n",i);
+
+	init[0] = tblassoc->getNbDevices();
 
 	// How many devices ?
 	init[0] = INIT_NB_DEVICES;
 	size = create_trame(trame, init, ODIDSPECIAL);
-	write(slave,trame,size);
+	i = write(slave,trame,size);
+	
+	ORIGINE_DEBUG_STDOUT("Trame 2 envoyée | Nombre données envoyées: %d\n", i);
+	ORIGINE_DEBUG_STDOUT_ITER(trame,i);
+	
+	wait_ack(trame[IND_SEQ]);
 
-	i = read_trame_from_fd(trame, init, odid);
+	i = read_trame_from_fd(trame);
 
-	nb_devices = init[0];
+	int nb_devices = get_commande_from_trame(trame)[0];
 
-#ifdef DEBUG
-	cout << "trame :";
-	for (h = 0; h < TAILLE_MAX_FRAME; h++) 
-		cout << init[h] << '-';
-	cout << "DEBUG Gaop::initialise : Nombre de devices : " << nb_devices << endl;
-#endif
-
-	for (int i = 0; i < nb_devices; i++)
+	ORIGINE_DEBUG_STDOUT("Trame 2 reçue, nombre de devices : %d\n\n\n", nb_devices);
+	ORIGINE_DEBUG_STDOUT_ITER(trame,i);
+	
+	for (int j = 0; j < nb_devices; j++)
 	{
 		// Get ODID for each device
 		init[0] = INIT_GET_ODID;
 		size = create_trame(trame, init, ODIDSPECIAL);
 		write(slave,trame,size);
+	
+		ORIGINE_DEBUG_STDOUT("Trame pour odid envoyée | Nombre données envoyées: %d | Ordre : %d\n", i, init[0]);
+		ORIGINE_DEBUG_STDOUT_ITER(trame,i);
+		
+		wait_ack(trame[IND_SEQ]);
 
-		i = read_trame_from_fd(trame, init, odid);
+		i = read_trame_from_fd(trame);
 
-		odid = init[0];
+		odid = (octet)(get_commande_from_trame(trame)[0]);
+			
+		ORIGINE_DEBUG_STDOUT("odid n°%d reçu\n\n\n",odid);
 
 		// Check if this odid is associate with this Gaop
 		if (tblassoc->getByODID(odid) != NULL) 
@@ -181,9 +178,10 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 			size = create_trame(trame, init, ODIDSPECIAL);
 			write(slave,trame,size);
 
-#if DEBUG
-			cout << "DEBUG Gaop::initialise : odid :" << (int)(tblassoc->getByODID(odid)->getOdid()) << " ajouté";
-#endif
+			ORIGINE_DEBUG_STDOUT("odid n°%d ajouté\n\n\n",odid);
+			
+			wait_ack(trame[IND_SEQ]);
+			
 			tblassoc->getByODID(odid)->associe(this);
 		}
 		else
@@ -192,10 +190,16 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 			init[0] = INIT_ODID_NOK;
 			size = create_trame(trame, init, ODIDSPECIAL);
 			write(slave,trame,size);
+			
+			ORIGINE_DEBUG_STDOUT("odid n°%d supprime\n\n\n",odid);
+	
+			wait_ack(trame[IND_SEQ]);
 		}
 	}
+			
+	ORIGINE_DEBUG_STDOUT("Init done\n\n\n");
 
-	// On thread la fonction receive
+	// Thread the RX way
 	pthreadarg[0] = this;
 	pthreadarg[1] = tblassoc;
 	pthread_create(&fils, NULL, run_gaop, pthreadarg);
@@ -363,7 +367,7 @@ FIXME: Fail de lecture répétées
 	// Fin de la récupération des données
 
 	// Tentative de lecture de la trame
-	if ( buf[IND_TAILLE] <= TAILLE_MAX_FRAME-INFOCPL && read_trame(buf, cmd, odid) )
+	if ( buf[IND_TAILLE] <= TAILLE_MAX_FRAME-INFOCPL && verify_trame(buf) )
 	{ 
 #if DEBUG
 		cout << "DEBUG PCGaop::receive : Succès de lecture de la trame" <<endl;
@@ -388,7 +392,7 @@ FIXME: Fail de lecture répétées
 #ifdef DEBUG
 				cout << "DEBUG PCGaop::receive : ack de la cmd " << (int)buf[1] << endl;
 #endif
-				trame_envoyees[buf[1]]->ack = true;
+				trames_history[buf[1]]->ack = true;
 			}
 			// ack non ok => on renvoi la trame
 			else
@@ -436,14 +440,14 @@ void PCGaop::save_trame_before_send(octet* buf)
 	int ind = buf[IND_SEQ];
 
 	// On passe l'ack à false
-	trame_envoyees[ind]->ack = false;
+	trames_history[ind]->ack = false;
 
 	// Sauvegarde de la taille et de l'odid
-	trame_envoyees[ind]->taille = buf[IND_TAILLE];
-	trame_envoyees[ind]->odid = buf[IND_ODID];
+	trames_history[ind]->taille = buf[IND_TAILLE];
+	trames_history[ind]->odid = buf[IND_ODID];
 
 	// Sauvegarde de la commande
-	for ( i = 0 ; i < trame_envoyees[ind]->taille/2 ; i++ )
+	for ( i = 0 ; i < trames_history[ind]->taille/2 ; i++ )
 		cmd[i] = buf[2*i+INFOCPL_DEBUT]*0x100 + buf[2*i+INFOCPL_DEBUT+1];
 }
 
@@ -455,62 +459,136 @@ octet* PCGaop::build_trame_from_seq(Commande& cmd, octet seq)
 	return buf;
 }
 
-int PCGaop::read_trame_from_fd(octet* trame,Commande &cmd, octet &odid)
+int PCGaop::read_trame_from_fd(octet* trame)
 {
 	int nfds = slave + 1;
 	int ret = -1;
-	int i;
+	int i,j;
 	int read_len = -1;
 	int trame_len = 0;
+	struct timeval wait;
+
+	// Si il y a un début de trame dans next_trame, on l'a copie dans la trame
+	if (size_next_trame != 0)
+	{
+		ORIGINE_DEBUG_STDOUT("Données présentes dans next_trame : %d\n",size_next_trame);
+		ORIGINE_DEBUG_STDOUT_ITER(next_trame,TAILLE_MAX_FRAME);
+
+		i = 0;
+		for ( j = 0 ; i < size_next_trame ; i++)
+		{
+			trame[j] = next_trame[i];
+			j++;
+			trame_len++;
+		}
+		//TODO:décalage pour avoir un début de trame
+
+		// Verification of the trame
+		if (trame_len > IND_TAILLE && trame_len >= trame[IND_TAILLE]+INFOCPL)
+		{
+			// On copie la fin de la trame lue, dans le cas où l'on ai lus plusieurs trames
+			j = 0;
+			for( i = trame[IND_TAILLE]+INFOCPL ; i < trame_len ; i++)
+			{
+				next_trame[j] = trame[i];
+				j++;
+			}
+			size_next_trame = j;
+			trame_len = trame[IND_TAILLE]+INFOCPL;
+
+			ORIGINE_DEBUG_STDOUT("Trame ok, issue de next_trame : %d\n",trame_len);
+			ORIGINE_DEBUG_STDOUT_ITER(trame,trame_len);
+
+			return trame_len;
+		}
+	}
 
 	while(trame_len < TAILLE_MAX_FRAME) // FIXME
 	{
-		// Reset monitoring on fd
+		// Reset read monitoring on fd
 		FD_ZERO(&fdr);
-		FD_ZERO(&fdw);
-		FD_ZERO(&fde);
-
 		FD_SET(slave, &fdr);
 
-		ret = select(nfds, &fdr, &fdw, &fde, NULL);
+		ORIGINE_DEBUG_STDOUT("Attente de news données pour lire\n");
+	
+		wait.tv_sec = 1;
+		wait.tv_usec = 0;
 
-		// Read disponible
+		ret = select(nfds, &fdr, NULL, NULL, &wait);
+
+		// If new data on slave
 		if (FD_ISSET(slave, &fdr))
 		{
 			read_len = read(slave, trame+trame_len, TAILLE_MAX_FRAME-trame_len);
-
+			// TODO:vérif
 			trame_len += read_len;
 
-#ifdef DEBUG
-			cout << "DEBUG PCGaop::read_trame_from_fd : Nombre de données lues via read : " << trame_len << endl;
-			cout << "Derniere valeur de read_len : " << read_len << endl;
-
-			cout << "Données actuelles : ";
-
-			int k;
-			for(k=0; k < /*trame_len*/ TAILLE_MAX_FRAME; k++)
-				cout << (int)trame[k] << "-";
-			cout << endl;
-#endif
+			ORIGINE_DEBUG_STDOUT("Nombre de données lues via read (trame_len) : %d\nDerniere valeur de read_len : %d\n", trame_len, read_len);
+			ORIGINE_DEBUG_STDOUT_ITER(trame, TAILLE_MAX_FRAME);
 
 			// En cas de décalage, on se recalibre sur un début de trame
 			while (trame[0] != BEGIN_TRAME && trame_len != 0)
 			{
-#ifdef DEBUG
-				cout << "DEBUG PCGaop::read_trame_from_fd : Nombre de décalage" << endl;
-#endif
-				for ( i = 1 ; i < trame_len ; i++ )
-					trame[i-1] = trame[i];
+				ORIGINE_DEBUG_STDOUT("Décalage (suivant trame_len) :\n");
+				ORIGINE_DEBUG_STDOUT_ITER(trame,trame_len);
 
 				trame_len--;
 			}
-
 		}
 
-		if (trame_len > IND_TAILLE && trame_len >= trame[IND_TAILLE]+INFOCPL && read_trame(trame,cmd,odid))
+		// Verification of the trame
+		if (trame_len > IND_TAILLE && trame_len >= trame[IND_TAILLE]+INFOCPL)
+		{
+			// On copie la fin de la trame lue, dans le cas où l'on ai lus plusieurs trames
+			j = 0;
+			for( i = trame[IND_TAILLE]+INFOCPL ; i < trame_len ; i++)
+			{
+				next_trame[j] = trame[i];
+				j++;
+			}
+			size_next_trame = j;
+
+			ORIGINE_DEBUG_STDOUT("Taille de next_trame : %d\n", j);
+
+			trame_len = trame[IND_TAILLE]+INFOCPL;
+
+			ORIGINE_DEBUG_STDOUT("Trame ok : %d\n",trame_len);
+			ORIGINE_DEBUG_STDOUT_ITER(trame,trame_len);
+
 			return trame_len;
+		}
 	}
 
 	return -1;
 }
 
+void PCGaop::wait_ack(octet seq)
+{
+	int i;
+	octet odid = 0;
+	Commande cmd;
+	octet trame[TAILLE_MAX_FRAME] = {0};
+
+	do
+	{
+		ORIGINE_DEBUG_STDOUT("Attente ack de la séquence %d\n",seq);
+		i = read_trame_from_fd(trame);
+
+		odid = get_odid_from_trame(trame);
+
+		if ( odid == ODIDACKOK )
+		{
+			// TODO: remplir struct
+		}
+		else if ( odid == ODIDACKNOK )
+		{
+			// TODO: renvoyé trame
+		}
+		else
+		{
+			// Euh, wait ..?
+		}
+	} while (odid != ODIDACKOK && odid != ODIDACKNOK);
+		
+	ORIGINE_DEBUG_STDOUT("Reception ack de la séquence %d\n",seq);
+}
