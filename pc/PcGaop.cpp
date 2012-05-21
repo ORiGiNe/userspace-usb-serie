@@ -40,24 +40,21 @@ PCGaop::PCGaop(const char *slave) : AbstractGaop()
 	cfsetispeed(&options, B115200);
 
 	// Options extract from ssty on special device while the analog reader of the Arduino IDE is running
-	//TODO:ranger
-	options.c_cflag &= ~PARENB;
-	options.c_cflag &= ~PARODD;
-	options.c_cflag |= CS8;
-	options.c_cflag &= ~HUPCL;
-	options.c_cflag &= ~CSTOPB;
-	options.c_cflag |= CREAD | CLOCAL;
-	options.c_cflag &= ~CRTSCTS;
+	options.c_cflag &= ~(PARENB | PARODD | HUPCL | CSTOPB | CRTSCTS);
+	options.c_cflag |= ( CS8 | CREAD | CLOCAL );
+	
 	options.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | ISTRIP
 			| INLCR | IGNCR | ICRNL | IXON | IXOFF
 			| IUCLC | IXANY | IMAXBEL | IUTF8);
 	options.c_iflag |= INPCK;
+	
 	options.c_oflag &= ~(OPOST | OLCUC | OCRNL | ONLCR | ONOCR
 			| ONLRET | OFILL | OFDEL);
+	options.c_oflag |= ( NL0 | CR0 | TAB0 | BS0 | VT0 | FF0 );
+	
 	options.c_lflag &= ~(ECHO | ECHONL | ECHOE | ECHOK | ICANON
 			| ISIG | IEXTEN | NOFLSH | XCASE | TOSTOP
 			| ECHOPRT | ECHOCTL | ECHOKE);
-	options.c_oflag |= ( NL0 | CR0 | TAB0 | BS0 | VT0 | FF0 );
 
 	tcsetattr(this->slave, TCSANOW, &options);
 
@@ -152,7 +149,7 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 	ORIGINE_DEBUG_STDOUT("Trame 2 reçue, nombre de devices : %d\n\n\n", nb_devices);
 	ORIGINE_DEBUG_STDOUT_ITER(trame,i);
 	
-	for (int j = 0; j < nb_devices; j++)
+	for (j = 0; j < nb_devices; j++)
 	{
 		// Get ODID for each device
 		init[0] = INIT_GET_ODID;
@@ -205,12 +202,13 @@ void PCGaop::initialise(AssocPeriphOdid *tblassoc)
 	pthread_create(&fils, NULL, run_gaop, pthreadarg);
 }
 
+// TODO:faire des mutex, c'est mieux
 bool PCGaop::send(Commande &cmd, octet odid)
 {
 	struct timespec towait;
 	int tour = 0;
 
-	// If GAOP lock until we send/receive a special odid
+	// GAOP lock until we send/receive a special odid
 	while (flags & GAOPBLK && odid != ODIDSPECIAL)
 	{
 		towait.tv_sec = 0;
@@ -264,7 +262,7 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 	int i = 0, nb_donnees = 0;
 	struct timespec towait;
 
-	ORIGINE_DEBUG_STDOUT("init");
+	ORIGINE_DEBUG_STDOUT("init\n");
 
 	// If Gaop send, return
 	if (flags & GAOPSND)
@@ -276,13 +274,13 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 	// If trame is valid 
 	if ( verify_trame(trame) )
 	{ 
-		// En cas d'ODID spécial, on débloque
+		// If odid spécial, we unlock the periph
 		if (odid == ODIDSPECIAL)
 		{
 			ORIGINE_DEBUG_STDOUT("ODID spécial\n");
 
 			trames_envoyees = 0;
-			periph_busy = false;
+			flags &= ~GAOPBLK;
 		}
 		// Handle ack
 		else if ( odid == ODIDACKNOK || odid == ODIDACKOK )
@@ -292,17 +290,18 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 			{
 				ORIGINE_DEBUG_STDOUT("ack de la cmd %d\n",trame[IND_SEQ]);
 				trames_history[trame[IND_SEQ]]->ack = true;
+				
+				if (trames_envoyees > 0)
+					trames_envoyees--;
 			}
 			// ack non ok => on renvoi la trame TODO
 			else
 			{
 				ORIGINE_DEBUG_STDOUT("nack de la cmd %d\n",trame[IND_SEQ]);
 				
-				Commande cmd_ack;
+				//trame = build_trame_from_seq(trame[IND_SEQ]);
 
-				build_trame_from_seq(cmd_ack, trame[IND_SEQ]);
-
-				send(cmd_ack,odid);
+				//send(get_commande_from_trame(trame),get_odid_from_trame(trame));
 			}
 		}
 		else if (tblassoc.getByODID(odid) != NULL)
@@ -331,26 +330,24 @@ void PCGaop::save_trame_before_send(octet* buf)
 	Commande cmd;
 	octet i;
 
-	// Récupération du numéro de séquence <=> indice du tableau
+	// Sequence number <=> tab index 
 	int ind = buf[IND_SEQ];
 
-	// On passe l'ack à false
+	// We just send the trame
 	trames_history[ind]->ack = false;
 
-	// Sauvegarde de la taille et de l'odid
+	// Save data
 	trames_history[ind]->taille = buf[IND_TAILLE];
 	trames_history[ind]->odid = buf[IND_ODID];
 
-	// Sauvegarde de la commande
 	for ( i = 0 ; i < trames_history[ind]->taille/2 ; i++ )
 		cmd[i] = buf[2*i+INFOCPL_DEBUT]*0x100 + buf[2*i+INFOCPL_DEBUT+1];
 }
 
-octet* PCGaop::build_trame_from_seq(Commande& cmd, octet seq)
+octet* PCGaop::build_trame_from_seq(octet seq)
 {
 	octet* buf;
 
-	//TODO
 	return buf;
 }
 

@@ -74,7 +74,7 @@ class PCGaop : public AbstractGaop
 		 *	Construction d'une trame à l'aide de la structure gérant l'historique et d'un numéro de séquence
 		 *	Ce numéro de séquence est récupéré de la trame de nack TODO : ou d'un timeout.
 		 */
-		octet* build_trame_from_seq(Commande& cmd, octet seq);
+		octet* build_trame_from_seq(octet seq);
 
 		/*!
 		 *	Récupération du numéro de séquence de la dernière commande envoyée sans ack

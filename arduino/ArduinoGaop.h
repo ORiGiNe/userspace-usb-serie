@@ -21,7 +21,7 @@ class ArduinoGaop : public AbstractGaop
 		bool receive(AssocPeriphOdid&);
 
 		/*!
-		 * Lit une trame directement depuis l'instance Serial
+		 * Lit une trame directement depuis l'instance Serial, et vérifie
 		 * Cette méthode utilise AbstractGaop::read_trame et envoie un ack
 		 * \param trame La trame à remplir
 		 * \return Nombre de bytes lus

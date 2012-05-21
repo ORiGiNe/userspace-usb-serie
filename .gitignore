@@ -3,4 +3,6 @@
 *.swo
 *.so
 *~
-test
+prog_pc
+prog_arduino
+build-cli/

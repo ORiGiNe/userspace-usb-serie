@@ -1,6 +1,7 @@
 CPP = g++
 EXT = cpp
-BIN = test
+BIN = prog_pc
+ARDUINO_MAKEFILE=arduino.mk
 
 CFLAGS = -Wall -Wextra -DIAmNotOnThePandaBoard=0 $(DEBUG)
 
@@ -19,6 +20,8 @@ SRC2 = $(wildcard $(PC)/*.$(EXT))
 OBJPC = $(SRC2:$(PC)/%.$(EXT)=$(OBJ)/%.o)
 
 all: $(BIN)
+#	cd arduino
+#	make -f arduino/$(ARDUINO_MAKEFILE) upload 
 
 debug:
 	$(MAKE) $(MAKEFILE) DEBUG="-g -DORiGiNe_DEBUG"
@@ -38,6 +41,7 @@ clean:
 mrproper: clean
 		rm -vf $(BINDIR)/$(BIN)
 
+# For install in IDE's sketchbook
 .sketchbook:
 	@if ! test -d $(SKETCHBOOK); \
 	then mkdir $(SKETCHBOOK); \

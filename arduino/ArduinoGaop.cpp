@@ -15,7 +15,7 @@ ArduinoGaop::~ArduinoGaop()
 
 void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 {
-	int i, j; // TODO: i => ret
+	int i, j;
 	octet trame[TAILLE_MAX_FRAME] = {0};
 	octet odid = 0;
 	Commande init;
