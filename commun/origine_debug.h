@@ -40,20 +40,19 @@
 }
 
 /*!
- *	\def ORIGINE_DEBUG_ARD_LED
- *	\param time Temps d'attente en ms
- *	Allume la LED 13, execute le ... et éteint la LED 13 après le delay
+ *	@def ORIGINE_DEBUG_POISON
+ *	@param nbr Nombre de données poisons
+ *	@param data Data a écrire
+ *	Ecrit des données poisons sur la liaison série
  */
-/*#define ORIGINE_DEBUG_ARD_LED(time,...) { \
-	digitalWrite(13,HIGH); \
-	__VA_ARGS__ \
-	delay(delay); \
-	digitalrite(12,LOW); \
+#define ORIGINE_DEBUG_POISON(data,nbr) { \
+	int origine_debug_i; \
+	for (origine_debug_i = 0 ; origine_debug_i < nbr ; origine_debug_i++) \
+		write(device,data,i); \
 }
-*/
 
 #endif /* ORiGiNe_DEBUG */
-
+// FIXME: la suite à remettre là haut avec un makefile joli pour up sur arduino
 /*!
  *	@def ORIGINE_DEBUG_ARD_LED
  *	@param time Le temps d'attente en ms
@@ -63,5 +62,17 @@
 	digitalWrite(13,HIGH); \
 	delay(time); \
 	digitalWrite(13,LOW); \
+}
+
+/*!
+ *	@def ORIGINE_DEBUG_ARD_POISON
+ *	@param nbr Nombre de données poisons
+ *	@param data Data a écrire
+ *	Ecrit des données poisons sur la liaison série
+ */
+#define ORIGINE_DEBUG_ARD_POISON(data,nbr) { \
+	int origine_debug_i; \
+	for (origine_debug_i = 0 ; origine_debug_i < nbr ; origine_debug_i++) \
+		Serial.write(data); \
 }
 #endif /* ORIGINE_DEBUG_H */

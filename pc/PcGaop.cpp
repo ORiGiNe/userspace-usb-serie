@@ -210,53 +210,37 @@ bool PCGaop::send(Commande &cmd, octet odid)
 	struct timespec towait;
 	int tour = 0;
 
-	// Tant que le périphérique est bloqué, on attend	
-	while (periph_busy && odid != ODIDSPECIAL)
+	// If GAOP lock until we send/receive a special odid
+	while (flags & GAOPBLK && odid != ODIDSPECIAL)
 	{
-		/*
-#ifdef DEBUG
-cout << "DEBUG PCGaop::send : Periph bloqué" << endl;
-#endif
-*/
 		towait.tv_sec = 0;
 		towait.tv_nsec = 500000; //500 microsecondes
 		nanosleep(&towait, NULL);
 		tour++;
 
 		// Si on dépasse un certain nombre de tours, c'est qu'il y a eu un problème avec la trame de déblocage
-		// on considère que c'est great
-		if (tour > MAX_NBR_TOURS)
-			periph_busy = false;	
+		/*if (tour > MAX_NBR_TOURS)
+			periph_busy = false;	*/
 	}
 
-	// Si il s'agit d'une trame de déblocage, on bloque en attendant la réponse du périphérique
-	if (odid == ODIDSPECIAL)
-	{
-#ifdef DEBUG
-		cout << "DEBUG PCGaop::send : ODID Spécial" << endl;
-#endif
-	}
+	// If somebody send data, wait
+	while ((flags & GAOPSND));
 
-	while ((flags & GAOPSND))
-		nanosleep(&towait, NULL); //qqn emet => attente
-
-	// Emission et construction
+	// Build & send trame
 	flags |= GAOPSND; 
 	octet buf[TAILLE_MAX_FRAME] = {0};
 
 	int taille_trame = create_trame(buf, cmd, odid);
 
-	// On sauvegarde la trame en cas de non ack ou timeout
+	// Save trame in order to re-send it if we have a nack 
 	save_trame_before_send(buf);
 
 	int octets_envoyes = write(slave, buf, taille_trame*sizeof(octet));
-	//tcdrain(slave); //attendre que c'est bien envoye
 
-#if DEBUG 
-	cout << "DEBUG PCGaop::send : Nombre octets ( " << sizeof(octet) << " ) envoyés : " << octets_envoyes << endl;
-#endif
+	ORIGINE_DEBUG_STDOUT("Nombre octets envoyés : %d\n", octets_envoyes);
 
-	flags &= ~GAOPSND; //fin de l'emission
+	// End of send
+	flags &= ~GAOPSND;
 
 	if (odid != ODIDSPECIAL)
 	{
@@ -276,142 +260,54 @@ bool PCGaop::receive(AssocPeriphOdid& tblassoc)
 {
 	Commande cmd;
 	octet odid;
-	octet buf[TAILLE_MAX_FRAME] = {0};
+	octet trame[TAILLE_MAX_FRAME] = {0};
 	int i = 0, nb_donnees = 0;
 	struct timespec towait;
 
-#ifdef DEBUG
-	int k;
-	cout << "DEBUG PCGaop::receive : init" << endl;
-#endif
+	ORIGINE_DEBUG_STDOUT("init");
 
-	// Si on envoi, on ne fait rien
+	// If Gaop send, return
 	if (flags & GAOPSND)
 		return false;
 
-	// Récupération des données
-	do	
-	{
-		// Détection d'un début d'une trame
-		if (nb_donnees == 0)
-		{
-			// On boucle tant que l'on n'a pas un début de trame
-			i = read(slave, buf, 1*sizeof(octet));
+	// Get trame
+	nb_donnees = read_trame_from_fd(trame);
 
-			if (buf[0] == BEGIN_TRAME && i > 0)
-				nb_donnees++;
-		}
-		// Récupération de la taille
-		else if (nb_donnees < IND_TAILLE+1)
-		{ 
-			i = read(slave, buf+nb_donnees, (INFOCPL_DEBUT - nb_donnees)*(sizeof(octet)));
-
-			if ( i > 0 )
-				nb_donnees += i;
-		}
-		else //lit le reste = data + fin
-		{
-			if (nb_donnees < buf[IND_TAILLE]+INFOCPL)
-			{
-				i = read(slave, buf+nb_donnees, (buf[2]+INFOCPL - nb_donnees)*(sizeof(octet)));
-
-				if ( i > 0 )
-					nb_donnees += i;
-			}
-		}
-
-		/*
-		   Traitement erreurs
-		   */
-		// Taille
-		if (nb_donnees >= IND_TAILLE+1)
-		{
-			if (buf[IND_TAILLE] > TAILLE_MAX_FRAME-INFOCPL)
-				break;
-		}
-
-		/*
-FIXME: Fail de lecture répétées
-*/
-		// Boucle principal
-		towait.tv_sec = 0;
-		towait.tv_nsec = 50000; //50 microsecondes
-		nanosleep(&towait, NULL);
-
-#ifdef DEBUG
-		cout << "DEBUG PCGaop::receive : Nombre de données lues via read : " << nb_donnees-1 << endl;
-		cout << "Derniere valeur de i : " << i << endl;
-
-		if (nb_donnees >= 3 )
-			cout << "Nombre de données attendues : " << (buf[2] + INFOCPL) <<endl;
-
-		if (i < 0)
-			cout << "Erreur : " <<strerror(errno) <<endl;
-
-		cout << "Donnée actuelle : ";
-
-		for(k=0;k< nb_donnees;k++)
-			cout << (int)buf[k] << "-";
-		cout << endl;
-#endif
-
-		// Si on n'a pas la taille, on revient directement au début
-		if (nb_donnees < INFOCPL_DEBUT)
-			continue;
-
-		// Si la taille est plus grande que la taille max de frame, on break pour gestion d'erreurs
-		if (buf[IND_TAILLE] > TAILLE_MAX_FRAME-INFOCPL)
-			break;
-
-	} while (nb_donnees < (int)(buf[2]+INFOCPL)); // TODO:cpt error
-	// Fin de la récupération des données
-
-	// Tentative de lecture de la trame
-	if ( buf[IND_TAILLE] <= TAILLE_MAX_FRAME-INFOCPL && verify_trame(buf) )
+	// If trame is valid 
+	if ( verify_trame(trame) )
 	{ 
-#if DEBUG
-		cout << "DEBUG PCGaop::receive : Succès de lecture de la trame" <<endl;
-#endif
-
 		// En cas d'ODID spécial, on débloque
 		if (odid == ODIDSPECIAL)
 		{
-#if DEBUG
-			cout << "DEBUG PCGaop::receive : ODID spécial" <<endl;
-#endif
+			ORIGINE_DEBUG_STDOUT("ODID spécial\n");
 
 			trames_envoyees = 0;
 			periph_busy = false;
 		}
-		// Gestion de l'ack
+		// Handle ack
 		else if ( odid == ODIDACKNOK || odid == ODIDACKOK )
 		{
 			// ack ok
 			if (odid == ODIDACKOK)
 			{
-#ifdef DEBUG
-				cout << "DEBUG PCGaop::receive : ack de la cmd " << (int)buf[1] << endl;
-#endif
-				trames_history[buf[1]]->ack = true;
+				ORIGINE_DEBUG_STDOUT("ack de la cmd %d\n",trame[IND_SEQ]);
+				trames_history[trame[IND_SEQ]]->ack = true;
 			}
-			// ack non ok => on renvoi la trame
+			// ack non ok => on renvoi la trame TODO
 			else
 			{
-#ifdef DEBUG
-				cout << "DEBUG PCGaop::receive : nack" << endl;
-#endif
+				ORIGINE_DEBUG_STDOUT("nack de la cmd %d\n",trame[IND_SEQ]);
+				
 				Commande cmd_ack;
 
-				build_trame_from_seq(cmd_ack, buf[IND_SEQ]);
+				build_trame_from_seq(cmd_ack, trame[IND_SEQ]);
 
 				send(cmd_ack,odid);
 			}
 		}
 		else if (tblassoc.getByODID(odid) != NULL)
 		{
-#ifdef DEBUG
-			cout << "DEBUG PCGaop::receive : envoi a l'odid " << (int)odid <<endl;
-#endif
+			ORIGINE_DEBUG_STDOUT("envoi a l'odid %d\n", odid);
 
 			tblassoc.getByODID(odid)->receive(cmd);
 		}
@@ -424,9 +320,8 @@ FIXME: Fail de lecture répétées
 		// On vérifie ici s'il s'agit d'un ack ou non grace à l'historique,
 		// si ce n'est pas le cas on renvoi la dernière requête de type get ou asserv
 
-#ifdef DEBUG
 		std::cerr << "Erreur de transmission ! " << std::endl;
-#endif
+		
 		return false;
 	}
 }
@@ -459,6 +354,7 @@ octet* PCGaop::build_trame_from_seq(Commande& cmd, octet seq)
 	return buf;
 }
 
+//TODO:verify_trame
 int PCGaop::read_trame_from_fd(octet* trame)
 {
 	int nfds = slave + 1;
@@ -481,7 +377,14 @@ int PCGaop::read_trame_from_fd(octet* trame)
 			j++;
 			trame_len++;
 		}
-		//TODO:décalage pour avoir un début de trame
+		// En cas de décalage, on se recalibre sur un début de trame
+		while (trame[0] != BEGIN_TRAME && trame_len != 0)
+		{
+			ORIGINE_DEBUG_STDOUT("Décalage (suivant trame_len) :\n");
+			ORIGINE_DEBUG_STDOUT_ITER(trame,trame_len);
+
+			trame_len--;
+		}
 
 		// Verification of the trame
 		if (trame_len > IND_TAILLE && trame_len >= trame[IND_TAILLE]+INFOCPL)

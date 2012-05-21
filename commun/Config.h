@@ -152,22 +152,12 @@ struct trame {
  *	\brief Émission bloquées
  */
 #define GAOPBLK 0b00000001
-/*!
- *	\def GAOPDBK
- *	\brief Émission de l'autre machine (distante bloquée)
- */
-#define GAOPDBK 0b00000010
+
 /*!
  *	\def GAOPSND
  *	\brief Émission en cours
  */
-#define GAOPSND 0b00000100 
-/*!
- *	\def GAOPSPE
- *	\brief Trame spéciale de déblocage
- *	On envoi une trame ayant l'ODID 0xFF pour débloquer une potentielle erreur
- */
-#define GAOPSPE 0b00001000
+#define GAOPSND 0b00000010 
 
 // TODO:Plus que 2 odids spécifiques : 1 spécial pour init & ping ; 1 pour ack ok ou non ok
 
