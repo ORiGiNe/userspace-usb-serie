@@ -5,9 +5,9 @@
 #define timeToCm(time) ((time) / 29 / 2)
 #define timeToMm(time) (((time)*10) / 29 / 2)
 
-Jack::Jack(int pin)
+Jack::Jack(int _pin)
 {
-	this->pin = pin;
+	pin = _pin;
 
 	// Define in lib arduino
 	pinMode(pin, INPUT);

@@ -3,11 +3,12 @@
 
 #include "Peripherique.h"
 
+#define PERIPH_MAX 10
+
 class AssocPeriphOdid //associe un odid a un peripherique
 {
 	public:
 		AssocPeriphOdid();
-		~AssocPeriphOdid();
 
 		void add(Peripherique*);
 		void rm(octet odid); //desactive le peripherique odid
@@ -16,7 +17,7 @@ class AssocPeriphOdid //associe un odid a un peripherique
 		Peripherique* getByODID(octet odid); //recherche par identifiant (lineaire)
 
 	private:
-		Peripherique **t;
+		Peripherique* t[PERIPH_MAX];
 		int taille;
 };
 

@@ -1,8 +1,8 @@
 #include "Capteur.h"
 
-Capteur::Capteur(int odid, DriverCapteur *driver) : AbstractCapteur(odid)
+Capteur::Capteur(int odid, DriverCapteur *_driver) : AbstractCapteur(odid)
 {
-	this->driver = driver;
+	driver = _driver;
 }
 
 

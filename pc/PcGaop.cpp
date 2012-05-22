@@ -1,20 +1,21 @@
 #include "PCGaop.h"
 #include "AssocPeriphOdid.h"
-#include <origine_debug.h> /* ORIGINE_DEBUG_* */
+#include "origine_debug.h"	/* ORIGINE_DEBUG_* */
 
-#include <sys/select.h> /* fd_set */
+#include <sys/select.h>		/* fd_set */
 #include <sys/types.h>
 #include <unistd.h>
-#include <sys/stat.h>	/*open*/
+#include <sys/stat.h>		/*open*/
 #include <fcntl.h>		/*open*/
 #include <signal.h>		/*kill*/
 #include <unistd.h>		/*read, write, close, fork*/
-#include <termios.h>	/*tcgetattr, cfsetospeed, cfsetispeed, tcsetattr, tcdrain struct termios*/
-#include <time.h>		/*clock_gettime(implique -lrt), nanosleep*/
+#include <termios.h>		/*tcgetattr, cfsetospeed, cfsetispeed, tcsetattr, tcdrain struct termios*/
 #include <iostream>		/*cerr, cout, endl*/
 #include <cstring>		/*strerr*/
 #include <cerrno>		/*errno*/
+#include <ctime>		/*clock_gettime(implique -lrt), nanosleep*/
 
+using namespace std;
 
 PCGaop::PCGaop(const char *slave_path) : AbstractGaop()
 {
@@ -25,7 +26,7 @@ PCGaop::PCGaop(const char *slave_path) : AbstractGaop()
 	// Wrong special file : stop
 	if (slave < 0)
 	{
-		std::cerr << "Error : " << strerror(errno) << std::endl;
+		cerr << "Error : " << strerror(errno) << endl;
 		throw strerror(errno);
 	}
 
@@ -48,14 +49,14 @@ PCGaop::PCGaop(const char *slave_path) : AbstractGaop()
 	options.c_cflag |= CREAD | CLOCAL;
 	options.c_cflag &= ~CRTSCTS;
 	options.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | ISTRIP
-			 | INLCR | IGNCR | ICRNL | IXON | IXOFF
-			 | IUCLC | IXANY | IMAXBEL | IUTF8);
+			     | INLCR | IGNCR | ICRNL | IXON | IXOFF
+			     | IUCLC | IXANY | IMAXBEL | IUTF8);
 	options.c_iflag |= INPCK;
 	options.c_oflag &= ~(OPOST | OLCUC | OCRNL | ONLCR | ONOCR
-			 | ONLRET | OFILL | OFDEL);
+			     | ONLRET | OFILL | OFDEL);
 	options.c_lflag &= ~(ECHO | ECHONL | ECHOE | ECHOK | ICANON
-			 | ISIG | IEXTEN | NOFLSH | XCASE | TOSTOP
-			 | ECHOPRT | ECHOCTL | ECHOKE);
+			     | ISIG | IEXTEN | NOFLSH | XCASE | TOSTOP
+			     | ECHOPRT | ECHOCTL | ECHOKE);
 	options.c_oflag |=(NL0 | CR0 | TAB0 | BS0 | VT0 | FF0 );
 
 	tcsetattr(slave, TCSANOW, &options);
@@ -227,7 +228,7 @@ bool PCGaop::send(Commande &cmd, octet odid)
 		}
 	}
 
-	return(octets_envoyes == taille_trame);
+	return (octets_envoyes == taille_trame);
 }
 
 bool PCGaop::receive()
@@ -251,40 +252,31 @@ bool PCGaop::receive()
 	// If trame is valid
 	if (verified_trame)
 	{
-		// En cas d'ODID spécial, on débloque
-		if (odid == ODIDSPECIAL)
+		switch (odid)
 		{
+		case ODIDSPECIAL:
 			ORIGINE_DEBUG_STDOUT("ODID spécial\n");
-
 			trames_envoyees = 0;
 			periph_busy = false;
-		}
-		// Handle ack
-		else if (odid == ODIDACKNOK || odid == ODIDACKOK )
-		{
-			// ack ok
-			if (odid == ODIDACKOK)
+			break;
+		case ODIDACKOK:
+			ORIGINE_DEBUG_STDOUT("ack de la cmd %d\n", trame[IND_SEQ]);
+			trames_history[trame[IND_SEQ]]->ack = true;
+			break;
+		case ODIDACKNOK:
+			ORIGINE_DEBUG_STDOUT("nack de la cmd %d\n", trame[IND_SEQ]);
+			Commande cmd_ack;
+			build_trame_from_seq(cmd_ack, trame[IND_SEQ]);
+			send(cmd_ack, odid);
+			break;
+		default:
+			if (tblassoc->getByODID(odid) != NULL)
 			{
-				ORIGINE_DEBUG_STDOUT("ack de la cmd %d\n", trame[IND_SEQ]);
-				trames_history[trame[IND_SEQ]]->ack = true;
+				ORIGINE_DEBUG_STDOUT("envoi a l'odid %d\n", odid);
+
+				tblassoc->getByODID(odid)->receive(cmd);
 			}
-			// ack non ok => on renvoi la trame TODO
-			else
-			{
-				ORIGINE_DEBUG_STDOUT("nack de la cmd %d\n", trame[IND_SEQ]);
-				
-				Commande cmd_ack;
-
-				build_trame_from_seq(cmd_ack, trame[IND_SEQ]);
-
-				send(cmd_ack, odid);
-			}
-		}
-		else if (tblassoc->getByODID(odid) != NULL)
-		{
-			ORIGINE_DEBUG_STDOUT("envoi a l'odid %d\n", odid);
-
-			tblassoc->getByODID(odid)->receive(cmd);
+			break;
 		}
 	}
 	// Erreur de lecture de trame
@@ -294,7 +286,7 @@ bool PCGaop::receive()
 		// On vérifie ici s'il s'agit d'un ack ou non grace à l'historique,
 		// si ce n'est pas le cas on renvoi la dernière requête de type get ou asserv
 
-		std::cerr << "Erreur de transmission ! " << std::endl;
+		cerr << "Erreur de transmission ! " << endl;
 	}
 	return verified_trame;
 }

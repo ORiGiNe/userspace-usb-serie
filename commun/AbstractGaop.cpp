@@ -33,7 +33,7 @@ int AbstractGaop::create_trame(octet *trame, Commande data, octet odid)
 	}
 
 	trame[i+1] = END_TRAME;
-	trame[i] = create_checksum(trame, 2*data.getTaille() + INFOCPL ); // FIXME
+	trame[i] = create_checksum(trame, 2 * data.getTaille() + INFOCPL); // FIXME
 
 	return i+2;
 }
@@ -42,14 +42,14 @@ bool AbstractGaop::verify_trame(octet *trame)
 {
 	int taille_cmd = trame[IND_TAILLE];
 
-	if (trame[taille_cmd+INFOCPL-1] != END_TRAME)
+	if (trame[taille_cmd + INFOCPL - 1] != END_TRAME)
 		return false;
 
 	if (taille_cmd > TAILLE_MAX_FRAME - INFOCPL)
 		return false;
 
 	// Checksum
-	if (create_checksum(trame, taille_cmd+INFOCPL) != trame[taille_cmd+INFOCPL-2])
+	if (create_checksum(trame, taille_cmd + INFOCPL) != trame[taille_cmd + INFOCPL - 2])
 		return false;
 
 	return true;
@@ -61,14 +61,16 @@ void AbstractGaop::get_data_from_trame(octet *trame, Commande &cmd, octet &odid)
 	cmd = get_commande_from_trame(trame);	
 }
 
-/*void AbstractGaop::reset_trame(octet *trame)
+/*
+void AbstractGaop::reset_trame(octet *trame)
 	{
 	int i, size = trame[IND_TAILLE];
 
 	for ( i = 0 ; i < size ; i++ )
 	trame[i] = 0;
 	}
- */
+//*/
+
 octet AbstractGaop::get_odid_from_trame(octet *trame)
 {
 	return trame[IND_ODID];
@@ -86,7 +88,7 @@ Commande AbstractGaop::get_commande_from_trame(octet *trame)
 	// Spécifique à COMMANDE_SIZE
 	for (int i = 0; i < taille_cmd/2; i++)
 	{
-		cmd[i] = trame[2*i+INFOCPL_DEBUT]*0x100 + trame[2*i+INFOCPL_DEBUT+1];
+		cmd[i] = trame[2 * i + INFOCPL_DEBUT] * 0x100 + trame[2 * i + INFOCPL_DEBUT + 1];
 	}
 
 	return cmd;
