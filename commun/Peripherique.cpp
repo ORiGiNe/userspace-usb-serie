@@ -1,14 +1,9 @@
 #include "Peripherique.h"
-#include <stdlib.h>
 
-#if IAmNotOnThePandaBoard
-void __cxa_pure_virtual() { };
-#endif
-
-Peripherique::Peripherique(octet odid) 
+Peripherique::Peripherique(octet _odid)
 { 
-	this->odid = odid;
-	this->g = NULL;
+	odid = _odid;
+	g = NULL;
 }
 
 octet Peripherique::getOdid()
@@ -16,9 +11,9 @@ octet Peripherique::getOdid()
 	return odid;
 }
 
-void Peripherique::associe(AbstractGaop* g)
+void Peripherique::associe(AbstractGaop* _g)
 {
-	this->g = g;
+	g = _g;
 } 
 
 // TODO evolution future
@@ -33,13 +28,5 @@ bool Peripherique::test()
 */
 bool Peripherique::operation()
 {
-	if (g == NULL)
-		return false;
-	
-	bool ret = g->send(cmd, odid);
-	return ret;
+	return (g == NULL) ? false : g->send(cmd, odid);
 }
-
-//void Peripherique::Receive(Commande& c){  }
-
-

@@ -52,19 +52,14 @@ int Asserv::get(Commande &c)
 	struct timespec avant, apres;
 	clock_gettime(CLOCK_REALTIME, &avant);
 	
+	int timeoutMilliSec = TIMEOUTSEC * 1000 + TIMEOUTUSEC / 1000;
+
 	while (!reponse) //Ok car programmation multi-threade
 	{
 		clock_gettime(CLOCK_REALTIME, &apres);
-		if (apres.tv_nsec - avant.tv_nsec < 0) //retenue
-		{
-			if (apres.tv_sec - avant.tv_sec -1 >= TIMEOUTSEC && avant.tv_nsec - apres.tv_nsec > TIMEOUTUSEC*1000)
-				return -1;
-		} else
-		{
-			if (apres.tv_sec - avant.tv_sec >= TIMEOUTSEC && apres.tv_nsec - avant.tv_nsec > TIMEOUTUSEC*1000)
-				return -1;
-		}
-
+		timeout = (apres.tv_sec - avant.tv_sec) * 1000 + (apres.tv_nsec - avant.tv_nsec) / 1000000;
+		if (timeout > timeoutMilliSec)
+			return -1;
 	}
 
 	c = cmd;
@@ -74,7 +69,7 @@ int Asserv::get(Commande &c)
 int Asserv::getLastDistance()
 {
 	Commande trame;
-	if (this->get(trame) == -1)
+	if (get(trame) == -1)
 		return -32768;
 
 	return trame[1];
@@ -83,7 +78,7 @@ int Asserv::getLastDistance()
 int Asserv::getLastRotation()
 {
 	Commande trame;
-	if (this->get(trame) == -1)
+	if (get(trame) == -1)
 		return -32768;
 
 	return trame[3];

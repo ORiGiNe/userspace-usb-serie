@@ -1,5 +1,5 @@
-#ifndef FICHIERDECONFIGURATION
-#define FICHIERDECONFIGURATION
+#ifndef CONFIG_H
+#define CONFIG_H
 
 #include "Commande.h"
 

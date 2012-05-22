@@ -5,17 +5,15 @@
 #define timeToCm(time) ((time) / 29 / 2)
 #define timeToMm(time) (((time)*10) / 29 / 2)
 
-TriggerEcho::TriggerEcho(int trigger, int echo)
+TriggerEcho::TriggerEcho(int _trigger, int _echo)
 {
-	this->trigger = trigger;
-	this->echo = echo;
+	trigger = _trigger;
+	echo = _echo;
 
 	// Define in lib arduino
 	pinMode(echo, INPUT);
 	pinMode(trigger, OUTPUT);
 }
-
-//TriggerEcho::TriggerEcho(int trigger_echo)
 
 int TriggerEcho::get()
 {

@@ -11,10 +11,10 @@
 	Il faudrait le mettre dans le main
 */
 
-I2C::I2C(int address)
+I2C::I2C(int _address)
 {
 	Wire.begin();
-	this->address = address;
+	address = _address;
 }
 
 int I2C::get()
@@ -22,24 +22,24 @@ int I2C::get()
 	int result = 0;
 
 	// Pour enregistrer la valeur en cm
-	Wire.beginTransmission(this->address);
+	Wire.beginTransmission(address);
 	Wire.send(0);
 	Wire.send(0x51);
 	Wire.endTransmission();
 	delay(70);
 
 	// Pour lire
-	Wire.beginTransmission(this->address);
+	Wire.beginTransmission(address);
 	Wire.send(2);
 	Wire.endTransmission();
 
-	Wire.requestFrom(this->address, 2);
+	Wire.requestFrom(address, 2);
 
-	while (Wire.available() < 2 )   {
+	while (Wire.available() < 2) {
 		// wait for result
 	}
 
-	// Décalage logique d'un bit
+	// Décalage logique d'un octet
 	result = Wire.receive() * 256;
 	result += Wire.receive();
 

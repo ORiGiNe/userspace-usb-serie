@@ -1,8 +1,8 @@
 #include "Effecteur.h"
 
-Effecteur::Effecteur(octet odid, DriverEffecteur *driver) : AbstractEffecteur(odid)
+Effecteur::Effecteur(octet odid, DriverEffecteur *_driver) : AbstractEffecteur(odid)
 {
-	this->driver = driver;
+	driver = _driver;
 }
 
 void Effecteur::receive(Commande& c)

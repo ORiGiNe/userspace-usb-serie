@@ -1,8 +1,8 @@
 #include "Led.h"
 
-Led::Led(int pin)
+Led::Led(int _pin)
 {
-	this->pin = pin;
+	pin = _pin;
 	pinMode(pin, OUTPUT);
 }
 

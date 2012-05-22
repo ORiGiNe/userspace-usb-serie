@@ -1,40 +1,22 @@
 #include "AssocPeriphOdid.h"
-#include <stdlib.h>
-
-#if DEBUG && !IAmNotOnThePandaBoard
-using namespace std;
-#include <iostream>
-#endif
+#include "origine_debug.h"
 
 AssocPeriphOdid::AssocPeriphOdid()
 {
-	t = NULL;
 	taille = 0;
-}
-
-AssocPeriphOdid::~AssocPeriphOdid()
-{
-	if (t)
-		free(t);
 }
 
 void AssocPeriphOdid::add(Peripherique *p)
 {
 	taille++;
-	t = (Peripherique**)realloc(t, taille*sizeof(Peripherique*));
 	t[taille-1] = p;
 
-#ifdef DEBUG && !IAmNotOnThePandaBoard
-	cout << "DEBUG AssocPeriphOdid::add odid periph : " << (int)(p->getOdid()) <<endl;
-#endif
+	ORIGINE_DEBUG_STDOUT("DEBUG AssocPeriphOdid::add odid periph : %d" << (int)(p->getOdid()))
 }
 
 Peripherique* AssocPeriphOdid::operator[](int n)
 {
-	if (n >= 0 &&  n < taille)
-		return t[n];
-	else
-		return NULL;
+	return (n >= 0 &&  n < taille) ? t[n] : NULL;
 }
 
 Peripherique* AssocPeriphOdid::getByODID(octet odid)
@@ -46,9 +28,11 @@ Peripherique* AssocPeriphOdid::getByODID(octet odid)
 	}
 	return NULL;
 }
+
 void AssocPeriphOdid::rm(octet odid)
 {
-	for (int i = 0; i < taille; i++)
+	int i = 0;
+	for (i = 0; i < taille; i++)
 	{
 		if (t[i]->getOdid() == odid)
 		{
@@ -56,6 +40,12 @@ void AssocPeriphOdid::rm(octet odid)
 			break;
 		}
 	}
+	//compact the array so getNbDevices is REALLY the nb of devices
+	for(i; i < taille-1; i++)
+	{
+		t[i] = t[i+1];
+	}
+	taille--;
 }
 
 int AssocPeriphOdid::getNbDevices()
