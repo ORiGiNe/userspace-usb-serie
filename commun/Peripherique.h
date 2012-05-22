@@ -8,10 +8,6 @@
  * Le code de ce bidule sera different cote arduino et cote pc
  */
 
-#if IAmNotOnThePandaBoard
-extern "C" void __cxa_pure_virtual();
-#endif
-
 class Peripherique
 {
 	public:
