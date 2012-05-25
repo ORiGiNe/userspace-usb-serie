@@ -46,18 +46,21 @@ class PCGaop : public AbstractGaop
 		 *	\brief Méthode pour recevoir une trame
 		 *	Cette méthode tourne en arrière-plan et permet de gérer les trames en réception
 		 */
-		bool receive(AssocPeriphOdid&);
+        bool receive();
+
+        static void* bootstrapRun(void*);
+        void* run();
+
+        bool loop;
+        bool loopFinished;
 
 	private:
+        AssocPeriphOdid *tblassoc;
+
 		/*!
 		 *	File descriptor du slave
 		 */
-		int slave;
-		/*!
-		 *	Thread pour lancer la méthode receive du Gaop et ainsi recevoir les trames du slave
-		 */
-		pthread_t fils;
-		void **pthreadarg; // XXX: vraiment nécessaire ?
+        int slave;
 
 		/*!
 		 * Historique des trames pour les renvoyées en cas de problèmes de communication.

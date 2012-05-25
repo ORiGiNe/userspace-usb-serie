@@ -1,27 +1,13 @@
 #include "Commande.h"
-#include "Config.h"
-#include <stdlib.h>
 
 Commande::Commande()
 {
-	tbl = NULL;
 	taille = 0;
-}
-
-Commande::~Commande()
-{
-	/*if (tbl)
-		free(tbl);*/
 }
 
 short int& Commande::operator[](unsigned int i)
 {
-	if (i >= taille && (sizeof(short int))*i+INFOCPL < TAILLE_MAX_FRAME)
-	{ 
-		tbl = (short int *)realloc(tbl, (i + 1)*sizeof(short int));
-		taille = i + 1;
-	}
-	return tbl[i];
+	return (i < TBL_MAX) ? tbl[i] : -1;
 }
 
 int Commande::getTaille() const
@@ -29,7 +15,7 @@ int Commande::getTaille() const
 	return taille;
 }
 
-void Commande::setTaille(int taille)
+void Commande::setTaille(int _taille)
 {
-	this->taille = taille;
+	taille = _taille;
 }

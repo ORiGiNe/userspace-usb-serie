@@ -1,22 +1,22 @@
-#include <iostream>
 #include "PCGaop.h"
 #include "AssocPeriphOdid.h"
 #include "Effecteur.h"
 #include "Capteur.h"
 #include "Asserv.h"
-using namespace std;
-#include <unistd.h>
+
+#include <iostream>
 #include <ctime>
-#include <sys/stat.h>	/*open*/
+#include <sys/stat.h>		/*open*/
 #include <fcntl.h>		/*open*/
 #include <signal.h>		/*kill*/
 #include <unistd.h>		/*read, write, close, fork*/
-#include <termios.h>	/*tcgetattr, cfsetospeed, cfsetispeed, tcsetattr, tcdrain struct termios*/
+#include <termios.h>		/*tcgetattr, cfsetospeed, cfsetispeed, tcsetattr, tcdrain struct termios*/
 #include <time.h>		/*clock_gettime (implique -lrt), nanosleep*/
 #include <iostream>		/*cerr, cout, endl*/
 #include <cstring>		/*strerr*/
 #include <cerrno>		/*errno*/
 
+using namespace std;
 
 int main()
 {
@@ -25,16 +25,16 @@ int main()
 	PCGaop g("/dev/ttyACM0");
 	//PCGaop g("/dev/ttyUSB0");
 
-	  Effecteur led1(1);		//declaration de la led ayant l'odid 0
+	Effecteur led1(1);		//declaration de la led ayant l'odid 0
 	//	Capteur uson(1);        //ultrason a l'odid 1
-//		Effecteur servo1(3);	//un servo ayant l'odid 3 : Violet : 5-6
-//		Effecteur servo2(4);	//un servo ayant l'odid 4 : Orange : 9-10
-	  tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
+	//		Effecteur servo1(3);	//un servo ayant l'odid 3 : Violet : 5-6
+	//		Effecteur servo2(4);	//un servo ayant l'odid 4 : Orange : 9-10
+	tblassoc.add(&led1);	//enregistrement doit etre fait pour tous les devices
 	//	tblassoc.add(&uson);
 	//	tblassoc.add(&servo1);
 	//	tblassoc.add(&servo2);
 	g.initialise(&tblassoc); //initailiation des devices au bon gaop protocol
-/*	int device = open("/dev/ttyACM1", O_RDWR | O_NOCTTY | O_NDELAY );
+	/*	int device = open("/dev/ttyACM1", O_RDWR | O_NOCTTY | O_NDELAY );
 	octet trame[TAILLE_MAX_FRAME] = {0};
 	octet trame2[TAILLE_MAX_FRAME] = {0};
 	octet checksum = 0;
@@ -81,14 +81,14 @@ int main()
 		cout << endl;
 	}
 */
-		/*for( int i = 90 ; i > 0 ; i -- )
+	/*for( int i = 90 ; i > 0 ; i -- )
 		{
 			cout << "Servo 1 - Init - : " << i << " : " << servo1.set(i) << endl;
 			cout << "Servo 2 - Init - : " << i << " : " << servo2.set(180-i) << endl;
 			usleep(100000);
 		}*/
 
-/*
+	/*
 		servo2.set(10);
 =======
 
@@ -131,7 +131,7 @@ int main()
 */
 
 
-		/*sleep(3);
+	/*sleep(3);
 		//cout << "Servo 2 - Init : " << servo2.set(0) << endl;
 		sleep(5);
 		cout << "Servo 1 - Semi-ouverture : " << servo1.set(90) << endl;

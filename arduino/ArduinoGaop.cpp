@@ -17,28 +17,27 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 {
 	int i, j;
 	octet trame[TAILLE_MAX_FRAME] = {0};
-	octet odid = 0;
 	Commande init;
 
 	// Open serial communication
-	Serial.begin(115200); 
+	Serial.begin(115200);
 
 	// Begin transmission (ping)
 	i = read_trame_from_serial(trame);
 	i = create_trame(trame, get_commande_from_trame(trame), get_odid_from_trame(trame));
-	Serial.write(trame,i);	
+	Serial.write(trame, i);
 
-	ORIGINE_DEBUG_ARD_POISON('r',3);
+	ORIGINE_DEBUG_ARD_POISON('r', 3);
 
 	// Number of devices
 	i = read_trame_from_serial(trame);
 
 	init[0] = tblassoc->getNbDevices();
-	i = create_trame(trame,init,ODIDSPECIAL);
+	i = create_trame(trame, init, ODIDSPECIAL);
 	Serial.write(trame, i);
 
 	// For each device, send it odid
-	for (j = 0 ; j < tblassoc->getNbDevices(); j++)
+	for (j = 0; j < tblassoc->getNbDevices(); j ++ )
 	{
 		// Wait master command
 		i = read_trame_from_serial(trame);
@@ -49,26 +48,26 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 		i = create_trame(trame, init, ODIDSPECIAL);
 		Serial.write(trame, i);
 
-		//ORIGINE_DEBUG_ARD_POISON(85,3); // FIXME:ne passe pas ce test
+		//ORIGINE_DEBUG_ARD_POISON(85, 3); // FIXME:ne passe pas ce test
 
-		// If ODID exists in the master, associate it 
+		// If ODID exists in the master, associate it
 		i = read_trame_from_serial(trame);
 		init = get_commande_from_trame(trame);
 
-		if (init[0] == INIT_ODID_NOK ) 
+		if (init[0] == INIT_ODID_NOK)
 		{
 			tblassoc->rm((*tblassoc)[j]->getOdid());
 		}
-		else 
+		else
 		{
-				(*tblassoc)[j]->associe(this);
+			(*tblassoc)[j]->associe(this);
 		}
 	}
 }
 
 bool ArduinoGaop::send(Commande& cmd, octet odid)
 {
-	octet buf[TAILLE_MAX_FRAME] = {0}; 
+	octet buf[TAILLE_MAX_FRAME] = {0};
 
 	int taille_trame = create_trame(buf, cmd, odid);
 	Serial.write(buf, taille_trame);
@@ -77,7 +76,7 @@ bool ArduinoGaop::send(Commande& cmd, octet odid)
 }
 
 bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
-{    
+{
 	Commande cmd;
 	Commande nil;
 	octet trame[TAILLE_MAX_FRAME] = {0};
@@ -89,26 +88,25 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 	nb_donnees = read_trame_from_serial(trame);
 	
 	// If trame valid
-	if (verify_trame(trame)) 
+	bool verified_trame = verify_trame(trame);
+	if (verified_trame)
 	{
 		// Get informations
 		get_data_from_trame(trame, cmd, odid);
 
-		// Exec command	
+		// Exec command
 		if (tblassoc.getByODID(odid) != NULL)
 			tblassoc.getByODID(odid)->receive(cmd);
 		
 		// Ping
-		if ( odid==ODIDSPECIAL )
+		if (odid==ODIDSPECIAL)
 		{
 			// Pong
-			send(nil,ODIDSPECIAL);
+			send(nil, ODIDSPECIAL);
 		}
-
-		return true;
 	}
-	else
-		return false;
+
+	return verified_trame;
 }
 
 // FIXME:implementer void serialEvent(Serial myPort) && gestion timeout
@@ -117,34 +115,39 @@ int ArduinoGaop::read_trame_from_serial(octet* trame)
 	int i;
 	octet o = 0;
 
-	// Syncronize with the beginning
-	while (o != BEGIN_TRAME)
+	for(;;)
 	{
-		while (Serial.available() == 0)
+		if (Serial.available())
+		{
+			o = Serial.read();
+			if (o == BEGIN_TRAME)
+				break;
+		}
+		else
+		{
 			delayMicroseconds(30);
-
-		o = Serial.read();
+		}
 	}
 	
 	// Wait in order to get size
-	while (Serial.available() < IND_TAILLE) 
+	while (Serial.available() < IND_TAILLE)
 		delayMicroseconds(30);
 	
 	// Fill the buffer's begin
 	trame[0] = o;
-	for ( i = 1 ; i < IND_TAILLE+1 ; i++ )
+	for (i = 1; i < IND_TAILLE + 1; i++)
 		trame[i] = Serial.read();
 
 	// We can fill the rest
-	while (Serial.available() < (trame[IND_TAILLE]+INFOCPL-(IND_TAILLE+1)) )
-			delayMicroseconds(30);
+	while (Serial.available() < (trame[IND_TAILLE] + INFOCPL - (IND_TAILLE + 1)))
+		delayMicroseconds(30);
 
-	for ( ; i < trame[IND_TAILLE]+INFOCPL ; i++ )
+	for (; i < trame[IND_TAILLE] + INFOCPL; i++)
 		trame[i] = Serial.read();
 
-	send_ack(verify_trame(trame),trame[IND_SEQ]);
+	send_ack(verify_trame(trame), trame[IND_SEQ]);
 
-	return (int)(trame[IND_TAILLE]+INFOCPL);
+	return (int)(trame[IND_TAILLE] + INFOCPL);
 }
 
 int ArduinoGaop::send_ack(bool ok, int seq)
