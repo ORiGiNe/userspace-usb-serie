@@ -18,7 +18,7 @@ class ArduinoGaop : public AbstractGaop
 
 		void initialise(AssocPeriphOdid*);
 		bool send(Commande &cmd, octet odid);
-		bool receive(AssocPeriphOdid&);
+		bool receive();
 
 		/*!
 		 * Lit une trame directement depuis l'instance Serial, et vérifie

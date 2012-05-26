@@ -15,6 +15,7 @@ void Capteur::receive(Commande& c)
 
 int Capteur::get()
 {
+	int timeout = 0;
 	reponse = false;
 	operation(); //envoie la requete
 	//attend la reponse

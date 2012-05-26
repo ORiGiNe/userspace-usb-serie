@@ -7,7 +7,11 @@ Commande::Commande()
 
 short int& Commande::operator[](unsigned int i)
 {
-	return (i < TBL_MAX) ? tbl[i] : -1;
+	// FIXME beurk
+	if (i < TBL_MAX && i >= taille)
+		taille = i+1;
+
+	return (i < TBL_MAX) ? tbl[i]: tbl[TBL_MAX-1];
 }
 
 int Commande::getTaille() const

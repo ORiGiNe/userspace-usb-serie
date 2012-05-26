@@ -153,9 +153,9 @@ int main()
 	while (true)
 	{
 		led1.set(1);
-		usleep(100*1000);
+		usleep(10*1000);
 		led1.set(0);
-		usleep(100*1000);
+		usleep(10*1000);
 	}
 
 

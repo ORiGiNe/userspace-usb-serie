@@ -62,6 +62,7 @@ PCGaop::PCGaop(const char *slave_path) : AbstractGaop()
 
 	for (i = 0 ; i < NBR_TRAME_HIST ; i++ )
 	{
+		trames_history[i] = new trame;
 		trames_history[i]->ack = false;
 	}
 
@@ -107,7 +108,7 @@ void PCGaop::initialise(AssocPeriphOdid *_tblassoc)
 	
 	ORIGINE_DEBUG_STDOUT("Trame 1 reçue, nombre de données : %d\n\n\n", i);
 
-	init[0] = tblassoc->getNbDevices();
+	//init[0] = tblassoc->getNbDevices();
 
 	// How many devices ?
 	init[0] = INIT_NB_DEVICES;
@@ -231,6 +232,7 @@ bool PCGaop::send(Commande &cmd, octet odid)
 bool PCGaop::receive()
 {
 	Commande cmd;
+	Commande cmd_ack;
 	octet odid;
 	octet trame[TAILLE_MAX_FRAME] = {0};
 	int i = 0, nb_donnees = 0;
@@ -263,8 +265,7 @@ bool PCGaop::receive()
 			break;
 		case ODIDACKNOK:
 			ORIGINE_DEBUG_STDOUT("nack de la cmd %d\n", trame[IND_SEQ]);
-			Commande cmd_ack;
-			build_trame_from_seq(cmd_ack, trame[IND_SEQ]);
+			// TODO: build_trame_from_seq(trame[IND_SEQ]);
 			send(cmd_ack, odid);
 			break;
 		default:

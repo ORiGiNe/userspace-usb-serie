@@ -46,6 +46,7 @@ bool Asserv::arreter()
 
 int Asserv::get(Commande &c)
 {
+	int timeout = 0;
 	reponse = false;
 	operation(); //envoie la requete
 	//attend la reponse

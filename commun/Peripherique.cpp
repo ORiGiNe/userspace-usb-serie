@@ -1,5 +1,12 @@
 #include "Peripherique.h"
+#include <stdlib.h>		// NULL
 
+// Ne compile pas sans cette fonction
+//*
+#if IAmNotOnThePandaBoard
+void __cxa_pure_virtual() { };
+#endif
+//*/
 Peripherique::Peripherique(octet _odid)
 { 
 	odid = _odid;

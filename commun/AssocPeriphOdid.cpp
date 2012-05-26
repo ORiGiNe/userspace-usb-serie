@@ -1,3 +1,4 @@
+#include <stdlib.h> // NULL
 #include "AssocPeriphOdid.h"
 #include "origine_debug.h"
 
@@ -11,7 +12,7 @@ void AssocPeriphOdid::add(Peripherique *p)
 	taille++;
 	t[taille-1] = p;
 
-	ORIGINE_DEBUG_STDOUT("DEBUG AssocPeriphOdid::add odid periph : %d" << (int)(p->getOdid()))
+	ORIGINE_DEBUG_STDOUT("DEBUG AssocPeriphOdid::add odid periph : %d", (int)(p->getOdid()));
 }
 
 Peripherique* AssocPeriphOdid::operator[](int n)

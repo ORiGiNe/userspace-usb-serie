@@ -8,6 +8,11 @@
  * Le code de ce bidule sera different cote arduino et cote pc
  */
 
+// Ne compile pas sans ces 3 lignes FIXME
+#if IAmNotOnThePandaBoard
+extern "C" void __cxa_pure_virtual();
+#endif
+
 class Peripherique
 {
 	public:
@@ -15,7 +20,7 @@ class Peripherique
 		
 		octet getOdid();
 		
-		virtual bool test(); //test le fonctionnement. Renvoie faux si ne marche pas
+		bool test(); //test le fonctionnement. Renvoie faux si ne marche pas
 		bool operation(); //fait l'operation distante
 		
 		/* N'ont pas besoin d'etre wrapper sous urbi */

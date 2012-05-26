@@ -67,7 +67,7 @@ class AbstractGaop
 		 * Cette méthode tourne en boucle, elle permet de recevoir les données.
 		 * A la réception des données, celui-ci envoi au bon device (l'odid est dans la commande) via sa méthode receive
 		 */
-		virtual bool receive(AssocPeriphOdid&) = 0;
+		virtual bool receive() = 0;
 
 	protected:
 		/*!
@@ -137,6 +137,8 @@ class AbstractGaop
 		 *	\return true si la trame est bonne, false sinon
 		 */
 		bool verify_trame(octet *trame);
+
+    AssocPeriphOdid *tblassoc;
 
 		octet flags; //GAOPSPE, GAOPBLK, GAOPDBK, GAOPSND
 };

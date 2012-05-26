@@ -8,7 +8,7 @@
 #include <WProgram.h>
 #include "Servo.h"
 #include "I2C.h"
-//#include <Wire.h>
+#include "Wire.h"
 
 //Warning : on ne peut pas faire de new ou de delete (mais on peut faire du malloc), ni user de la STL
 //Warning : a virtual destructor requires the delete operator which in his turn requires stdlibc++ wich is not supported by avr-g++... (http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?action=print;num=1209026667) 
@@ -49,6 +49,6 @@ void setup()
 
 void loop()
 {
-	brain.receive(tblassoc);
+	brain.receive();
 }
 

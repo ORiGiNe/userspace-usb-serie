@@ -55,12 +55,11 @@ class PCGaop : public AbstractGaop
         bool loopFinished;
 
 	private:
-        AssocPeriphOdid *tblassoc;
-
 		/*!
 		 *	File descriptor du slave
 		 */
         int slave;
+	pthread_t fils;
 
 		/*!
 		 * Historique des trames pour les renvoyées en cas de problèmes de communication.

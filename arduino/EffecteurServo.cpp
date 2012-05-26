@@ -22,11 +22,20 @@ bool EffecteurServo::setup()
 
 bool EffecteurServo::set(int val)
 {
+	int i = 0;
+
 	if ( val < 0 || val > 180 )
 		return false;
 
-	myservo[i].write(val);
-	pos = val;
+	while ( pos != val )
+	{
+		if (pos < val)
+			pos++;
+		else
+			pos--;
 
+		for ( i = 0 ; i < nbr ; i++ )
+			myservo[i].write(pos);
+	}
 	return true;
 }

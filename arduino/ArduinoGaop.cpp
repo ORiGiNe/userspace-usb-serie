@@ -13,11 +13,13 @@ ArduinoGaop::~ArduinoGaop()
 
 }
 
-void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
+void ArduinoGaop::initialise(AssocPeriphOdid *_tblassoc)
 {
 	int i, j;
 	octet trame[TAILLE_MAX_FRAME] = {0};
 	Commande init;
+
+	tblassoc = _tblassoc;
 
 	// Open serial communication
 	Serial.begin(115200);
@@ -27,7 +29,7 @@ void ArduinoGaop::initialise(AssocPeriphOdid *tblassoc)
 	i = create_trame(trame, get_commande_from_trame(trame), get_odid_from_trame(trame));
 	Serial.write(trame, i);
 
-	ORIGINE_DEBUG_ARD_POISON('r', 3);
+	//ORIGINE_DEBUG_ARD_POISON('r', 3);
 
 	// Number of devices
 	i = read_trame_from_serial(trame);
@@ -75,7 +77,7 @@ bool ArduinoGaop::send(Commande& cmd, octet odid)
 	return true;
 }
 
-bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
+bool ArduinoGaop::receive()
 {
 	Commande cmd;
 	Commande nil;
@@ -95,8 +97,8 @@ bool ArduinoGaop::receive(AssocPeriphOdid& tblassoc)
 		get_data_from_trame(trame, cmd, odid);
 
 		// Exec command
-		if (tblassoc.getByODID(odid) != NULL)
-			tblassoc.getByODID(odid)->receive(cmd);
+		if (tblassoc->getByODID(odid) != NULL)
+			tblassoc->getByODID(odid)->receive(cmd);
 		
 		// Ping
 		if (odid==ODIDSPECIAL)
