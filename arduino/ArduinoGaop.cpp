@@ -1,6 +1,6 @@
 #include "ArduinoGaop.h"
 #include "Config.h"
-#include <WProgram.h>
+#include <Arduino.h>
 #include "origine_debug.h"
 
 ArduinoGaop::ArduinoGaop() : AbstractGaop()

@@ -3,11 +3,10 @@ UserSpace usb-serie pandaboard/arduino
 ->abstraction logiciel (bridge pattern) cote arduino
 ->heritage simple cote pc
 
-Pour compiler : 
+Pour compiler :
 make : compile les sources pour la panda
 make install-ide : copie les sources dans le sketchbook
+make -f makefile.arduino ou make arduino pour compiler les sources de l'arduino
+make -f makefile.arduino ou make upload pour importer sur l'arduino
 logiciel arduino -> userspace-usb-serie : compile puis importe sur l'arduino
-
-	 
-
 

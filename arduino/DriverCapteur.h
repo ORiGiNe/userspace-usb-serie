@@ -1,7 +1,7 @@
 #ifndef DRIVERCAPTEUR_H
 #define DRIVERCAPTEUR_H
 
-#include <WProgram.h>
+#include <Arduino.h>
 
 class DriverCapteur
 {

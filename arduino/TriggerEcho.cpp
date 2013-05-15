@@ -1,5 +1,5 @@
 #include "TriggerEcho.h"
-#include <WProgram.h>
+#include <Arduino.h>
 
 // Macro-fonctions pour renvoyer les valeurs dans l'unité voulue
 #define timeToCm(time) ((time) / 29 / 2)

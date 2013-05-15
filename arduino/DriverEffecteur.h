@@ -1,7 +1,7 @@
 #ifndef DRIVEREFFECTEUR_H
 #define DRIVEREFFECTEUR_H
 
-#include <WProgram.h>
+#include <Arduino.h>
 
 class DriverEffecteur
 {

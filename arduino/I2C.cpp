@@ -1,5 +1,5 @@
 #include "I2C.h"
-#include <WProgram.h>
+#include <Arduino.h>
 #include <Wire.h>
 
 /*
@@ -23,14 +23,14 @@ int I2C::get()
 
 	// Pour enregistrer la valeur en cm
 	Wire.beginTransmission(address);
-	Wire.send(0);
-	Wire.send(0x51);
+	Wire.write(0);
+	Wire.write(0x51);
 	Wire.endTransmission();
 	delay(70);
 
 	// Pour lire
 	Wire.beginTransmission(address);
-	Wire.send(2);
+	Wire.write(2);
 	Wire.endTransmission();
 
 	Wire.requestFrom(address, 2);
@@ -40,8 +40,8 @@ int I2C::get()
 	}
 
 	// Décalage logique d'un octet
-	result = Wire.receive() * 256;
-	result += Wire.receive();
+	result = Wire.read() * 256;
+	result += Wire.read();
 
 	return result;
 }
