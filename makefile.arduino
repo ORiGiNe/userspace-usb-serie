@@ -1,0 +1,165 @@
+#Makefile for use arduino.
+#Make : compile (sourcfe in src and arduino librairie)
+#make upload : import le code
+
+#PROGRAMS
+AR = avr-ar
+AVRDUDE = avrdude
+BIN = robot
+CC = avr-gcc
+CXX = avr-g++
+LD = avr-ld
+NM = avr-nm
+OBJCOPY = avr-objcopy
+OBJDUMP = avr-objdump
+RM = rm -v
+SIZE = avr-size
+
+#DIRECTORIES
+OBJDIR = obj-arduino
+SRCDIR = arduino commun
+INCDIR = arduino commun
+BINDIR = obj-arduino
+ARDUINO = /usr/share/arduino
+
+#FLAGS
+LDFLAGS =
+CWARN = -Wall -Wextra -Wextra -Wshadow
+#CDEBUG = -g
+INCFLAGS = $(patsubst %,-I%, $(INCDIR))
+
+OPTFLAG = -Os #0 (none), 1, 2, 3, s (space)
+
+#BOARD CONFIGURATION
+UPLOAD_RATE = 115200
+AVRDUDE_PROGRAMMER = stk500v1
+#MCU = atmega168
+MCU = atmega328p
+F_CPU = 16000000UL
+VERSION=18
+PORT = /dev/ttyACM0
+
+#additional lib
+#ADDITIONAL_LIB = Servo Ethernet ...
+ADDITIONAL_LIB = Servo Wire Wire/utility
+
+#.SILENT:
+
+#############################################################################################
+# Below here nothing should be changed...
+
+LDFLAGS += $(OPTFLAGS) -lm
+INCFLAGS += $(patsubst %,-I$(ARDUINO)/libraries/%, $(ADDITIONAL_LIB)) -I$(ARDUINO)/hardware/arduino/cores/arduino -I$(ARDUINO)/hardware/arduino/variants/standard/
+CFLAGS = $(CWARN) $(CDEBUG) $(INCFLAGS) $(OPTFLAG) -DF_CPU=$(F_CPU) -DARDUINO=$(VERSION) -mmcu=$(MCU)
+
+#MODULES TO BUILD LIBAARDUINO
+MODULES = $(wildcard $(ARDUINO)/hardware/arduino/cores/arduino/*.c)
+MODULES += $(wildcard $(ARDUINO)/hardware/arduino/cores/arduino/*.cpp)
+
+MODULES += $(wildcard $(patsubst %,$(ARDUINO)/libraries/%/*.c, $(ADDITIONAL_LIB)))
+MODULES += $(wildcard $(patsubst %,$(ARDUINO)/libraries/%/*.cpp, $(ADDITIONAL_LIB)))
+
+#AVRDUDE FLAGS
+AVRDUDE_FLAGS = -V -F -C $(ARDUINO)/hardware/tools/avrdude.conf \
+-p $(MCU) -P $(PORT) -c $(AVRDUDE_PROGRAMMER) \
+-b $(UPLOAD_RATE)
+
+#PARSE SOURCES FILES
+SRC  = $(wildcard $(patsubst %,%/*.c,$(SRCDIR)))
+OBJ  = $(filter .o,$(SRC:$(SRCDIR)/%.c=$(OBJDIR)/%.o))
+SRCCPP = $(wildcard $(patsubst %,%/*.cpp,$(SRCDIR)))
+OBJ += $(filter .o,$(SRCCPP:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o))
+
+OBJDIR_MODULE = $(OBJDIR)
+TMP_MODULES=$(notdir $(MODULES))
+OBJ_MODULES = $(filter %.o,$(TMP_MODULES:%.c=$(OBJDIR_MODULE)/%.o))
+OBJ_MODULES +=$(filter %.o,$(TMP_MODULES:%.cpp=$(OBJDIR_MODULE)/%.o))
+
+#define VPATH variable to tell make to serach in several directory
+VPATH= $(SRCDIR) $(patsubst %,$(ARDUINO)/libraries/%, $(ADDITIONAL_LIB)) $(ARDUINO)/hardware/arduino/cores/arduino
+
+# Convert ELF to COFF for use in debugging / simulating in AVR Studio or VMLAB.
+COFFCONVERT=$(OBJCOPY) --debugging \
+--change-section-address .data-0x800000 \
+--change-section-address .bss-0x800000 \
+--change-section-address .noinit-0x800000 \
+--change-section-address .eeprom-0x810000
+
+#.PHONY: des regles et non des noms de fichiers
+.PHONY: clean all mrproper upload pre post elf hex eep lss sym
+
+#Uncommented to do quite compilation
+#.SILENT:
+
+all: pre build eep lss sym post
+
+coff: $(BINDIR)/$(BIN).elf
+	$(COFFCONVERT) -O coff-avr $(BINDIR)/$(BIN).elf $(BINDIR)/$(BIN).cof
+
+extcoff: $(BINDIR)/$(BIN).elf
+	$(COFFCONVERT) -O coff-ext-avr $(BINDIR)/$(BIN).elf $(BINDIR)/$(BIN).cof
+
+.SUFFIXES: .elf .hex .eep .lss .sym
+
+.elf.hex:
+	$(OBJCOPY) -O ihex -R .eeprom $< $@
+
+.elf.eep:
+	$(OBJCOPY) -O ihex -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+	--no-change-warnings \
+	--change-section-lma .eeprom=0 $< $@
+
+# Create extended listing file from ELF output file.
+.elf.lss:
+	$(OBJDUMP) -h -S $< > $@
+
+# Create a symbol table from ELF output file.
+.elf.sym:
+	$(NM) -n $< > $@
+
+elf: $(BINDIR)/$(BIN).elf
+hex: $(BINDIR)/$(BIN).hex
+eep: $(BINDIR)/$(BIN).eep
+lss: $(BINDIR)/$(BIN).lss
+sym: $(BINDIR)/$(BIN).sym
+
+pre:
+
+build: elf hex
+
+post: build
+	$(SIZE) --mcu=$(MCU) --format=avr $(BINDIR)/$(BIN).elf
+
+# Program the device.
+upload: $(BINDIR)/$(BIN).hex
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:w:$(BINDIR)/$(BIN).hex
+
+#Build rules
+$(BINDIR)/core.a: $(OBJ_MODULES)
+	@for i in $(OBJ_MODULES); do echo $(AR) rcs $(BINDIR)/core.a $$i; $(AR) rcs $(BINDIR)/core.a $$i; done
+
+$(BINDIR)/$(BIN).elf: $(OBJ) $(BINDIR)/core.a
+		$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -Wl,--gc-section
+
+$(OBJDIR)/%.o: %.cpp
+		$(CXX) -o $@ -c $< $(CFLAGS)
+
+$(OBJDIR_MODULES)/%.o: %.cpp
+		$(CXX) -o $@ -c $< $(CFLAGS)
+
+$(OBJDIR)/%.o: %.c
+		$(CC) -o $@ -c $< $(CFLAGS)
+
+$(OBJDIR_MODULE)/%.o: %.c
+		$(CC) -o $@ -c $< $(CFLAGS)
+clean:
+		@$(RM) $(OBJ)
+		@$(RM) $(OBJ_MODULES)
+
+mrproper: clean
+		@$(RM) $(BINDIR)/$(BIN).elf
+		@$(RM) $(BINDIR)/$(BIN).hex
+		@$(RM) $(BINDIR)/$(BIN).lss
+		@$(RM) $(BINDIR)/$(BIN).sym
+		@$(RM) $(BINDIR)/core.a
+
